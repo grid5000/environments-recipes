@@ -57,12 +57,20 @@ def tar_convert(disk, output, excludes, compression_level):
     elif output.endswith(('tar.lzo', 'tzo')):
         compr = "| %s %s -c -" % (which("lzop"), compression_level_opt)
 
-    tar_options_list = ["numericowner:true",
-                        "excludes:\"%s\"" % ' '.join(excludes)]
+    tar_options_list = ["--selinux", "--acls", "--xattrs",
+                        "--numeric-owner", "--one-file-system"] + \
+                       ['--exclude="%s"' % s for s in excludes]
     tar_options = ' '.join(tar_options_list)
-    cmd = which("guestfish") + \
-        " --ro -i tar-out -a %s / - %s %s > %s"
-    cmd = cmd % (disk, tar_options, compr, output)
+
+    directory = dir_path = os.path.dirname(os.path.realpath(disk))
+    cmds = [
+        which("mkdir") + " %s/.mnt" % directory,
+        which("guestmount") + " --ro -i -a %s %s/.mnt" % (disk, directory),
+        which("tar") + " -cf %s --gzip %s -C %s/.mnt ." % (output, tar_options, directory),
+        which("guestunmount") + " %s/.mnt" % directory,
+        which("rmdir") + " %s/.mnt" % directory
+        ]
+    cmd = " && ".join(cmds)
     proc = subprocess.Popen(cmd, env=os.environ.copy(), shell=True)
     proc.communicate()
     if proc.returncode:
