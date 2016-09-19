@@ -12,8 +12,6 @@ class env::big ( $parent_parameters = {} ){
     'env::nfs':
       parent_parameters => $parameters
   }
-  # Ceph - bug #7225 - install Ceph modules from apt.grid5000.fr
-  class { 'env::big::install_ceph': }
   # Users packages
   class { 'env::big::packages': }
   # gem
@@ -22,6 +20,8 @@ class env::big ( $parent_parameters = {} ){
       stage  => 'g5k_adjustment';
     }
   }
+  # Ceph - bug #7225 - install Ceph modules from apt.grid5000.fr
+  class { 'env::big::install_ceph': }
   # mail
   class { 'env::big::configure_postfix': }
   # kvm
