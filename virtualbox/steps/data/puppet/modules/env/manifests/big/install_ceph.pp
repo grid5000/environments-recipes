@@ -1,5 +1,6 @@
 class env::big::install_ceph (
   $version = 'firefly'
+  $distrib = 'jessie'
 ) {
 
   # bug ref. 7225 - changed commands to get ceph packages from apt.grid5000.fr
@@ -9,7 +10,7 @@ class env::big::install_ceph (
       mode    => '0644',
       owner   => root,
       group   => root,
-      content => "deb http://apt.grid5000.fr/ceph5k/jessie/${version}"
+      content => "deb http://apt.grid5000.fr/ceph5k/jessie/${version} ./"
   }
 
   # bug ref. 7225 - changed commands to install ceph from correct packages
