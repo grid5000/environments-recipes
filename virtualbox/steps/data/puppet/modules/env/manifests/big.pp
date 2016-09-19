@@ -12,6 +12,8 @@ class env::big ( $parent_parameters = {} ){
     'env::nfs':
       parent_parameters => $parameters
   }
+  # Ceph - bug #7225 - install Ceph modules from apt.grid5000.fr
+  class { 'env::big::install_ceph': }
   # Users packages
   class { 'env::big::packages': }
   # gem

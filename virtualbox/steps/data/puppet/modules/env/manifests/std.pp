@@ -24,6 +24,8 @@ class env::std ( $parent_parameters = {} ){
     'env::big':
       parent_parameters => $parameters
   }
+  # Ceph - bug #7225 - install Ceph modules from apt.grid5000.fr
+  class { 'env::std::install_ceph': }
   # OAR
   class { 'env::std::configure_oar_client': }
   # g5kchecks (+ ipmitool)
