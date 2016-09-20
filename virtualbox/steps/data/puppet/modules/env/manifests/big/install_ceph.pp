@@ -1,5 +1,5 @@
 class env::big::install_ceph (
-  $version = 'firefly'
+  $version = 'hammer'
 ) {
 
   # bug ref. 7225 - updated URL to get ceph packages directly from jessie-backports
@@ -14,6 +14,7 @@ class env::big::install_ceph (
 
   package {
     "ceph":
+      ensure  => installed,
       require => File["/etc/apt/sources.list.d/ceph.list"];
   }
 
