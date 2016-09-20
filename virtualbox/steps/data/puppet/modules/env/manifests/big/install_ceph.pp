@@ -1,16 +1,8 @@
 class env::big::install_ceph (
-  $version = 'hammer'
+  $version = 'firefly'
 ) {
 
-  $key = '460F3994'
-
-  # bug ref. 7225 - changed commands to get ceph packages from apt.grid5000.fr
-  exec {
-    'get_ceph_key':
-      command  => "/usr/bin/wget -q -O- 'https://download.ceph.com/keys/release.asc' | /usr/bin/apt-key add -",
-      unless    => "/usr/bin/apt-key list | /bin/grep '${key}'";
-  }
-
+  # bug ref. 7225 - updated URL to get ceph packages directly from jessie-backports
   file {
     '/etc/apt/sources.list.d/ceph.list':
       ensure  => file,
@@ -20,11 +12,10 @@ class env::big::install_ceph (
       content => "deb https://download.ceph.com/debian-$version/ jessie main"
   }
 
-  exec {
-    'install_ceph':
-      command  => "/usr/bin/apt-get -y --force-yes install ceph",
+  package {
+    "ceph":
+      require => File["/etc/apt/sources.list.d/ceph.list"];
   }
 
-  Exec['get_ceph_key'] -> File['/etc/apt/sources.list.d/ceph.list'] -> Exec['install_ceph']
 }
 
