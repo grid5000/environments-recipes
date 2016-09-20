@@ -23,7 +23,6 @@ class env::big::install_ceph (
   exec {
     'install_ceph':
       command  => "/usr/bin/apt-get -y --force-yes install ceph",
-      unless    => "/usr/bin/apt-key list | /bin/grep '${key}'";
   }
 
   Exec['get_ceph_key'] -> File['/etc/apt/sources.list.d/ceph.list'] -> Exec['install_ceph']
