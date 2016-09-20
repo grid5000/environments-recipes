@@ -1,40 +1,31 @@
 class env::big::install_ceph (
-  $version = 'firefly'
+  $version = 'hammer'
 ) {
 
+  $key = '460F3994'
+
   # bug ref. 7225 - changed commands to get ceph packages from apt.grid5000.fr
+  exec {
+    'get_ceph_key':
+      command  => "/usr/bin/wget -q -O- 'https://download.ceph.com/keys/release.asc' | /usr/bin/apt-key add -",
+      unless    => "/usr/bin/apt-key list | /bin/grep '${key}'";
+  }
+
   file {
     '/etc/apt/sources.list.d/ceph.list':
       ensure  => file,
       mode    => '0644',
       owner   => root,
       group   => root,
-      content => "deb http://apt.grid5000.fr/ceph5k/jessie/${version} ./"
+      content => "deb https://download.ceph.com/debian-$version/ jessie main"
   }
 
-  # bug ref. 7225 - changed commands to install ceph from correct packages
-  package {
-    "ceph":
-      ensure => '0.80.10-2~bpo8+1',
-      require => File["/etc/apt/sources.list.d/ceph.list"];
-    "chrony":
-      ensure => installed;
-    "ceph-common":
-      ensure => '0.80.10-2~bpo8+1',
-      require => File["/etc/apt/sources.list.d/ceph.list"];
-    "python-ceph":
-      ensure => '0.80.10-2~bpo8+1',
-      require => File["/etc/apt/sources.list.d/ceph.list"];
-    "librbd1":
-      ensure => '0.80.10-2~bpo8+1',
-      require => File["/etc/apt/sources.list.d/ceph.list"];
-    "libcephfs1":
-      ensure => '0.80.10-2~bpo8+1',
-      require => File["/etc/apt/sources.list.d/ceph.list"];
-    "librados2":
-      ensure => '0.80.10-2~bpo8+1',
-      require => File["/etc/apt/sources.list.d/ceph.list"];
+  exec {
+    'install_ceph':
+      command  => "/usr/bin/apt-get -y --force-yes install ceph",
+      unless    => "/usr/bin/apt-key list | /bin/grep '${key}'";
   }
 
+  Exec['get_ceph_key'] -> File['/etc/apt/sources.list.d/ceph.list'] -> Exec['install_ceph']
 }
 
