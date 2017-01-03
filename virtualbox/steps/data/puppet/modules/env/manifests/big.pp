@@ -20,6 +20,8 @@ class env::big ( $parent_parameters = {} ){
       stage  => 'g5k_adjustment';
     }
   }
+  # Ceph - bug #7225 - install Ceph modules from apt.grid5000.fr
+  class { 'env::big::install_ceph': }
   # mail
   class { 'env::big::configure_postfix': }
   # kvm
