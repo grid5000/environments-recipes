@@ -11,9 +11,9 @@ extend: ubuntu12.04.yaml
 # Global variables use by Kameleon engine and the steps
 global:
   # Distribution
-  release: trusty
-  release_number: 14.04
-  bootstrap_image_version: "20150915-1"
+  release: 14.04
+  release_number: $${release}
+  bootstrap_image_version: "20180114-1"
 
   # Apt recipe options
   apt_repository: http://archive.ubuntu.com/ubuntu/
