@@ -3,25 +3,215 @@ class env::big::packages () {
   # editors
   $editors = [ 'jed', 'joe', 'emacs' ]
 
-  #utils
-  $utils = [ 'at', 'bash-completion', 'bc', 'connect-proxy', 'kbd', 'debhelper', 'debootstrap', 'diffstat', 'discover', 'discover-data', 'ftp', 'genders', 'gnuplot', 'hdparm', 'html2text', 'hwloc', 'inotify-tools', 'info', 'iperf', 'iputils-arping', 'iputils-tracepath', 'kanif', 'lsb-release', 'mysql-client', 'nmap', 'numactl', 'pv', 'r-base', 'stress', 'nuttcp', 'db-util', 'clustershell', 'parallel', 'cron', 'postgresql-client', 'tmux', 'graphviz', 'xauth', 'bootlogd', 'dnsutils', 'dtach', 'host', 'ldap-utils', 'lshw', 'lsof', 'bsd-mailx', 'm4', 'netcat-openbsd', 'screen', 'strace', 'telnet', 'time', 'xstow', 'sudo', 'debian-archive-keyring', 'linux-tools' ]
+  $utils = [
+    'at',
+    'bash-completion',
+    'bc',
+    'bootlogd',
+    'bsd-mailx',
+    'clustershell',
+    'connect-proxy',
+    'cron',
+    'db-util',
+    'debhelper',
+    'debian-archive-keyring',
+    'debootstrap',
+    'diffstat',
+    'discover',
+    'discover-data',
+    'dnsutils',
+    'dtach',
+    'ftp',
+    'genders',
+    'gnuplot',
+    'graphviz',
+    'hdparm',
+    'host',
+    'html2text',
+    'hwloc',
+    'info',
+    'inotify-tools',
+    'iperf',
+    'iputils-arping',
+    'iputils-tracepath',
+    'kanif',
+    'kbd',
+    'ldap-utils',
+    'linux-tools'
+    'lsb-release',
+    'lshw',
+    'lsof',
+    'm4',
+    'mysql-client',
+    'netcat-openbsd',
+    'nmap',
+    'numactl',
+    'nuttcp',
+    'parallel',
+    'postgresql-client',
+    'pv',
+    'r-base',
+    'screen',
+    'strace',
+    'stress',
+    'sudo',
+    'telnet',
+    'time',
+    'tmux',
+    'xauth',
+    'xstow',
+  ]
 
   # Dev and languages
-  $general_dev = [ 'libreadline6-dev', 'autoconf', 'flex', 'bison', 'libyaml-0-2', 'cgdb', 'cmake', 'cmake-curses-gui', 'cvs', 'gdb', 'gfortran', 'git-core', 'subversion', 'libatlas-base-dev', 'libdate-calc-perl', 'libc6', 'libjson-perl', 'libjson-xs-perl', 'libssl-dev', 'make', 'patch', 'tcl', 'php5-cli', 'valgrind', 'libtool', 'libnuma-dev', 'libdb-dev', 'libatlas-dev','debconf-utils', 'libnetcdf-dev', 'libboost-all-dev' ]
-  $perl_dev = [ 'libwww-perl', 'libperl-dev', 'libswitch-perl' ]
-  $python_dev = [ 'python-dev', 'python-imaging', 'python-matplotlib-data', 'python-matplotlib-doc', 'python-mysqldb', 'python-numpy', 'python-paramiko', 'python-scipy', 'python-sqlite', 'python-httplib2', 'python-yaml', 'python-psycopg2', 'python-pip', 'ruby-net-ssh-multi', 'python3', 'python3-dev', 'python3-cffi', 'cython3', 'ipython3', 'python3-numpy', 'python3-pandas', 'python3-scipy', 'python3-matplotlib', 'python3-virtualenv', 'python3-setuptools', 'python3-wheel', 'python3-pip']
+  $general_dev = [
+    'autoconf',
+    'bison',
+    'cgdb',
+    'cmake',
+    'cmake-curses-gui',
+    'cvs',
+    'flex',
+    'gdb',
+    'gfortran',
+    'git-core',
+    'libatlas-base-dev',
+    'libatlas-dev','debconf-utils',
+    'libboost-all-dev'
+    'libc6',
+    'libdate-calc-perl',
+    'libdb-dev',
+    'libjson-perl',
+    'libjson-xs-perl',
+    'libnetcdf-dev',
+    'libnuma-dev',
+    'libreadline6-dev',
+    'libssl-dev',
+    'libtool',
+    'libyaml-0-2',
+    'make',
+    'patch',
+    'php5-cli',
+    'subversion',
+    'tcl',
+    'valgrind',
+  ]
+
+  $perl_dev = [
+    'libwww-perl',
+    'libperl-dev',
+    'libswitch-perl',
+  ]
+
+  $python_dev = [
+    'cython3',
+    'ipython3',
+    'python-dev',
+    'python-httplib2',
+    'python-imaging',
+    'python-matplotlib-data',
+    'python-matplotlib-doc',
+    'python-mysqldb',
+    'python-numpy',
+    'python-paramiko',
+    'python-pip',
+    'python-psycopg2',
+    'python-scipy',
+    'python-sqlite',
+    'python-yaml',
+    'python3',
+    'python3-cffi',
+    'python3-dev',
+    'python3-matplotlib',
+    'python3-numpy',
+    'python3-pandas',
+    'python3-pip',
+    'python3-scipy',
+    'python3-setuptools',
+    'python3-virtualenv',
+    'python3-wheel',
+  ]
+
+  $ruby_dev = [
+    'ruby-net-ssh-multi',
+  ]
+
   $java_dev = [ 'openjdk-7-jdk', 'openjdk-7-jre', 'ant' ]
-  $infiniband = [ 'ibverbs-utils', 'libcxgb3-dev', 'libipathverbs-dev', 'libmlx4-dev', 'libmthca-dev', 'rdmacm-utils', 'ibutils', 'infiniband-diags', 'perftest', 'srptools' ]
+
+  $infiniband = [
+    'ibverbs-utils',
+    'libcxgb3-dev',
+    'libipathverbs-dev',
+    'libmlx4-dev',
+    'libmthca-dev',
+    'rdmacm-utils',
+    'ibutils',
+    'infiniband-diags',
+    'perftest',
+    'srptools',
+  ]
+
   case $operatingsystem {
-      'centos':           { $dev = [ $general_dev, $perl_dev, $python_dev, $java_dev, $infiniband, 'gcc', 'ruby-libs', 'ruby-devel', 'ruby-docs', 'ruby-rack', 'ruby-ri', 'ruby-irb', 'ruby-rdoc', 'ruby-mode', 'libwww-perl', 'libperl-dev' ]}
-      /^(Debian|Ubuntu)$/:{ $dev = [ $general_dev, $perl_dev, $python_dev, $java_dev, $infiniband, 'build-essential', 'binutils-doc', 'ruby-dev', 'ruby-rack', 'ri', 'libruby', 'manpages-dev' ]  }
-      default:            { $dev = [ $general_dev, $perl_dev, $python_dev, $java_dev, $infiniband ]}
-    }
-  $gems = [ 'mime-types', 'rdoc', 'rest-client', 'restfully']
+    'centos': {
+      $dev = [
+        $general_dev,
+        $perl_dev,
+        $python_dev,
+        $ruby_dev,
+        $java_dev,
+        $infiniband,
+        'gcc',
+        'ruby-libs',
+        'ruby-devel',
+        'ruby-docs',
+        'ruby-rack',
+        'ruby-ri',
+        'ruby-irb',
+        'ruby-rdoc',
+        'ruby-mode',
+        'libwww-perl',
+        'libperl-dev',
+      ]}
+
+    /^(Debian|Ubuntu)$/: {
+      $dev = [
+        $general_dev,
+        $perl_dev,
+        $python_dev,
+        $ruby_dev,
+        $java_dev,
+        $infiniband,
+        'build-essential',
+        'binutils-doc',
+        'ruby-dev',
+        'ruby-rack',
+        'ri',
+        'libruby',
+        'manpages-dev',
+      ]}
+
+    default: {
+      $dev = [
+        $general_dev,
+        $perl_dev,
+        $python_dev,
+        $ruby_dev,
+        $java_dev,
+        $infiniband,
+      ]}
+  }
+
+  $gems = [
+    'mime-types',
+    'rdoc',
+    'rest-client',
+    'restfully',
+  ]
 
   # System tools
-  $system = [ 'htop', 'psmisc' ]
-
+  $system = [
+    'htop',
+    'psmisc',
+  ]
 
   file {
     '/etc/parallel/config':
