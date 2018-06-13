@@ -56,6 +56,7 @@ class env::big::packages () {
     'stress',
     'sudo',
     'telnet',
+    'traceroute',
     'time',
     'tmux',
     'xauth',
