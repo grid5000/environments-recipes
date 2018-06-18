@@ -1,6 +1,16 @@
 class env::base::packages () {
 
-  $installed = [ 'bind9-host', 'python', 'ipython', 'ruby', 'curl', 'taktuk', 'bzip2', 'rsync', 'vim' ]
+  $installed = [
+    'bind9-host',
+    'bzip2',
+    'curl',
+    'ipython',
+    'python',
+    'rsync',
+    'ruby',
+    'taktuk',
+    'vim',
+  ]
 
   package {
     $installed:
