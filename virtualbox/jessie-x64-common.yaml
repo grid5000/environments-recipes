@@ -26,7 +26,7 @@ global:
     - prepare appliance
     - start_virtualbox
   setup_packages: >
-    extlinux
+    extlinux dbus
   # G5k variables
   variant: min # default value for variant. Can be overwritten by --global=variant:<my_variant> when calling kameleon
   os_family: debian
