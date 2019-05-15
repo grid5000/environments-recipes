@@ -12,8 +12,8 @@ apt-get update
 apt-get -y install --no-install-recommends wget lsb-release
 apt-get -y install readline-common linux-image-amd64
 wget -O /tmp/libreadline6.deb http://snapshot.debian.org/archive/debian/20161005T102332Z/pool/main/r/readline6/libreadline6_6.3-9_amd64.deb && dpkg -i /tmp/libreadline6.deb
-wget -q http://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb -O /tmp/puppetlabs-release-pc1.deb
-dpkg -i /tmp/puppetlabs-release-pc1.deb
+wget -q http://release-archives.puppet.com/apt/pool/jessie/PC1/p/puppet-agent/puppet-agent_1.5.1-1jessie_amd64.deb -O /tmp/puppet-agent_1.5.1-1jessie_amd64.deb
+dpkg -i /tmp/puppet-agent_1.5.1-1jessie_amd64.deb
 apt-get update
 apt-get install -y --no-install-recommends --allow-unauthenticated puppet-agent=1.5.1-1jessie
 /opt/puppetlabs/bin/puppet module install puppetlabs-stdlib --version 5.0.0
