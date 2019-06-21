@@ -25,5 +25,17 @@ class env::std::dell::params {
 
       Env::Common::G5kpackages['ssl4dell']->Package[$packages]
     }
+
+    'buster': {
+      $src_location = "https://linux.dell.com/repo/community/openmanage/910/stretch"
+      $src_repos = 'main'
+
+      env::common::g5kpackages {
+        'ssl4dell':
+          packages => 'libssl1.0.0';
+      }
+
+      Env::Common::G5kpackages['ssl4dell']->Package[$packages]
+    }
   }
 }
