@@ -21,11 +21,21 @@ class env::std::dell (
 
   include apt
 
+  # FIXME : mettre source_release sur buster quand ce sera supporté
+  case "${::lsbdistcodename}" {
+    "buster" : {
+      $source_release = "stretch"
+    }
+    default : {
+      $source_release = "${::lsbdistcodename}"
+    }
+  }
+
   apt::source {
     'dell':
       comment  => 'Dell repository for OpenManage Server Administrator tools',
       location => $src_location,
-      release  => $::lsbdistcodename,
+      release  => $source_release,
       repos    => $src_repos,
       key      => {
         'id'      => $key,

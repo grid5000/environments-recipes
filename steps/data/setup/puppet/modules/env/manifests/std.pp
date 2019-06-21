@@ -27,8 +27,11 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
   }
   # OAR
   class { 'env::std::configure_oar_client': }
-  # g5kchecks (+ ipmitool)
-  class { 'env::std::install_g5kchecks': }
+  # FIXME g5k-checks et dell ne sont pas compatible avec buster pour le moment
+  if "${::lsbdistcodename}" != "buster" {
+    # g5kchecks (+ ipmitool)
+    class { 'env::std::install_g5kchecks': }
+  }
   # g5kcode
   class { 'env::std::add_g5kcode_to_path': }
   # g5k-subnets
