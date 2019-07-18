@@ -1,19 +1,17 @@
 class env::big::configure_nvidia_gpu::cuda () {
 
-  # May be changed to a link inside g5k if required
-  $driver_source = 'http://packages.grid5000.fr/other/cuda/cuda_9.0.176_384.81_linux-run'
   case "${::lsbdistcodename}" {
     "buster" : {
+      $driver_source = 'http://packages.grid5000.fr/other/cuda/cuda_10.1.168_418.67_linux.run'
       $opengl_packages = ['ocl-icd-libopencl1', 'opencl-headers']
-      $install_opt = "--override" # gcc 8.3 is installed by buster and cuda 9 wants gcc 4.9 (https://docs.nvidia.com/cuda/archive/9.0/cuda-installation-guide-linux/index.html#system-requirements)
     }
     "stretch" : {
+      $driver_source = 'http://packages.grid5000.fr/other/cuda/cuda_9.0.176_384.81_linux-run'
       $opengl_packages = ['ocl-icd-libopencl1', 'opencl-headers']
-      $install_opt = ""
     }
     "jessie" : {
+      $driver_source = 'http://packages.grid5000.fr/other/cuda/cuda_9.0.176_384.81_linux-run'
       $opengl_packages = ['ocl-icd-libopencl1', 'opencl-headers', 'amd-opencl-icd']
-      $install_opt = ""
     }
   }
 
@@ -23,7 +21,7 @@ class env::big::configure_nvidia_gpu::cuda () {
       timeout   => 1200, # 20 min
       creates   => "/tmp/NVIDIA-Linux_cuda.run";
     'install_nvidia_cuda':
-      command   => "/tmp/NVIDIA-Linux_cuda.run --silent --toolkit --samples ${install_opt} && /bin/rm /tmp/NVIDIA-Linux_cuda.run",
+      command   => "/tmp/NVIDIA-Linux_cuda.run --silent --toolkit --samples && /bin/rm /tmp/NVIDIA-Linux_cuda.run",
       timeout   => 2400, # 20 min
       user      => root,
       require   =>  File['/tmp/NVIDIA-Linux_cuda.run'];
