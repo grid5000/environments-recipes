@@ -1,29 +1,18 @@
-# Description: classe to manage multiple OS version
+# Recipe from grid5000-puppet, keep synchronized!
 #
 
 class env::std::dell::params {
 
-  $key = '1285491434D8786F'
-  $packages = [
-    'srvadmin-all',
+  $packages_names = [
+    'srvadmin-base',
+    "srvadmin-idracadm7",
+    "srvadmin-idracadm8",
+    'srvadmin-storageservices',
+    'srvadmin-omcommon',
+    'libncurses5',
+    'libxslt1.1',
+    'libssl1.0.0',
   ]
-
-  case $::lsbdistcodename {
-    'jessie': {
-      $src_location = "https://linux.dell.com/repo/community/debian/"
-      $src_repos = 'openmanage'
-    }
-
-    'stretch': {
-      $src_location = "https://linux.dell.com/repo/community/openmanage/910/${::lsbdistcodename}"
-      $src_repos = 'main'
-
-      env::common::g5kpackages {
-        'ssl4dell':
-          packages => 'libssl1.0.0';
-      }
-
-      Env::Common::G5kpackages['ssl4dell']->Package[$packages]
-    }
-  }
+  $service_name = 'dataeng'
+  $service_status = 'service dataeng status'
 }
