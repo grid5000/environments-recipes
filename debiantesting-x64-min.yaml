@@ -49,6 +49,7 @@ setup:
   - configure_apt_sources
   - configure_g5k_apt_sources
   - install_packages
+  - install_firmware_bug10805
   - set_kernel_modules_blacklist
   - set_g5k_release
   - set_g5k_dhclient_hook

@@ -1,0 +1,12 @@
+# This is used on debiantesting to install a firmware-bnx2x package that fixes
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=939076
+# It can be removed when the firmware-bnx2x package is updated in testing.
+- add_g5k_apt_sources:
+  - exec_in: |
+      cat <<EOF > /etc/apt/sources.list.d/firmware-nonfree-bug10895.list
+      deb http://packages.grid5000.fr/deb/firmware-nonfree-bug10895/ /
+      EOF
+- update_repositories:
+  # Deactivate the check to make the cache system works after a while...
+  - apt-get_in: -o Acquire::Check-Valid-Until=false update
+  - apt-get_in: -y install firmware-bnx2x
