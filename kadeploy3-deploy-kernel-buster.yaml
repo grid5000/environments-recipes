@@ -10,7 +10,7 @@ extend: kadeploy3-deploy-kernel-debian-base.yaml
 # Global variables use by Kameleon engine and the steps
 global:
   release: buster
-  bootstrap_packages: initramfs-tools busybox gnupg dirmngr xfsprogs btrfs-progs
+  bootstrap_packages: initramfs-tools busybox gnupg dirmngr xfsprogs btrfs-progs lvm2
   to_remove_packages: wget libpsl5
   use_backports: no
 bootstrap:
