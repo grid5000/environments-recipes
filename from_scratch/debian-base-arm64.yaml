@@ -33,8 +33,8 @@ global:
   deb_components: main contrib non-free
 
   qemu_iso_path: ""
-  installer_kernel_url: http://ftp.debian.org/debian/dists/buster/main/installer-arm64/current/images/netboot/debian-installer/arm64/linux
-  installer_initrd_url: http://ftp.debian.org/debian/dists/buster/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz
+  installer_kernel_url: http://ftp.debian.org/debian/dists/$${release}/main/installer-arm64/current/images/netboot/debian-installer/arm64/linux
+  installer_initrd_url: http://ftp.debian.org/debian/dists/$${release}/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz
   qemu_append_cmdline: "auto=true priority=critical url=http://%LOCAL_IP%:%HTTP_PORT%/preseed.cfg"
   base_preseed_path: $${kameleon_data_dir}/preseed/$${distrib}-$${release}-preseed.cfg
   preseed_path: $${kameleon_cwd}/preseed.cfg
