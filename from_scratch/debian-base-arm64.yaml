@@ -32,7 +32,7 @@ global:
   deb_mirror_uri: http://$${deb_mirror_hostname}/debian/
   deb_components: main contrib non-free
 
-  iso_path: ""
+  qemu_iso_path: ""
   installer_kernel_url: http://ftp.debian.org/debian/dists/buster/main/installer-arm64/current/images/netboot/debian-installer/arm64/linux
   installer_initrd_url: http://ftp.debian.org/debian/dists/buster/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz
   qemu_append_cmdline: "auto=true priority=critical url=http://%LOCAL_IP%:%HTTP_PORT%/preseed.cfg"

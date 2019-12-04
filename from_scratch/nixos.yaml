@@ -16,7 +16,7 @@ global:
 
   iso_filename: nixos-minimal-$${release}.$${release_minor_and_hash}-$${arch}-linux.iso
   iso_url: http://nixos.org/$${iso_location}/nixos/$${release}-small/nixos-$${release}.$${release_minor_and_hash}/$${iso_filename}
-  iso_path: $${kameleon_cwd}/$${distrib}.iso
+  qemu_iso_path: $${kameleon_cwd}/$${distrib}.iso
 
   autoinstall_script_path: $${kameleon_data_dir}/$${distrib}-autoinstall.sh
   root_password: root
