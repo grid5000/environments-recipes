@@ -144,7 +144,9 @@
       QEMU_BOOT=
       QEMU_APPEND_CMDLINE=
       if [ "$${qemu_uefi}" == "true" ]; then
-        cp $${qemu_uefi_vars_path} $${kameleon_cwd}/qemu_uefi_vars.fd
+        if [ ! -f $${kameleon_cwd}/qemu_uefi_vars.fd ]; then
+          cp $${qemu_uefi_vars_path} $${kameleon_cwd}/qemu_uefi_vars.fd
+        fi
         QEMU_BOOT="-drive if=pflash,format=raw,readonly,file=$${qemu_uefi_code_path} -drive if=pflash,format=raw,file=$${kameleon_cwd}/qemu_uefi_vars.fd"
       fi
       if [ -n "$${qemu_iso_path}" ]; then
