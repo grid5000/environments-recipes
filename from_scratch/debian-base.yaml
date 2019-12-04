@@ -42,7 +42,7 @@ global:
   iso_url:
   iso_finder_helper: $${kameleon_data_dir}/helpers/netinstall_iso_finder.py
   iso_finder_args: $${distrib} $${release_number} $${deb_arch}
-  iso_path: $${kameleon_cwd}/$${distrib}.iso
+  qemu_iso_path: $${kameleon_cwd}/$${distrib}.iso
 
   base_preseed_path: $${kameleon_data_dir}/preseed/$${distrib}-$${release}-preseed.cfg
   preseed_path: $${kameleon_cwd}/preseed.cfg
