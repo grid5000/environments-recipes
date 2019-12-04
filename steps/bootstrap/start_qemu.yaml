@@ -110,6 +110,7 @@
       if [ "$${qemu_enable_kvm}" == "true" ] && (/usr/sbin/kvm-ok > /dev/null || egrep '(vmx|svm)' /proc/cpuinfo > /dev/null) ; then # print warning if /usr/sbin/kvm-ok is not installed
         if [ "$${qemu_arch}" == "aarch64" ]; then
           ENABLE_KVM="-enable-kvm -accel kvm -machine virt -cpu host"
+          #ENABLE_KVM="-global virtio-blk-pci.scsi=off -no-user-config -enable-fips -machine virt,gic-version=host,accel=kvm:tcg -cpu host -rtc driftfix=slew -object rng-random,filename=/dev/urandom,id=rng0 -device virtio-rng-pci,rng=rng0"
         else #X86_64
           ENABLE_KVM="-enable-kvm -cpu host"
         fi
@@ -137,9 +138,9 @@
       fi
       # Select disk
       QEMU_DRIVES="-drive file=$${image_disk}.$${image_format},cache=$${disk_cache},media=disk,if=virtio,id=drive0"
-      QENU_BOOT=
+      QEMU_BOOT=
       if [ "$${qemu_arch}" == "aarch64" ]; then
-        QENU_BOOT="-bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd"
+        QEMU_BOOT="-bios /usr/share/qemu-efi-aarch64/QEMU_EFI.fd"
       fi
       if [ -n "$${iso_path}" ]; then
         QEMU_DRIVES="-drive file=$${iso_path},readonly,media=cdrom $QEMU_DRIVES"
@@ -147,7 +148,7 @@
           QEMU_BOOT="$QEMU_BOOT -boot order=d"
         fi
       elif [ -n "$${qemu_kernel_path}" ]; then
-        QEMU_BOOT="-kernel $${qemu_kernel_path}"
+        QEMU_BOOT="$QEMU_BOOT -kernel $${qemu_kernel_path}"
         if [ -n "$${qemu_initrd_path}" ]; then
           QEMU_BOOT="$QEMU_BOOT -initrd $${qemu_initrd_path}"
         fi
