@@ -6,7 +6,7 @@
 #
 #==============================================================================
 ---
-extend: from_scratch/debian-testing-arm64.yaml
+extend: from_scratch/aarch64/debian-testing.yaml
 
 global:
   # Export format to generate

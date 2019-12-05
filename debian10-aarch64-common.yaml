@@ -6,7 +6,7 @@
 #
 #==============================================================================
 ---
-extend: from_scratch/debian-buster-arm64.yaml
+extend: from_scratch/aarch64/debian-buster.yaml
 
 global:
   # Export format to generate
