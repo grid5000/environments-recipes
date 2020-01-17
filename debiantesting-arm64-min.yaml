@@ -33,6 +33,8 @@ global:
   g5k_meta_package: "g5k-meta-packages-$${distrib}$${release_number}-$${g5k_variant}"
   # packages to install, with version
   packages: "tgz-g5k=2.0.6 firmware-qlogic firmware-bnx2 firmware-bnx2x firmware-linux"
+  deb_mirror_hostname: snapshot.debian.org
+  deb_mirror_directory: /archive/debian/20191213T151449Z/
   # disable backports: they are not available for now
   deb_backports: false
   # locales

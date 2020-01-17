@@ -28,8 +28,10 @@ global:
   release_number: 8
 
   # URL to retrieve packages from (sources.list)
+  deb_mirror_protocol: http
   deb_mirror_hostname: ftp.debian.org
-  deb_mirror_uri: http://$${deb_mirror_hostname}/debian/
+  deb_mirror_directory: /debian/
+  deb_mirror_uri: $${deb_mirror_protocol}://$${deb_mirror_hostname}$${deb_mirror_directory}
   deb_components: main contrib non-free
 
   # Install from the installer's iso
