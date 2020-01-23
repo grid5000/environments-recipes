@@ -6,7 +6,7 @@
 #
 #==============================================================================
 ---
-extend: from_scratch/debian-testing.yaml
+extend: from_scratch/debian-debootstrap-base.yaml
 
 global:
   # Export format to generate
@@ -24,6 +24,8 @@ global:
   g5k_kernel_params: ""
   # kernel modules to blacklist
   kernel_modules_blacklist: "usb_storage usbhid ohci_hcd ehci_hcd usbcore nouveau myri10ge"
+  #
+  release_number: 10
   # Grid'5000 deb repositories to add to sources
   # Bug 939076: Add the firmware-nonfree-bug10895 g5k repository to install a firmware-bnx2x
   # package that fixes https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=939076
@@ -33,11 +35,11 @@ global:
   g5k_meta_package: "g5k-meta-packages-$${distrib}$${release_number}-$${g5k_variant}"
   # packages to install, with version
   # haveged is used to provide more entropy during boot
-  packages: "tgz-g5k=2.0.6 firmware-bnx2 firmware-bnx2x firmware-linux"
+  packages: "tgz-g5k=2.0.6 firmware-bnx2 firmware-bnx2x firmware-linux grub-efi-amd64-bin"
   # disable backports: they are not available for now
   deb_backports: false
   # locales
-  locales: POSIX C en_US.UTF8
+  locales: POSIX C en_US.UTF-8
   lang: en_US.UTF8
   timezone: Europe/Paris
   # password
