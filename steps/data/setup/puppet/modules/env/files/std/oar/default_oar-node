@@ -1,5 +1,5 @@
 # OARSERVER: machine where we remotely run oarnodesetting
-OARREMOTE="frontend"
+OARREMOTE="oar"
 
 # The paths to oarnodecheckquery and oarnodecheckrun (check your installation)
 OARNODECHECKQUERY=/usr/bin/oarnodecheckquery
