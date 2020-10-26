@@ -25,8 +25,8 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   class { 'env::base::increase_ssh_maxstartups': }
   # Specific tuning
   class { 'env::base::tcp_tuning_for_10gbe': }
-  # Cpufreq
-  class { 'env::base::enable_cpufreq_with_performance_governor': }
+  # Cpupower, replaces cpufreq
+  class { 'env::base::enable_cpupower_with_performance_governor': }
   # Ganglia
   class {
     'env::base::install_and_disable_ganglia':
