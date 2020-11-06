@@ -34,7 +34,7 @@ mv /bin/gzip /bin/gzip.OLD
 ln -s /usr/bin/pigz /bin/gzip
 
 # Disable SMT on Power (necessary for qemu)
-if [ "$ARCH" = "ppc64el" ]; then
+if [ "$ARCH" = "powerpc64le" ]; then
 	apt-get update && apt-get install -y powerpc-ibm-utils
 	ppc64_cpu --smt=off
 fi
