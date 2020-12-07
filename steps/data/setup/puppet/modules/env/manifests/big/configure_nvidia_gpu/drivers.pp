@@ -24,7 +24,7 @@ class env::big::configure_nvidia_gpu::drivers () {
       timeout   => 1200, # 20 min
       creates   => "/tmp/NVIDIA-Linux.run";
     'install_nvidia_driver':
-      command   => "/tmp/NVIDIA-Linux.run -qa --no-cc-version-check --ui=none --dkms -k ${installed_kernelreleases[-1]}",
+      command   => "/tmp/NVIDIA-Linux.run -qa --no-cc-version-check --no-drm --ui=none --dkms -k ${installed_kernelreleases[-1]}",
       timeout   => 1200, # 20 min,
       user      => root,
       require   => [Exec['prepare_kernel_module_build'], File['/tmp/NVIDIA-Linux.run']];
