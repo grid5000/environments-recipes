@@ -18,6 +18,22 @@ class env::big::configure_nvidia_gpu::drivers () {
     }
   }
 
+  # The nvidia installer fails because it tries to load the module 'nvidia-drm' at the end.
+  # This cannot work because we don't have any GPU on the build host (it's a VM).
+  # We temporarily blacklist the module and force the modprobe call to take it into account
+  # (using the MODPROBE_OPTIONS env variable to pass "-b").
+  file{
+    '/etc/modprobe.d/blacklist-nvidia.conf':
+      ensure    => file,
+      content   => "blacklist nvidia-drm\ninstall nvidia-drm /bin/true\n",
+      before    => Exec['install_nvidia_driver'];
+  }
+  # Cleanup blacklist after the installer has run, we don't want it in the final image.
+  file{
+    '/etc/modprobe.d/blacklist-nvidia.conf':
+      ensure    => absent,
+      require   => Exec['install_nvidia_driver'];
+  }
   exec{
     'retrieve_nvidia_drivers':
       command   => "/usr/bin/wget -q $driver_source -O /tmp/NVIDIA-Linux.run; chmod u+x /tmp/NVIDIA-Linux.run",
@@ -27,6 +43,7 @@ class env::big::configure_nvidia_gpu::drivers () {
       command   => "/tmp/NVIDIA-Linux.run -qa --no-cc-version-check --ui=none --dkms -k ${installed_kernelreleases[-1]}",
       timeout   => 1200, # 20 min,
       user      => root,
+      environment => ['MODPROBE_OPTIONS=-b'],
       require   => [Exec['prepare_kernel_module_build'], File['/tmp/NVIDIA-Linux.run']];
     'cleanup_nvidia':
       command   => "/bin/rm /tmp/NVIDIA-Linux.run",
