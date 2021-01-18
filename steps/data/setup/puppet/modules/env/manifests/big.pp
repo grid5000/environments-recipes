@@ -35,5 +35,7 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   class { 'env::big::configure_initramfs': }
   # Prometheus
   class { 'env::big::install_prometheus_exporters': }
+  # g5k-jupyterlab
+  class { 'env::min::install_g5k-jupyterlab': }
 
 }
