@@ -1,4 +1,4 @@
-class env::big::install_g5k-jupyterlab {
+class env::big::install_g5k_jupyterlab {
   case $operatingsystem {
     'Debian': {
 
@@ -6,7 +6,7 @@ class env::big::install_g5k-jupyterlab {
 
       env::common::g5kpackages {
         'g5k-jupyterlab':
-          ensure => $::env::common::software_versions::g5k-jupyterlab;
+          ensure => $::env::common::software_versions::g5k_jupyterlab;
       }
     }
     default: {
