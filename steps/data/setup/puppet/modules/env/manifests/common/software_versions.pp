@@ -17,7 +17,7 @@ class env::common::software_versions {
       $ganglia_monitor = '3.6.0-7.1'
     }
     'bullseye': {
-      $ganglia_monitor = '3.7.2-4'
+      $ganglia_monitor = '3.7.2-4.g5k1'
     }
     default: {
       $ganglia_monitor = '3.6.0-7.1'
