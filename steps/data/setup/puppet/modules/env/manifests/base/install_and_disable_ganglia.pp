@@ -15,14 +15,34 @@ class env::base::install_and_disable_ganglia ($enable = false){
       ensure  => directory,
       owner   => root,
       group   => root,
-      mode    => '0644';
-    '/etc/ganglia/gmond.conf' :
-      ensure  => file,
-      owner   => root,
-      group   => root,
       mode    => '0644',
-      source  => "puppet:///modules/env/base/ganglia/gmond.conf",
-      require => File['/etc/ganglia'];
+  }
+
+  case "${::lsbdistcodename}" {
+    # ganglia 3.7.X
+    'bullseye' : {
+      file {
+        '/etc/ganglia/gmond.conf' :
+          ensure  => file,
+          owner   => root,
+          group   => root,
+          mode    => '0644',
+          source  => "puppet:///modules/env/base/ganglia/gmond-3.7.conf",
+          require => File['/etc/ganglia'];
+      }
+    }
+    # ganglia 3.6.X
+    default : {
+      file {
+        '/etc/ganglia/gmond.conf' :
+          ensure  => file,
+          owner   => root,
+          group   => root,
+          mode    => '0644',
+          source  => "puppet:///modules/env/base/ganglia/gmond-3.6.conf",
+          require => File['/etc/ganglia'];
+      }
+    }
   }
 
   # Debian jessie suffers a bug that make puppet unable to correctly detect if some services are enabled or not (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=760616 or #bug=751638 )
