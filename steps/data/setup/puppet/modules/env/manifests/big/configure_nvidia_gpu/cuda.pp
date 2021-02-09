@@ -1,6 +1,14 @@
 class env::big::configure_nvidia_gpu::cuda () {
 
   case "${::lsbdistcodename}" {
+    "bullseye" : {
+      # Default Debian cuda toolkit
+      package {
+        'nvidia-cuda-toolkit':
+          ensure => installed;
+      }
+    }
+
     "buster" : {
       case "$env::deb_arch" {
         "amd64": {
@@ -15,8 +23,18 @@ class env::big::configure_nvidia_gpu::cuda () {
           err "${env::deb_arch} not supported"
         }
       }
+    }
 
-      $opengl_packages = ['ocl-icd-libopencl1', 'opencl-headers']
+    "stretch" : {
+      $driver_source = 'http://packages.grid5000.fr/other/cuda/cuda_9.0.176_384.81_linux-run'
+      $libcuda = '/usr/lib/x86_64-linux-gnu/libcuda.so'
+    }
+  }
+
+  $opengl_packages = ['ocl-icd-libopencl1', 'opencl-headers']
+
+  case "${::lsbdistcodename}" {
+    "stretch", "buster" : {
 
       exec{
         'retrieve_nvidia_cuda':
@@ -34,33 +52,8 @@ class env::big::configure_nvidia_gpu::cuda () {
           user      => root,
           refreshonly => true;
       }
-    }
 
-    "stretch" : {
-      $driver_source = 'http://packages.grid5000.fr/other/cuda/cuda_9.0.176_384.81_linux-run'
-      $opengl_packages = ['ocl-icd-libopencl1', 'opencl-headers']
-      $libcuda = '/usr/lib/x86_64-linux-gnu/libcuda.so'
 
-      exec{
-        'retrieve_nvidia_cuda':
-          command   => "/usr/bin/wget -q $driver_source -O /tmp/NVIDIA-Linux_cuda.run && chmod u+x /tmp/NVIDIA-Linux_cuda.run",
-          timeout   => 1200, # 20 min
-          creates   => "/tmp/NVIDIA-Linux_cuda.run";
-        'install_nvidia_cuda':
-          command     => "/tmp/NVIDIA-Linux_cuda.run --silent --toolkit --samples && /bin/rm /tmp/NVIDIA-Linux_cuda.run",
-          timeout     => 2400, # 20 min
-          user        => root,
-          require     =>  File['/tmp/NVIDIA-Linux_cuda.run'];
-        'update_ld_conf':
-          command   => "/sbin/ldconfig",
-          user      => root,
-          refreshonly => true;
-      }
-    }
-  }
-
-  case "${::lsbdistcodename}" {
-    "stretch", "buster" : {
       file{
         '/tmp/NVIDIA-Linux_cuda.run':
           ensure    => file,

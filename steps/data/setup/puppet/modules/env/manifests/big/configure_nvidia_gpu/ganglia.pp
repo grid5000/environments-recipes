@@ -57,7 +57,7 @@ class env::big::configure_nvidia_gpu::ganglia () {
       }
     }
     default: {
-      err "${operatingsystem} not suported."
+      err "${operatingsystem} not supported."
     }
   }
 

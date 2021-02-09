@@ -9,18 +9,16 @@ class env::common::software_versions {
    $libguestfs_backport_arm64 = '1:1.40.2-7~bpog5k10+1'
    $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
    $lmod = '6.6-0.3g5k1'
-   $datacenter_gpu_manager = '1:1.7.2'
    $g5k_jupyterlab = '0.4'
 
   case $lsbdistcodename {
-    'buster': {
-      $ganglia_monitor = '3.6.0-7.1'
-    }
     'bullseye': {
       $ganglia_monitor = '3.7.2-4.g5k1'
+      $datacenter_gpu_manager = '1:2.0.13'
     }
     default: {
       $ganglia_monitor = '3.6.0-7.1'
+      $datacenter_gpu_manager = '1:1.7.2'
     }
 
   }
