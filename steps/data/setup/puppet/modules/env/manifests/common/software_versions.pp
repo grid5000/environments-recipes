@@ -13,7 +13,6 @@ class env::common::software_versions {
 
   case $lsbdistcodename {
     'bullseye': {
-      $ganglia_monitor = '3.7.2-4.g5k1'
       $datacenter_gpu_manager = '1:2.1.4'
     }
     default: {
