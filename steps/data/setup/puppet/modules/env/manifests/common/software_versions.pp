@@ -6,6 +6,7 @@ class env::common::software_versions {
    $tgz_g5k = '2.0.15'
    $g5k_checks = '0.10.6'
    $sudo_g5k = '1.9'
+   $ganglia_monitor = '3.6.0-7.1'
    $libguestfs_backport_arm64 = '1:1.40.2-7~bpog5k10+1'
    $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
    $lmod = '6.6-0.3g5k1'
