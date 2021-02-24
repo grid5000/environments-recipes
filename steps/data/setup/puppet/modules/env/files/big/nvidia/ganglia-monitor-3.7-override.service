@@ -1,4 +1,0 @@
-# INSTALLED BY PUPPET
-
-[Service]
-ExecStartPre=/bin/bash -c "[[ $(lsmod | grep -ic nvidia) -eq 0 ]] && rm -f /etc/ganglia/conf.d/{nvidia.pyconf,modpython-nvidia.conf} || true"
