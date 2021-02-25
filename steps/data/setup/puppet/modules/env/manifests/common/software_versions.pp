@@ -17,7 +17,6 @@ class env::common::software_versions {
       $datacenter_gpu_manager = '1:2.1.4'
     }
     default: {
-      $ganglia_monitor = '3.6.0-7.1'
       $datacenter_gpu_manager = '1:1.7.2'
     }
 
