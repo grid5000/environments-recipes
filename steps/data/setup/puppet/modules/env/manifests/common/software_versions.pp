@@ -15,9 +15,11 @@ class env::common::software_versions {
   case $lsbdistcodename {
     'bullseye': {
       $datacenter_gpu_manager = '1:2.1.4'
+      $dcgm_exporter = '2.3.0-1'
     }
     default: {
       $datacenter_gpu_manager = '1:1.7.2'
+      $dcgm_exporter = '2.0.0-rc.11'
     }
 
   }
