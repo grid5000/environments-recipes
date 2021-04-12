@@ -28,7 +28,9 @@ global:
   g5k_postinst_path: server:///grid5000/postinstalls/g5k-postinstall.tgz
   g5k_postinst_compression: "gzip"
   g5k_postinst_script: g5k-postinstall --net debian
-  g5k_kernel_params: ""
+  # The NVMe driver enables multipath support by default if the disk supports
+  # it, and this breaks several things (see bug 12955 and 12962). Disable it.
+  g5k_kernel_params: "nvme_core.multipath=off"
   deb_backports: true
   packages: ""
   arch_packages_no_clean: "grub-ieee1275 grub-common"

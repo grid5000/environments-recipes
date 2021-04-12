@@ -25,7 +25,9 @@ global:
   g5k_postinst_path: server:///grid5000/postinstalls/g5k-postinstall.tgz
   g5k_postinst_compression: "gzip"
   g5k_postinst_script: g5k-postinstall --net debian
-  g5k_kernel_params: ""
+  # The NVMe driver enables multipath support by default if the disk supports
+  # it, and this breaks several things (see bug 12955 and 12962). Disable it.
+  g5k_kernel_params: "nvme_core.multipath=off"
   deb_backports: true
   # grub-efi-amd64-bin has to be installed if we want to support both mbr and
   # efi boot methods. This package can be installed in parallel with grub-pc
