@@ -1,10 +1,15 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Find the latest netinstall iso for a Debian version and system architecture."""
 
 from html.parser import HTMLParser
-from urllib2 import urlopen
-from urlparse import urljoin
+# hack to support python2 and python3 (https://python-future.org/compatible_idioms.html)
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urljoin
+except ImportError:
+    from urllib2 import urlopen
+    from urlparse import urljoin
 import re
 import sys
 import argparse

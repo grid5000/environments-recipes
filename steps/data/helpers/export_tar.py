@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Convert a rootfs directory to tar archives."""
 from __future__ import division, unicode_literals
