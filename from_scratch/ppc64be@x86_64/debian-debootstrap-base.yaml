@@ -1,0 +1,38 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian generic recipe for PPC64 BE using debootstrap + qemu-user
+#
+#==============================================================================
+---
+extend: ../debian-debootstrap-base.yaml
+global:
+  release: sid
+
+  arch: ppc64
+  deb_arch: ppc64
+  deb_kernel_arch: powerpc64
+  qemu_arch: x86_64
+
+  # PPC64 BE is a Debian port (not supported)
+  deb_mirror_uri: https://deb.debian.org/debian-ports
+  # powerpc-utils comes with debootstrap but fails to install because pmac-utils
+  # is not available (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=927255)
+  # exclude it but install powerpc-ibm-utils
+  bootstrap_exclude_packages: powerpc-utils
+  bootstrap_packages: locales openssh-server linux-image-$${deb_kernel_arch} powerpc-ibm-utils
+
+  in_context:
+    cmd: ssh -F $${ssh_config_file} $${kameleon_recipe_name} -t chroot $${rootfs} /usr/bin/qemu-$${arch}-static /bin/bash
+    workdir: /root/kameleon_workdir
+    proxy_cache: $${local_ip}
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+
+export:
+  - "@base"

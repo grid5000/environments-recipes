@@ -37,10 +37,10 @@ if [ -n "$PROXY" ]; then
 fi
 
 if [ $CURRENT_ARCH == $ARCH ]; then
-  debootstrap --arch=$DEB_ARCH --no-check-gpg ${VARIANT:+--variant=$VARIANT} ${PACKAGES:+--include="$PACKAGES"} $RELEASE $CHROOT_DIR $DEB_MIRROR_URI
+  debootstrap --arch=$DEB_ARCH --no-check-gpg ${VARIANT:+--variant=$VARIANT} ${PACKAGES:+--include="$PACKAGES"} ${EXCLUDE_PACKAGES:+--exclude="$EXCLUDE_PACKAGES"} $RELEASE $CHROOT_DIR $DEB_MIRROR_URI
   CHROOT_CMD="chroot $CHROOT_DIR"
 else
-  debootstrap --foreign --arch=$DEB_ARCH --no-check-gpg ${VARIANT:+--variant=$VARIANT} ${PACKAGES:+--include="$PACKAGES"} $RELEASE $CHROOT_DIR $DEB_MIRROR_URI
+  debootstrap --foreign --arch=$DEB_ARCH --no-check-gpg ${VARIANT:+--variant=$VARIANT} ${PACKAGES:+--include="$PACKAGES"} ${EXCLUDE_PACKAGES:+--exclude="$EXCLUDE_PACKAGES"} $RELEASE $CHROOT_DIR $DEB_MIRROR_URI
   cp /usr/bin/qemu-$ARCH-static $CHROOT_DIR/usr/bin/
   CHROOT_CMD="chroot $CHROOT_DIR /usr/bin/qemu-$ARCH-static /bin/bash"
   $CHROOT_CMD /debootstrap/debootstrap --second-stage
