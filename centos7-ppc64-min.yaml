@@ -18,7 +18,7 @@ global:
   g5k_version: 1111111111
   # Grid'5000 kadeploy environment parameters
   # Grid'5000 environment arch
-  g5k_image_arch: ppc64
+  g5k_image_arch: ppc64le
   g5k_tar_path: server:///path/to/your/image
   g5k_tar_compression: "zstd"
   g5k_postinst_path: server:///grid5000/postinstalls/g5k-postinstall.tgz

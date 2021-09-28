@@ -27,7 +27,9 @@
       if [[ "x$${g5k_variant}" != "xxen" ]]; then
       cat << EOF > $${output}.dsc
       $${dashes}
-      name: $${kameleon_recipe_name}
+      name: $${distrib}-$${g5k_variant}
+      alias: $${kameleon_recipe_name}
+      arch: $${g5k_image_arch}
       version: $${g5k_version}
       description: $${distrib} $${release_number} ($${release}) for $${g5k_image_arch} - $${g5k_variant}
       author: $${g5k_author}
@@ -53,7 +55,9 @@
       else
       cat << EOF > $${output}.dsc
       $${dashes}
-      name: $${kameleon_recipe_name}
+      name: $${distrib}-$${g5k_variant}
+      alias: $${kameleon_recipe_name}
+      arch: $${g5k_image_arch}
       version: $${g5k_version}
       description: $${distrib} $${release_number} ($${release}) for $${g5k_image_arch} - $${g5k_variant}
       author: $${g5k_author}
