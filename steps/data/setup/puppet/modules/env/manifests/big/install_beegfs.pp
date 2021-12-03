@@ -82,8 +82,8 @@ class env::big::install_beegfs {
 
       env::common::g5kpackages {
         'beegfs-test':
-          packages => [ 'beegfs-client', 'beegfs-utils', 'beegfs-helperd' ], # manque libbeegfs-ib
-          ensure   => '20:1.7.5';
+          packages => [ 'beegfs-client', 'beegfs-utils', 'beegfs-helperd', 'libbeegfs-ib' ],
+          ensure   => '20:7.1.5';
       }
       -> service {
         [ 'beegfs-helperd', 'beegfs-client'] :
