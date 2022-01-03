@@ -1,0 +1,26 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Proxmox 7 based on Debian bullseye (11)
+#
+#==============================================================================
+---
+extend: ./debian11-x64-min.yaml
+
+global:
+  g5k_description: Proxmox VE 7 for $${g5k_image_arch}
+  include_steps:
+    - $${distrib}/$${release}
+    - $${distrib}
+    - proxmox
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - install_proxmox7
+
+export:
+  - "@base"

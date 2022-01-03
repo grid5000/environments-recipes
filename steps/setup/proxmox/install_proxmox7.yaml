@@ -1,0 +1,21 @@
+
+- install_proxmox7:
+  - exec_in: echo "deb [arch=amd64] http://download.proxmox.com/debian/pve bullseye pve-no-subscription" > /etc/apt/sources.list.d/pve-install-repo.list
+  - local2in:
+    - $${kameleon_data_dir}/proxmox/proxmox-release-bullseye.gpg
+    - /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+  - apt-get_in: update
+  # Necessary for PVE services to start
+  - exec_in: echo $(ip -color=never route get 8.8.8.8 | grep -oP 'src \K[^ ]+') $(hostname) >> /etc/hosts
+  - apt-get_in: install proxmox-ve
+  # This is added during installation but requires a subscription
+  - exec_in: sed -i -e 's/^/#/' /etc/apt/sources.list.d/pve-enterprise.list
+  # Necessary because it's a symlink to the FUSE filesystem at /etc/pve/,
+  # which causes kadeploy to fail when it tries to add a SSH key.
+  # The symlink will be rebuilt by Proxmox on the first boot.
+  - exec_in: rm /root/.ssh/authorized_keys && cp /etc/pve/priv/authorized_keys /root/.ssh/authorized_keys
+  - on_setup_clean:
+    - apt-get_in: remove os-prober
+    - apt-get_in: remove linux-image-*
+    - apt-get_in: autoremove
+    - apt-get_in: clean
