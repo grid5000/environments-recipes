@@ -30,7 +30,7 @@ global:
   # kernel modules to blacklist
   kernel_modules_blacklist: "usb_storage usbhid ohci_hcd ehci_hcd usbcore nouveau myri10ge"
   # Packages to install
-  packages: "zstd"
+  packages: "zstd tcpdump dhclient"
   # locales
   locales: POSIX C en_US.UTF8
   lang: en_US.UTF8
