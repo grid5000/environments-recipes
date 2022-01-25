@@ -280,6 +280,11 @@ setup:
           fi
           EOF
           chmod 755 /etc/dhcp/dhclient-enter-hooks.d/hostname
+    - remove_nvme_multipath:
+      - exec_in: |
+          cat <<'EOF' > /etc/modprobe.d/disable_nvme_multipath.conf
+          options nvme_core multipath=off
+          EOF
     - remove_udev_persistent-net_rules:
       - exec_in: rm -f /etc/udev/rules.d/*-persistent-net.rules
 export:
