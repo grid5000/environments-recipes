@@ -10,7 +10,7 @@ extend: centos-base.yaml
 
 global:
   release_number: 8
-  mirror_url: $${mirror_base_url}$${release}/BaseOS/$${arch}/os
+  mirror_url: https://vault.centos.org/centos/8.5.2111/BaseOS/$${arch}/os
 
 bootstrap:
   - "@base"
