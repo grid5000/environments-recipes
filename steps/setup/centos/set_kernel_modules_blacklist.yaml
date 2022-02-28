@@ -11,4 +11,4 @@
         fi
       done
 - update_initramfs:
-  - exec_in: dracut --force
+  - exec_in: dracut --force --omit-drivers "$${kernel_modules_blacklist}"
