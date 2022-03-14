@@ -11,6 +11,8 @@ extend: ./debian10-x64-common.yaml
 global:
   # Grid'5000 environment variant
   g5k_variant: base
+  # Blacklist unwanted kernel modules
+  g5k_kernel_params: "module_blacklist=usb_storage,usbhid,ohci_hcd,ehci_hcd,usbcore,nouveau"
 
 bootstrap:
   - "@base"
