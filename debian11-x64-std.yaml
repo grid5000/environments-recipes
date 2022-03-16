@@ -14,7 +14,7 @@ global:
   # Grid'5000 Kadeploy environment parameters
   g5k_postinst_script: g5k-postinstall --net debian-bridged --net hpc --fstab nfs --restrict-user std --disk-aliases
   # Disable cgroup v2 and force cgroup v1 - Bug #12723
-  g5k_kernel_params: "module_blacklist=usb_storage,usbhid,ohci_hcd,ehci_hcd,usbcore,nouveau systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true"
+  g5k_kernel_params: "module_blacklist=usb_storage,usbhid,ohci_hcd,ehci_hcd,usbcore systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true"
   # QEMU options
   qemu_image_size: 22G
 
