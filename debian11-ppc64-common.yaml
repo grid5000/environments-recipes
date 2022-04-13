@@ -42,7 +42,6 @@ bootstrap:
   - "@base"
 
 setup:
-  - "@base"
   - configure_system
   - configure_apt_sources
   - install_packages
