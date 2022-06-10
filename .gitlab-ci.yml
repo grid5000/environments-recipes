@@ -44,9 +44,6 @@ lint:
 
 ### Dryrun
 ## x64
-# Debian9
-dryrun_debian9-x64-min:
-  <<: *defaults-dryrun
 
 # Debian10
 dryrun_debian10-x64-min:
