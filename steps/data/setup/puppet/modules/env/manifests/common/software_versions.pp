@@ -25,7 +25,7 @@ class env::common::software_versions {
         }
         'bullseye': {
           $rocm_version           = '4.5'
-          $nvidia_driver          = '460.91.03'
+          $nvidia_driver          = '470.57.02+'
           $nvidia_cuda            = '11.2.2_460.32.03_linux'
           $datacenter_gpu_manager = '1:2.1.4'
           $dcgm_exporter          = '2.3.0-1'
