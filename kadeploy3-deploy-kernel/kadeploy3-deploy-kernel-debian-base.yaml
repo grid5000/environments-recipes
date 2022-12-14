@@ -176,6 +176,8 @@ setup:
           if [ "$${use_backports}" == "true" -a "$${deb_kernel}" == "bpo" ]; then
             KERNEL_BPO=$(apt-cache search "^linux-image.[[:digit:].-]+bpo[[:digit:].]+-$${deb_kernel_arch}$" | sort -h | tail -n1 | cut -f1 -d\ )
             apt-get install -y --force-yes -t $${release}-backports $KERNEL_BPO $${firmware_packages}
+          elif [ "$${deb_kernel}" == "other" ]; then
+            echo "Do not install any kernel for now."
           else
             apt-get install -y --force-yes linux-image-$${deb_kernel_arch} $${firmware_packages}
           fi
