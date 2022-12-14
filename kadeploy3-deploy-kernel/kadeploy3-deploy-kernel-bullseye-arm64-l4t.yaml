@@ -1,0 +1,71 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Kadeploy3 ramdisk OS (used in the deployment phase) for ARM64
+#
+# Notes:
+# - force use of busybox rather than klibc-utils (which breaks the mount)
+#
+#==============================================================================
+---
+extend: kadeploy3-deploy-kernel-bullseye-arm64.yaml
+
+global:
+  ubuntu_deb_url_dpkg: http://ports.ubuntu.com/ubuntu-ports/pool/main/d/dpkg/dpkg_1.19.7ubuntu3.2_arm64.deb
+  ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.1.0-20220810203728_arm64.deb
+  deb_kernel: other
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - nvidia_l4t_specific:
+    # We install Ubuntu/L4T packages for the Linux kernel and
+    # dependences. Well not really install, just extracting file from packages to
+    # avoid dependency issues between Debian and Ubuntu/L4T.
+    # Some Ubuntu deb packages uses zstd internally instead of gz, which makes
+    # them not compatible with Debian's dpkg-deb tool. We need to install
+    # Ubuntu's one. Fortunately the deb package of Ubuntu's dpkg is compatible
+    # with Debian's dpkg however.
+    - install_wget:
+      - exec_in: apt-get install -y --force-yes wget
+    - install_ubuntu_dpkg:
+      - exec_in: mkdir -p ubuntu
+      - exec_in: |
+          # apt download if _apt cannot access the download location
+          mkdir -p deb
+          chown _apt deb
+          chmod 755 /root
+      - exec_in: |
+          UBUNTU_DEB_URL_DPKG=$${ubuntu_deb_url_dpkg}
+          wget $UBUNTU_DEB_URL_DPKG -O deb/${UBUNTU_DEB_URL_DPKG##*/}
+          dpkg-deb -x deb/${UBUNTU_DEB_URL_DPKG##*/} ubuntu
+    - install_nvidia_l4t_source:
+      - exec_in: |
+          UBUNTU_DEB_URL_L4T_APT_SOURCE=$${ubuntu_deb_url_l4t_apt_source}
+          wget $UBUNTU_DEB_URL_L4T_APT_SOURCE -O deb/${UBUNTU_DEB_URL_L4T_APT_SOURCE##*/}
+          ubuntu/usr/bin/dpkg-deb -x deb/${UBUNTU_DEB_URL_L4T_APT_SOURCE##*/} ubuntu
+      - exec_in: cp -av ubuntu/etc/apt /etc/
+      - exec_in: |
+          # Force the SoC id (tegra AGX Xavier)
+          sed -i -e 's/<SOC>/t194/' /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+    - update_packages_list:
+      - exec_in: apt-get update
+    - install_nvidia_l4t_kernel:
+      - exec_in: |
+          (cd deb; apt-get download nvidia-l4t-kernel nvidia-l4t-firmware nvidia-l4t-xusb-firmware)
+          KERNEL_VERSION=$(cd deb; ls nvidia-l4t-kernel_* | sed -e 's/^nvidia-l4t-kernel_\(.\+\)-.\+-.\+_arm64.deb$/\1/')
+          ubuntu/usr/bin/dpkg-deb -x deb/nvidia-l4t-kernel_*.deb ubuntu
+          ubuntu/usr/bin/dpkg-deb -x deb/nvidia-l4t-firmware_*.deb ubuntu
+          ubuntu/usr/bin/dpkg-deb -x deb/nvidia-l4t-xusb-firmware_*.deb ubuntu
+          mkdir -p /boot /lib/modules /lib/firmware
+          cp -av ubuntu/boot/Image /boot/$${kernel_filename}-${KERNEL_VERSION}-arm64
+          cp -av ubuntu/lib/modules/$KERNEL_VERSION /lib/modules/$KERNEL_VERSION
+          ln -snv /lib/modules/$KERNEL_VERSION /lib/modules/${KERNEL_VERSION}-arm64
+          cp -av ubuntu/lib/firmware/* /lib/firmware/
+          mkinitramfs -v ${KERNEL_VERSION}-arm64 -o /boot/initrd.img-$KERNEL_VERSION-arm64
+    - disable_nvidia_l4t_apt_source:
+      - exec_in: sed -i -e "s/^/#/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+export:
+  - "@base"
