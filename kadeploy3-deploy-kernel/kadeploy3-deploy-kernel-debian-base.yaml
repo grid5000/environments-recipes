@@ -157,14 +157,6 @@ setup:
           rm -f /etc/localtime /etc/timezone
           dpkg-reconfigure tzdata
   - install_packages:
-    - install_kernel_packages:
-      - exec_in: |
-          if [ "$${use_backports}" == "true" -a "$${deb_kernel}" == "bpo" ]; then
-            KERNEL_BPO=$(apt-cache search "^linux-image.[[:digit:].-]+bpo[[:digit:].]+-$${deb_kernel_arch}$" | sort -h | tail -n1 | cut -f1 -d\ )
-            apt-get install -y --force-yes -t $${release}-backports $KERNEL_BPO $${firmware_packages}
-          else
-            apt-get install -y --force-yes linux-image-$${deb_kernel_arch} $${firmware_packages}
-          fi
     - install_arch_specific_packages:
       - exec_in: |
           if [ -n "$${arch_specific_packages}" ]; then
@@ -179,6 +171,14 @@ setup:
           fi
     - fix_ntp:
       - exec_in: sed -i -e 's/\(NTPSERVERS=\).*/\1="ntp1.grid5000.fr ntp2.grid5000.fr"/;s/\(NTPDATE_USE_NTP_CONF=\).*/\1=no/' /etc/default/ntpdate
+    - install_kernel_packages:
+      - exec_in: |
+          if [ "$${use_backports}" == "true" -a "$${deb_kernel}" == "bpo" ]; then
+            KERNEL_BPO=$(apt-cache search "^linux-image.[[:digit:].-]+bpo[[:digit:].]+-$${deb_kernel_arch}$" | sort -h | tail -n1 | cut -f1 -d\ )
+            apt-get install -y --force-yes -t $${release}-backports $KERNEL_BPO $${firmware_packages}
+          else
+            apt-get install -y --force-yes linux-image-$${deb_kernel_arch} $${firmware_packages}
+          fi
     - remove_some_packages:
       - exec_in: |
           if [ -n "$${to_remove_packages}" ]; then
