@@ -229,30 +229,56 @@ setup:
       - exec_in: |
           cat <<'EOF' > /etc/rc.local
           #!/bin/bash -e
+          exec >& /dev/kmsg
           # parse kadeploy-specific kernel command line arguments
-          if [ -f /sys/module/drm_kms_helper/parameters/poll ]; then
-            echo 'Desactivate drm_kms_helper poll...'
-            echo 0 > /sys/module/drm_kms_helper/parameters/poll
-          fi
-          eth_dev=eth0
-          timeout=60
           for p in $(< /proc/cmdline); do
             case "$p" in
+              DEBUG=*)
+                set -x
+                debug_cmd=${p#DEBUG=}
+                eval "${debug_cmd//_/ }"
+              ;;
               ETH_DEV=*)
                 eth_dev=${p#ETH_DEV=}
               ;;
               LINK_UP_TOUT=*)
-                timeout=${p#LINK_UP_TOUT=}
+                eth_timeout=${p#LINK_UP_TOUT=}
+              ;;
+              DISK_DEV=*)
+                disk_dev=${p#DISK_DEV=}
+              ;;
+              DISK_TOUT=*)
+                disk_timeout=${p#DISK_TOUT=}
               ;;
             esac
           done
+          echo "eth_dev: ${eth_dev:=eth0}"
+          echo "eth_timeout: ${eth_timeout:=60}"
+          echo "disk_dev: ${disk_dev:=""}"
+          echo "disk_timeout: ${disk_timeout:=5}"
+          if [ -w /sys/module/drm_kms_helper/parameters/poll ]; then
+            echo 'Desactivate drm_kms_helper poll...'
+            echo 0 > /sys/module/drm_kms_helper/parameters/poll
+          fi
+          if [ -n "$disk_dev" ]; then
+            echo "Waiting for disk device: /dev/$disk_dev"
+            while ! [ -e "/dev/$disk_dev" ] && [ $((disk_timeout--)) -gt 0 ]; do
+              echo -n .
+              sleep 1
+            done
+            if ! [ -e "/dev/$disk_dev" ]; then
+              echo "!!! Disk device not found: /dev/$disk_dev !!!"
+              reboot -f
+            fi
+            echo
+          fi
           echo -n "Wait for ${eth_dev} link to be ready."
-          while ( [ ! -r "/sys/class/net/${eth_dev}/operstate" ] || [ "$(</sys/class/net/${eth_dev}/operstate)" != "up" ] ) && [ $((timeout--)) -gt 0 ]; do
+          while ( [ ! -r "/sys/class/net/${eth_dev}/operstate" ] || [ "$(</sys/class/net/${eth_dev}/operstate)" != "up" ] ) && [ $((eth_timeout--)) -gt 0 ]; do
             ip link set dev ${eth_dev} up || true
             echo -n .
             sleep 1
           done
-          if [ $timeout -le 0 ]; then
+          if [ $eth_timeout -le 0 ]; then
             echo "failed: $eth_dev link is not ready."
             exit 1
           else
