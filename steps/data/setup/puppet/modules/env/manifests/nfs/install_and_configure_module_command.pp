@@ -15,8 +15,7 @@ class env::nfs::install_and_configure_module_command () {
     "amd64": {
       case "${::lsbdistcodename}" {
         "bullseye" : {
-          # Bug 13590
-          $modulespath = "/grid5000/spack/share/spack/modules/linux-debian10-x86_64\n/grid5000/spack/share/spack/modules/linux-debian11-x86_64\n"
+          $modulespath = "/grid5000/spack/v1/share/spack/modules/linux-debian11-x86_64_v2\n"
         }
         default: {
           $modulespath = "/grid5000/spack/share/spack/modules/linux-debian9-x86_64\n/grid5000/spack/share/spack/modules/linux-debian10-x86_64\n"
