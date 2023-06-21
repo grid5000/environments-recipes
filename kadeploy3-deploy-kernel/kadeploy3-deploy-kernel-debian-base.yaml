@@ -9,7 +9,7 @@
 extend: ../from_debootstrap/base-qemu.yaml
 
 global:
-  release: jessie
+  release: bullseye
   # force use of busybox rather than klibc-utils (which breaks the mount)
   bootstrap_packages: initramfs-tools busybox
   bootstrap_variant: minbase
@@ -29,7 +29,7 @@ global:
   system_packages: ash systemd systemd-sysv haveged
   net_packages: ifupdown ntpdate isc-dhcp-client openssh-client openssh-server taktuk netcat
   linux_fs_packages: e2fsprogs xfsprogs btrfs-progs
-  other_fs_packages: dosfstools #ntfs-3g 
+  other_fs_packages: dosfstools #ntfs-3g
   archive_file_packages: tar bzip2 xz-utils zstd
   disk_packages: hdparm parted fdisk
   ruby_packages: ruby ruby-net-ssh ruby-net-ssh-multi ruby-daemons
@@ -45,7 +45,7 @@ bootstrap:
   - check_root_authorized_keys:
     - check_file_exist:
       - exec_local: |
-          if ! [ -n "$${root_authorized_keys}" -a -r "$${root_authorized_keys}" ]; then 
+          if ! [ -n "$${root_authorized_keys}" -a -r "$${root_authorized_keys}" ]; then
             pwd
             ls -l "$${root_authorized_keys}"
             echo "File: '$${root_authorized_keys}' is not readable from $PWD" 1>&2
