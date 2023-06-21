@@ -6,7 +6,7 @@
 #
 #==============================================================================
 ---
-extend: ../from_scratch/debian-debootstrap-base.yaml
+extend: ../from_debootstrap/base-qemu.yaml
 
 global:
   release: jessie
