@@ -62,8 +62,8 @@ bootstrap:
     - rootfs_umount_section: export
   - debootstrap
   - prepare_system_fs_for_chroot
-  - prepare_resolv_conf_for_chroot
   - prepare_cpuset_for_chroot
+  - debootstrap_post_config
 
 setup:
   - force_exit_on_errors:
