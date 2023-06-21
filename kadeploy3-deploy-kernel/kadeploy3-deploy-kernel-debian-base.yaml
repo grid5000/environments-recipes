@@ -53,7 +53,7 @@ bootstrap:
             exit 1
           fi
   - download_installer
-  - prepare_disk
+  - prepare_qemu_disk
   - prepare_ssh_to_out_context
   - start_qemu:
     - vm_cleanup_section: export
