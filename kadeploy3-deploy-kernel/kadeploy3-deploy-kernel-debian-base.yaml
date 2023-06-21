@@ -58,8 +58,9 @@ bootstrap:
   - start_qemu:
     - vm_cleanup_section: export
   - install_build_packages
-  - debootstrap:
-    - chroot_umount_section: export
+  - prepare_partition_for_rootfs:
+    - rootfs_umount_section: export
+  - debootstrap
   - start_chroot
 
 setup:
