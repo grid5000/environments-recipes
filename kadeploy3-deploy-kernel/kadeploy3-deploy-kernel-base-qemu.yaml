@@ -11,7 +11,7 @@ extend: ../from_debootstrap/base-qemu.yaml
 global:
   release: bullseye
   # force use of busybox rather than klibc-utils (which breaks the mount)
-  bootstrap_packages: initramfs-tools busybox
+  bootstrap_packages: initramfs-tools busybox gnupg
   bootstrap_variant: minbase
   enable_lighten: true
   root_authorized_keys: $${kameleon_data_dir}/kadeploy_root_authorized_keys
