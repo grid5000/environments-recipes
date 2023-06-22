@@ -327,6 +327,7 @@ export:
       - exec_in: apt-get -y --force-yes purge
       - exec_in: apt-get -y --force-yes clean
     - create_rootfs:
+      - apt-get_out: install cpio xz-utils
       - exec_out: |
           cd $${rootfs} # use out context: quicker if foreign arch
           find . -path './boot/*' -prune \
