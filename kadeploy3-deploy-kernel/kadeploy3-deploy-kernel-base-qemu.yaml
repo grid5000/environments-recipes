@@ -462,7 +462,6 @@ export:
                --package $${kameleon_recipe_name} \
                --newversion 1.$(date +%Y%m%d) \
                "Generated with kameleon using recipe $${kameleon_recipe_name}")
-      - exec_local: |
           cat > $${kameleon_recipe_name}/debian/control <<EOF
           Source: $${kameleon_recipe_name}
           Section: admin
@@ -477,14 +476,12 @@ export:
           Description: kadeploy3 deploy kernel
            Deploymenet kernel used by kadeploy3
           EOF
-      - exec_local: echo 9 > $${kameleon_recipe_name}/debian/compat
-      - exec_local: |
+          echo 9 > $${kameleon_recipe_name}/debian/compat
           cat > $${kameleon_recipe_name}/debian/copyright <<EOF
           Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
           Upstream-Name: $${kameleon_recipe_name}
           Source: https://github.com/oar-team/kameleon-recipes/tree/master/kadeploy3_deploy_kernel_from_scratch
           EOF
-      - exec_local: |
           cat > $${kameleon_recipe_name}/debian/rules <<'EOF'
           #!/usr/bin/make -f
           
@@ -492,10 +489,8 @@ export:
           	dh $@
           EOF
           chmod +x $${kameleon_recipe_name}/debian/rules
-      - exec_local: |
           mkdir -p $${kameleon_recipe_name}/debian/source
           echo "3.0 (native)" > $${kameleon_recipe_name}/debian/source/format
-      - exec_local: |
           cat > $${kameleon_recipe_name}/debian/install <<EOF
           $${kameleon_recipe_name}.$${kernel_filename} $${target_directory}
           $${kameleon_recipe_name}.initrd.img $${target_directory}
