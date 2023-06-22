@@ -324,10 +324,10 @@ setup:
 export:
   - create_ramdisk:
     - clean_apt:
-      - exec_in: apt-get -y --force-yes autoremove
-      - exec_in: apt-get -y --force-yes autoclean
-      - exec_in: apt-get -y --force-yes purge
-      - exec_in: apt-get -y --force-yes clean
+      - apt-get_in: autoremove
+      - apt-get_in: autoclean
+      - apt-get_in: purge
+      - apt-get_in: clean
     - create_rootfs:
       - apt-get_out: install cpio xz-utils
       - exec_out: |
