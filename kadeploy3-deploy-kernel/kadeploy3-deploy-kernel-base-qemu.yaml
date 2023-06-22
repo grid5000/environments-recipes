@@ -168,7 +168,7 @@ setup:
     - install_other_packages:
       - exec_in: |
           echo "Installing other required packages"
-          apt-get install -y --force-yes $${firmware_packages} $${system_packages} $${net_packages} $${linux_fs_packages} $${other_fs_packages} $${archive_file_packages} $${disk_packages} $${ruby_packages} 
+          apt-get install -y --force-yes $${firmware_packages} $${system_packages} $${net_packages} $${linux_fs_packages} $${other_fs_packages} $${archive_file_packages} $${disk_packages} $${ruby_packages}
           if [ "$${use_backports}" == "true" -a -n "$${ruby_packages_bpo}" ]; then
             apt-get install -y --force-yes -t $${release}-backports $${ruby_packages_bpo}
           fi
@@ -390,9 +390,8 @@ export:
              panic "Failed to create tmpfs"
           fi
           log_end_msg
-          
           log_begin_msg "Populate rootfs"
-          cd ${rootmnt}.tmp 
+          cd ${rootmnt}.tmp
           xzcat /root.cxz | cpio -i
           if [ $? -ne 0 ]; then
              panic "Failed to populate"
@@ -419,7 +418,7 @@ export:
           cat <<EOF > ${rootmnt}.tmp/etc/fstab
           rootfs / tmpfs size=$${tmpfs_size} 0 0
           EOF
-          umount ${rootmnt}.tmp 
+          umount ${rootmnt}.tmp
           if [ $? -ne 0 ]; then
             panic "Failed to umount"
           fi
@@ -433,7 +432,6 @@ export:
     - generate_new_initramfs:
       - exec_in: update-initramfs -u
   - move_files_to_out:
-    - on_checkpoint: redo
     - copy_files:
       - exec_out: |
           mkdir -p /tmp
@@ -454,9 +452,8 @@ export:
     - create_debian_files:
       - check_cmd_local: dch
       - exec_local: |
-           rm -rf $${kameleon_recipe_name}/debian
-           mkdir -p $${kameleon_recipe_name}/debian
-      - exec_local: |
+          rm -rf $${kameleon_recipe_name}/debian
+          mkdir -p $${kameleon_recipe_name}/debian
           export DEBEMAIL="Grid'5000 team <support-staff@lists.grid5000.fr>"
           (cd $${kameleon_recipe_name} && \
            dch --create \
