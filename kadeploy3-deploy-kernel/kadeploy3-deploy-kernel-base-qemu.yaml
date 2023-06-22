@@ -17,7 +17,6 @@ global:
   root_authorized_keys: $${kameleon_data_dir}/kadeploy_root_authorized_keys
   arch_specific_packages: kexec-tools grub-pc grub-efi-amd64-bin
   use_backports: true
-  security_release: $${release}
   hwraid_release: $${release}
   #deb_kernel: default
   # -> other option: bpo - e.g. set on command line using "-g deb_kernel:bpo"
@@ -113,35 +112,38 @@ setup:
           APT::Install-Recommends "0" ;
           APT::Install-Suggests "0" ;
     - configure_source_list:
-      - exec_in: sed -i -e 's/^/#/' /etc/apt/sources.list
-      - write_in:
-        - /etc/apt/sources.list.d/$${release}.list
-        - |
-          deb $${deb_mirror_uri} $${release} main contrib non-free
       - exec_in: |
-          if [ "$${release}" != "sid" ] && [ "$${release}" != "jessie" ]; then
+          sed -i -e 's/^/#/' /etc/apt/sources.list
+          if [ "$${release}" == "bookworm" ]; then
+            echo "deb $${deb_mirror_uri} $${release} main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/$${release}.list
+          else
+            echo "deb $${deb_mirror_uri} $${release} main contrib non-free" >> /etc/apt/sources.list.d/$${release}.list
+          fi
+          if [ "$${release}" == "bookworm" ]; then
+            echo "deb $${deb_mirror_uri} $${release}-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/$${release}.list
+          elif [ "$${release}" != "sid" ]; then
             echo "deb $${deb_mirror_uri} $${release}-updates main contrib non-free" >> /etc/apt/sources.list.d/$${release}.list
           fi
-          if [ "$${release}" != "sid" ] && [ "$${release}" != "jessie" -o "$${deb_arch}" == "amd64" ]; then
-            # https://www.lucas-nussbaum.net/blog/?p=947 -> not available for jessie on arm64, ppc64*...
-            echo "deb http://security.debian.org/ $${security_release}/updates main contrib non-free" >> /etc/apt/sources.list.d/$${release}.list
+          if [ "$${release}" == bookworm ]; then
+            echo "deb http://security.debian.org/ $${release}-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/$${release}.list
+          elif [ "$${release}" == "bullseye" ]; then
+            echo "deb http://security.debian.org/ $${release}-security main contrib non-free" >> /etc/apt/sources.list.d/$${release}.list
+          elif [ "$${release}" == "buster" ]; then
+            echo "deb http://security.debian.org/ $${release}/updates main contrib non-free" >> /etc/apt/sources.list.d/$${release}.list
           fi
-      - exec_in: |
           if [ "$${use_backports}" == "true" ]; then
-            echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free" > /etc/apt/sources.list.d/$${release}-backports.list
-            if [ "$${release}" == "jessie" ]; then
-              # https://www.lucas-nussbaum.net/blog/?p=947
-              echo 'Acquire::Check-Valid-Until no;' > /etc/apt/apt.conf.d/99no-check-valid-until
+            if [ "$${release}" == "bookworm" ]; then
+              echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free non-free-firmware" > /etc/apt/sources.list.d/$${release}-backports.list
+            elif ! [[ "$${release}" =~ sid|testing ]]; then
+              echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free" > /etc/apt/sources.list.d/$${release}-backports.list
             fi
           fi
-      - exec_in: |
           if [ "$${deb_arch}" == "amd64" ]; then
-            cat <<EOF >/etc/apt/sources.list.d/hwraid.list
-          deb http://hwraid.le-vert.net/debian $${hwraid_release} main
-          EOF
+            echo "deb http://hwraid.le-vert.net/debian $${hwraid_release} main" >/etc/apt/sources.list.d/hwraid.list
             apt-key adv --keyserver $${gpg_keyserver} --recv-key 6005210E23B3D3B4
           fi
-      - exec_in: apt-get update
+    - update_apt:
+      - apt-get_in: update
     - debconf-noninteractive:
       - exec_in: |
           debconf-set-selections <<'EOF'
