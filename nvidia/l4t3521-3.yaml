@@ -44,7 +44,7 @@ global:
   l4t_kernel_config_file: "cti_tegra_defconfig"
   debian_kernel_pkg_url: "http://ftp.fr.debian.org/debian/pool/main/l/linux/linux-image-5.10.0-20-arm64-unsigned_5.10.158-2_arm64.deb"
   kernel_src_dir: $${l4t_dir}/src/kernel/kernel-$${l4t_kernel_version}
-  kernel_version_suffix: -l4tdeb11
+  kernel_version_suffix: -l4t3
   kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=-$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
 
 bootstrap:
@@ -85,15 +85,19 @@ setup:
       - apt-get_out: install make gcc xxd flex bison python3 python-is-python3 bc rsync kmod libelf-dev libssl-dev
     - merge_kernel_configs:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}/arch/arm64/configs
-          cat debian_defconfig $${l4t_kernel_config_file} > debian_l4t_defconfig
+          #cat debian_defconfig $${l4t_kernel_config_file} > debian_l4t_defconfig
+          cat $${l4t_kernel_config_file} > debian_l4t_defconfig
       - exec_out: |
+          set -e
           $${kernel_make_cmd} debian_l4t_defconfig
           cp $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
           $${kernel_make_cmd} debian_l4t_defconfig
           diff --brief $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
     - disable_bogus_configs:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
           for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
@@ -101,22 +105,48 @@ setup:
           done
     - force_builtin_nfs_support:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           ./scripts/config --enable NFS_V4
           ./scripts/config --enable NFS_V3
           ./scripts/config --enable NFS_V2
+    - disable_useless_kernel_support:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          ./scripts/config --disable USB_SUPPORT
+          ./scripts/config --disable WLAN
+          ./scripts/config --disable WIRELESS
+          ./scripts/config --disable WIMAX
+          ./scripts/config --disable BT
+          ./scripts/config --disable NFC
+          ./scripts/config --disable HAMRADIO
+          ./scripts/config --disable SOUND
+          ./scripts/config --disable RFKILL
+          ./scripts/config --disable CAN
+          ./scripts/config --disable W1
+          ./scripts/config --disable GNSS
+          ./scripts/config --disable PARPORT
+          #./scripts/config --disable MEDIA_SUPPORT
+          ./scripts/config --disable MEMSTICK
+          ./scripts/config --disable SOUNDWIRE
     #- dive_in:
+    #  - apt-get_out: install libncurses-dev
     #  - exec_local: |
     #      echo "Kernel make command: $${kernel_make_cmd}"
     #  - breakpoint
     - build_kernel_objects:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           $${kernel_make_cmd} Image
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           $${kernel_make_cmd} dtbs
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           $${kernel_make_cmd} modules
     - install_kernel_objects:
@@ -125,10 +155,12 @@ setup:
       - exec_out: |
           cp $${kernel_src_dir}/arch/arm64/boot/dts/nvidia/* $${l4t_dir}/kernel/dtb/
       - exec_out: |
+          set -e
           KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
           $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs_container_work_dir}/usr/src/linux-headers-$KERNEL_RELEASE" headers_install
           tar -C $${rootfs_container_work_dir}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE
       - exec_out: |
+          set -e
           $${kernel_make_cmd} INSTALL_MOD_PATH="$${rootfs_container_work_dir}" modules_install
           ln -sfn /usr/src/linux-headers-$KERNEL_RELEASE $${rootfs_container_work_dir}/lib/modules/$KERNEL_RELEASE/build
           tar -C $${rootfs_container_work_dir} -jcvf $${l4t_dir}/kernel/kernel_supplements.tbz2 lib/modules/$KERNEL_RELEASE
