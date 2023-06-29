@@ -329,7 +329,7 @@ export:
       - apt-get_in: purge
       - apt-get_in: clean
     - create_rootfs:
-      - apt-get_out: install cpio xz-utils
+      - apt-get_out: install cpio xz-utils pixz
       - exec_out: |
           cd $${rootfs} # use out context: quicker if foreign arch
           find . -path './boot/*' -prune \
@@ -344,7 +344,7 @@ export:
               -o -path './root/kameleon_workdir' -prune \
               -o -path './$${kernel_filename}' -prune \
               -o -path './initrd.img' -prune \
-              -o -xdev -print | cpio -o -H newc  | xz -9 > $${rootfs}/boot/root.cxz
+              -o -xdev -print | cpio -o -H newc  | pixz -9 > $${rootfs}/boot/root.cxz
     - add_initramfs_hook:
       - exec_in: |
           cat <<'EOF' > /etc/initramfs-tools/hooks/copy-root-archive
