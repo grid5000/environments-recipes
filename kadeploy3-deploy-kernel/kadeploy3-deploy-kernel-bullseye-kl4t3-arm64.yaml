@@ -1,0 +1,64 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Kadeploy3 ramdisk OS (used in the deployment phase)
+#
+#==============================================================================
+---
+extend: kadeploy3-deploy-kernel-base-docker.yaml
+# Global variables use by Kameleon engine and the steps
+global:
+  release: bullseye
+  bootstrap_packages: initramfs-tools busybox gnupg dirmngr
+  to_remove_packages: wget libpsl5
+  use_backports: no
+  security_release: $${release}-security
+  arch: aarch64
+  deb_arch: arm64
+  deb_kernel_arch: $${deb_arch}
+  deb_kernel: other
+  arch_specific_packages: kexec-tools grub-efi-arm64 
+  out_context_docker_image: l4t3521-3
+  tmpfs_size: 4G
+
+  ubuntu_deb_url_dpkg: http://ports.ubuntu.com/ubuntu-ports/pool/main/d/dpkg/dpkg_1.19.7ubuntu3.2_arm64.deb
+  ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.2.1-20230124153320_arm64.deb
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - install_l4t-deb-kernel:
+    - install_kernel_modules:
+      - on_checkpoint: disabled
+      - exec_out: |
+          tar -C $${rootfs} -xvf /nvidia/Linux_for_Tegra/kernel/kernel_supplements.tbz2
+    - install_kernel_image:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          KERNEL_VERSION=$(cd $${rootfs}/lib/modules && ls)
+          cp -av /nvidia/Linux_for_Tegra/kernel/Image $${rootfs}/boot/$${kernel_filename}-${KERNEL_VERSION}
+    - install_firmware:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          dpkg-deb -X /nvidia/Linux_for_Tegra/nv_tegra/l4t_deb_packages/nvidia-l4t-firmware_*_arm64.deb $${rootfs}
+          dpkg-deb -X /nvidia/Linux_for_Tegra/nv_tegra/l4t_deb_packages/nvidia-l4t-xusb-firmware_*_arm64.deb $${rootfs}
+          # Fix the rootfs' /lib -> /usr/lib, which is overwritten by the dpkg-deb extraction
+          cp -av $${rootfs}/lib/* $${rootfs}/usr/lib/
+          rm -r $${rootfs}/lib
+          ln -sfnv usr/lib $${rootfs}/lib
+    - generate_first_initramfs:
+      - on_checkpoint: disabled
+      - exec_in: |
+          set -e
+          sed -i -e 's/^MODULES=.*/MODULES=list/' \
+            /etc/initramfs-tools/initramfs.conf
+          KERNEL_VERSION=$(cd /lib/modules && ls)
+          mkinitramfs -v ${KERNEL_VERSION} -o /boot/initrd.img-$KERNEL_VERSION
+      #- breakpoint
+export:
+  - "@base"
