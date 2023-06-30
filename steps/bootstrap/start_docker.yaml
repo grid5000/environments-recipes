@@ -3,6 +3,7 @@
 - rootfs_host_work_dir:
 - rootfs_container_work_dir: $${rootfs}
 - docker_cleanup_section: export
+- docker_extra_volumes:
 
 - clean_containers:
   - on_checkpoint: disabled
@@ -28,5 +29,5 @@
       set -e
       rm -f MAIN_CONTAINER_ID
       KAMELEON_ROOTFS_HOST_DIR=$${rootfs_host_work_dir}
-      docker run -d -u$${docker_user} -i -h $${docker_hostname} --cidfile MAIN_CONTAINER_ID --privileged ${KAMELEON_ROOTFS_HOST_DIR:+-v $KAMELEON_ROOTFS_HOST_DIR:$${rootfs_container_work_dir}} --entrypoint cat "$${docker_image}:base"
+      docker run -d -u$${docker_user} -i -h $${docker_hostname} --cidfile MAIN_CONTAINER_ID $${docker_extra_volumes} --privileged ${KAMELEON_ROOTFS_HOST_DIR:+-v $KAMELEON_ROOTFS_HOST_DIR:$${rootfs_container_work_dir}} --entrypoint cat "$${docker_image}:base"
       while ! [ -s MAIN_CONTAINER_ID ] || ! docker exec -u $${docker_user} -i $(< MAIN_CONTAINER_ID) true; do sleep 1; done
