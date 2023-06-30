@@ -1,0 +1,57 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Simple recipe that use a docker image directly.
+#
+# It is made to conserve docker layers for the exported image.  No setup section
+# is provided: You have to implement yours
+#
+#==============================================================================
+---
+extend: ../steps/backend/$${backend}.yaml
+
+# Loads some helpful aliases (this files are located in steps/aliases/ directory)
+aliases: defaults.yaml
+
+# Custom shell environement (this files are located in steps/env/ directory)
+env:
+  - bashrc
+  - functions.sh
+
+global:
+  ssh_config_file: $${kameleon_cwd}/ssh_config
+
+  backend: dockerzchroot
+
+  # You should specify this in the global of your recipe
+  out_context_docker_image: "l4t3521-deb11-light"
+  docker_extra_volumes: "-v /grid5000:/grid5000:ro"
+
+  rootfs_container_work_dir: "$${l4t_dir}/rootfs"
+
+  workdir: "/nvidia"
+  l4t_dir: "$${workdir}/Linux_for_Tegra"
+  g5k_env_std_tarball_file: "/grid5000/images/debian11-arm64-std-2023010308.tar.zst"
+  g5k_postinstall_tarball_file: "/grid5000/postinstalls/g5k-postinstall.tgz"
+
+bootstrap:
+  - "@base"
+setup:
+  - deploy_g5k_env_std_in_rootfs:
+    - install_necessary_debs:
+      - apt-get_out: install zstd lbzip2 ruby iproute2
+    - extract_rootfs:
+      - exec_out: tar -C $${rootfs_container_work_dir} --zstd -xvf $${g5k_env_std_tarball_file}
+    - apply_l4t_binaries:
+      - exec_out: $${l4t_dir}/apply_binaries.sh -r $${rootfs_container_work_dir} --target-overlay
+    - g5k-postinstall:
+      - exec_out: |
+          set -e
+          mkdir $${workdir}/tmp
+          tar -C $${workdir}/tmp -zxf $${g5k_postinstall_tarball_file}
+          sed -i -e 's/$myjson = {/$myjson = { "architecture" => {},/' $${workdir}/tmp/g5k-postinstall
+          KADEPLOY_CLUSTER="estats" KADEPLOY_DEPLOY_PART="/dev/sda3" KADEPLOY_BLOCK_DEVICE="/dev/sda" KADEPLOY_DEPLOY_PART_NUM="3" KADEPLOY_SWAP_PART_NUM="1" KADEPLOY_PROD_PART_NUM="2" KADEPLOY_TMP_PART_NUM="5" KADEPLOY_PREPOST_EXTRACTION_DIR="$${workdir}/tmp" KADEPLOY_TMP_DIR="/tmp" KADEPLOY_ENV="debian11-arm-std" KADEPLOY_ENV_KERNEL="/vmlinuz" KADEPLOY_ENV_INITRD="/initrd.img" KADEPLOY_ENV_KERNEL_PARAMS="console=tty0 console=ttyS0,38400n8 net.ifnames=0 biosdevname=0" KADEPLOY_ENV_HYPERVISOR="" KADEPLOY_ENV_HYPERVISOR_PARAMS="" KADEPLOY_OS_KIND="linux" KADEPLOY_PART_TYPE="83" KADEPLOY_FS_TYPE="ext4" KADEPLOY_ENV_EXTRACTION_DIR=/nvidia/Linux_for_Tegra/rootfs/ $${workdir}/tmp/g5k-postinstall --no-ref-api --fstab nfs --net debian
+          rm -r $${workdir}/tmp
+export:
+  - export_zfs_rootfs
