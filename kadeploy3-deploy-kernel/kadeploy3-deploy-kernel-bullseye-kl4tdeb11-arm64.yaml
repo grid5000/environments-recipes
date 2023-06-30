@@ -34,8 +34,7 @@ setup:
     - install_kernel_modules:
       - on_checkpoint: disabled
       - exec_out: |
-          #tar -C $${rootfs} -xvf /nvidia/Linux_for_Tegra/kernel/kernel_supplements.tbz2
-          mkdir -p $${rootfs}/lib/modules/5.10.104-debian-l4t
+          tar -C $${rootfs} -xvf /nvidia/Linux_for_Tegra/kernel/kernel_supplements.tbz2
     - install_kernel_image:
       - on_checkpoint: disabled
       - exec_out: |
@@ -60,6 +59,6 @@ setup:
             /etc/initramfs-tools/initramfs.conf
           KERNEL_VERSION=$(cd /lib/modules && ls)
           mkinitramfs -v ${KERNEL_VERSION} -o /boot/initrd.img-$KERNEL_VERSION
-#      - breakpoint
+      - breakpoint
 export:
   - "@base"

@@ -59,6 +59,6 @@ setup:
             /etc/initramfs-tools/initramfs.conf
           KERNEL_VERSION=$(cd /lib/modules && ls)
           mkinitramfs -v ${KERNEL_VERSION} -o /boot/initrd.img-$KERNEL_VERSION
-      #- breakpoint
+      - breakpoint
 export:
   - "@base"

@@ -25,7 +25,7 @@ global:
   backend: dockerzchroot
 
   # You should specify this in the global of your recipe
-  from_docker_image: "ubuntu:20.04"
+  out_context_docker_image: "ubuntu:20.04"
   rootfs_arch: aarch64
 
   to_docker_image: "$${kameleon_recipe_name}:latest"
@@ -45,7 +45,7 @@ global:
   debian_kernel_pkg_url: "http://ftp.fr.debian.org/debian/pool/main/l/linux/linux-image-5.10.0-20-arm64-unsigned_5.10.158-2_arm64.deb"
   kernel_src_dir: $${l4t_dir}/src/kernel/kernel-$${l4t_kernel_version}
   kernel_version_suffix: -l4t2
-  kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=-$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
+  kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
 
 bootstrap:
   - "@base"
