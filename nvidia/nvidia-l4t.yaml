@@ -9,7 +9,7 @@
 #
 #==============================================================================
 ---
-extend: steps/backend/$${backend}.yaml
+extend: ../steps/backend/$${backend}.yaml
 
 # Loads some helpful aliases (this files are located in steps/aliases/ directory)
 aliases: defaults.yaml
@@ -25,7 +25,7 @@ global:
   backend: dockerzchroot
 
   # You should specify this in the global of your recipe
-  from_docker_image: "ubuntu:20.04"
+  out_context_docker_image: "ubuntu:20.04"
   rootfs_arch: aarch64
   docker_extra_volumes: "-v /grid5000:/grid5000:ro"
 
@@ -46,9 +46,11 @@ global:
   l4t_kernel_config_file: "cti_tegra_defconfig"
   debian_kernel_pkg_url: "http://ftp.fr.debian.org/debian/pool/main/l/linux/linux-image-5.10.0-20-arm64-unsigned_5.10.158-2_arm64.deb"
   kernel_src_dir: $${l4t_dir}/src/kernel/kernel-$${l4t_kernel_version}
-  kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=-debian-l4t CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
+  kernel_version_suffix: -l4tdeb11f
+  kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
   g5k_env_std_tarball_file: "/grid5000/images/debian11-arm64-std-2023010308.tar.zst"
   g5k_postinstall_tarball_file: "/grid5000/postinstalls/g5k-postinstall.tgz"
+  g5k_check_deb_file: "../../g5k-checks_0.11.11_arm64.deb"
 
 bootstrap:
   - "@base"
@@ -67,8 +69,8 @@ setup:
       - exec_out: wget -O- -q "$${nvidia_rootfs_url}" | tar -C $${rootfs_container_work_dir} -jxv
     - install_qemu:
       - apt-get_out: install qemu-user-static binfmt-support
-    - setup_qemu_in_rootfs:
-      - exec_out: cp $${qemu_file} $${rootfs_container_work_dir}/$${qemu_file}
+    #- setup_qemu_in_rootfs:
+    #  - exec_out: cp $${qemu_file} $${rootfs_container_work_dir}/$${qemu_file}
   - install_cti_BSP:
     - download_and extract_cti_BSP:
       - exec_out: wget -O- -q "$${cti_BSP_url}" | tar -C $${l4t_dir} -zxv
@@ -87,18 +89,21 @@ setup:
       - exec_out: rm -r $${workdir}/tmp
   - build_kernel:
     - install_tools:
-      - apt-get_out: install make gcc xxd flex bison python3 python-is-python3 bc rsync kmod libelf-dev libssl-dev
+      - apt-get_out: install make gcc xxd flex bison python3 bc rsync kmod libelf-dev libssl-dev
     - merge_kernel_configs:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}/arch/arm64/configs
           cat debian_defconfig $${l4t_kernel_config_file} > debian_l4t_defconfig
       - exec_out: |
+          set -e
           $${kernel_make_cmd} debian_l4t_defconfig
           cp $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
           $${kernel_make_cmd} debian_l4t_defconfig
           diff --brief $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
     - disable_bogus_configs:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
           for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
@@ -106,22 +111,31 @@ setup:
           done
     - force_builtin_nfs_support:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           ./scripts/config --enable NFS_V4
           ./scripts/config --enable NFS_V3
           ./scripts/config --enable NFS_V2
+    - force_module_for_dummy:
+      - exec_out: |
+          cd $${kernel_src_dir}
+          ./scripts/config --module DUMMY
     #- dive_in:
+    #  - apt-get_out: install libncurses-dev
     #  - exec_local: |
     #      echo "Kernel make command: $${kernel_make_cmd}"
     #  - breakpoint
     - build_kernel_objects:
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           $${kernel_make_cmd} Image
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           $${kernel_make_cmd} dtbs
       - exec_out: |
+          set -e
           cd $${kernel_src_dir}
           $${kernel_make_cmd} modules
     - install_kernel_objects:
@@ -130,34 +144,94 @@ setup:
       - exec_out: |
           cp $${kernel_src_dir}/arch/arm64/boot/dts/nvidia/* $${l4t_dir}/kernel/dtb/
       - exec_out: |
+          set -e
           KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
           $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs_container_work_dir}/usr/src/linux-headers-$KERNEL_RELEASE" headers_install
           tar -C $${rootfs_container_work_dir}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE
       - exec_out: |
+          set -e
           $${kernel_make_cmd} INSTALL_MOD_PATH="$${rootfs_container_work_dir}" modules_install
           ln -sfn /usr/src/linux-headers-$KERNEL_RELEASE $${rootfs_container_work_dir}/lib/modules/$KERNEL_RELEASE/build
           tar -C $${rootfs_container_work_dir} -jcvf $${l4t_dir}/kernel/kernel_supplements.tbz2 lib/modules/$KERNEL_RELEASE
+      #- clean_kernel_objects:
+      #  - exec_out: |
+      #      $${kernel_make_cmd} INSTALL_MOD_PATH="$${rootfs_container_work_dir}" mrproper
   - setup_for_flashing:
     - install_required_debs:
-      - apt-get_out: install usbutils udev python3-yaml lz4 cpio openssh-client libxml2-utils perl-modules-5.30 dosfstools
-  - create_new_zfs_rootfs
+      - apt-get_out: install usbutils udev python-is-python3 python3-yaml lz4 cpio openssh-client libxml2-utils perl-modules-5.30 dosfstools
+  - create_new_zfs_rootfs:
+    - rootfs_backup_name: rootfs-l4t
   - deploy_g5k_env_std_in_rootfs:
     - install_necessary_debs:
       - apt-get_out: install zstd lbzip2 ruby iproute2
     - extract_rootfs:
       - exec_out: tar -C $${rootfs_container_work_dir} --zstd -xvf $${g5k_env_std_tarball_file}
+  - apply_l4t_binaries:
     - apply_l4t_binaries:
       - exec_out: $${l4t_dir}/apply_binaries.sh -r $${rootfs_container_work_dir} --target-overlay
-    - g5k-postinstall:
+  - prepare_system_fs_for_chroot
+  - fix_os_after_nvidia_script:
+    - rebuild_ld_cache:
+      - exec_in: ldconfig
+    - disable_nvidia_first_boot:
+      - exec_in: rm /etc/nv/nvfirstboot
+    - disable_unwanted_tegra_systemd:
+      - exec_in: systemctl disable nvargus-daemon.service
+      - exec_in: systemctl disable nv-l4t-usb-device-mode.service
+      - exec_in: systemctl disable nv-l4t-bootloader-config.service
+    - configure_nvpmodel_all_core:
+      - exec_in: |
+          set -e
+          dpkg-divert --no-rename /etc/systemd/nvpmodel.sh
+          sed -i.distrib -e 's@^\([[:space:]]*/usr/sbin/nvpmodel\) -f /etc/nvpmodel.conf@&\n\1 -m 3@' /etc/systemd/nvpmodel.sh
+  - g5kify_os:
+    - nfsrootify_dhclient_script:
+      - exec_in: |
+          set -e
+          dpkg-divert --no-rename /sbin/dhclient-script
+          sed -i.distrib -e '214,224s/^/#G5Knfsroot/;231,299s/^/#G5Knfsroot/;306,321s/^/#G5Knfsroot/;326,379s/^/#G5Knfsroot/;' /sbin/dhclient-script
+    - truify_ipmitool:
+      - exec_in: |
+          set -e
+          dpkg-divert --rename /usr/bin/ipmitool
+          ln -s /bin/true /usr/bin/ipmitool
+    - upgrade_g5k_check:
+      - local2in:
+        - $${g5k_check_deb_file}
+        - /tmp/g5k-check.deb
+      - exec_in: |
+          dpkg --force-confnew -i /tmp/g5k-check.deb
+  - copy_kernel_sources_in_rootfs:
+    - copy_files:
       - exec_out: |
           set -e
-          mkdir $${workdir}/tmp
-          tar -C $${workdir}/tmp -zxf $${g5k_postinstall_tarball_file}
-          sed -i -e 's/$myjson = {/$myjson = { "architecture" => {},/' $${workdir}/tmp/g5k-postinstall
-          KADEPLOY_CLUSTER="estats" KADEPLOY_DEPLOY_PART="/dev/sda3" KADEPLOY_BLOCK_DEVICE="/dev/sda" KADEPLOY_DEPLOY_PART_NUM="3" KADEPLOY_SWAP_PART_NUM="1" KADEPLOY_PROD_PART_NUM="2" KADEPLOY_TMP_PART_NUM="5" KADEPLOY_PREPOST_EXTRACTION_DIR="$${workdir}/tmp" KADEPLOY_TMP_DIR="/tmp" KADEPLOY_ENV="debian11-arm-std" KADEPLOY_ENV_KERNEL="/vmlinuz" KADEPLOY_ENV_INITRD="/initrd.img" KADEPLOY_ENV_KERNEL_PARAMS="console=tty0 console=ttyS0,38400n8 net.ifnames=0 biosdevname=0" KADEPLOY_ENV_HYPERVISOR="" KADEPLOY_ENV_HYPERVISOR_PARAMS="" KADEPLOY_OS_KIND="linux" KADEPLOY_PART_TYPE="83" KADEPLOY_FS_TYPE="ext4" KADEPLOY_ENV_EXTRACTION_DIR=/nvidia/Linux_for_Tegra/rootfs/ $${workdir}/tmp/g5k-postinstall --no-ref-api --fstab nfs --net debian
-          rm -r $${workdir}/tmp
+          KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
+          cp -a $${kernel_src_dir} $${rootfs_container_work_dir}/usr/src/linux-kbuild-$KERNEL_RELEASE
+          ln -sfn /usr/src/linux-kbuild-$KERNEL_RELEASE $${rootfs_container_work_dir}/lib/modules/$KERNEL_RELEASE/source
+  - install_g5k_postinstall:
+    - g5k_postinstall:
+      - exec_out: |
+          set -e
+          mkdir $${workdir}/g5k-postinstall
+          tar -C $${workdir}/g5k-postinstall -zxf $${g5k_postinstall_tarball_file}
+    - patch_g5k_postinstall:
+      - exec_out: |
+          echo -e "#/ is nfsroot\nnfs:/export/grid5000  /grid5000 nfs _netdev,rw,hard,async,nodev,nosuid,auto 0 0" > $${workdir}/g5k-postinstall/fstab
+    - explain_how_to_use_g5k_postinstall:
+      - exec_local: |
+          set -e
+          echo 'To apply the postinstall to a node rootfs, set the node #, e.g.:'
+          echo '$ N=6'
+          echo 'And create its rootfs:'
+          echo '$ ! zfs list z/nodes/estats-$N -H >& /dev/null || sudo zfs destroy z/nodes/estats-$N'
+          echo '$ sudo zfs clone $${target_rootfs_dataset}/rootfs@latest z/nodes/estats-$N'
+          echo 'Then'
+          echo '$ docker run -it --rm --privileged -v /z/nodes/estats-$N:$${l4t_dir}/rootfs --entrypoint bash $${target_docker_image}'
+          echo 'And within the container:'
+          echo '$  KADEPLOY_PI_NET_CFG=eth0,172.16.121.$N,11:22:33:44:55:66 KADEPLOY_CLUSTER="estats" KADEPLOY_DEPLOY_PART="/dev/sda3" KADEPLOY_BLOCK_DEVICE="/dev/sda" KADEPLOY_DEPLOY_PART_NUM="3" KADEPLOY_SWAP_PART_NUM="1" KADEPLOY_PROD_PART_NUM="2" KADEPLOY_TMP_PART_NUM="5" KADEPLOY_PREPOST_EXTRACTION_DIR="$${workdir}/g5k-postinstall" KADEPLOY_TMP_DIR="/tmp" KADEPLOY_ENV="debian11-arm-std" KADEPLOY_ENV_KERNEL="/vmlinuz" KADEPLOY_ENV_INITRD="/initrd.img" KADEPLOY_ENV_KERNEL_PARAMS="console=tty0 console=ttyS0,38400n8 net.ifnames=0 biosdevname=0" KADEPLOY_ENV_HYPERVISOR="" KADEPLOY_ENV_HYPERVISOR_PARAMS="" KADEPLOY_OS_KIND="linux" KADEPLOY_PART_TYPE="83" KADEPLOY_FS_TYPE="ext4" KADEPLOY_ENV_EXTRACTION_DIR=$${l4t_dir}/rootfs/ $${workdir}/g5k-postinstall/g5k-postinstall --no-ref-api --fstab custom --net debian'
 export:
-  - export_zfs_rootfs
+  - export_zfs_rootfs:
+    - rootfs_add_exports: rootfs-l4t
   - export_docker_image_ready_to_flash:
     - commit_and_configure_to_flash:
       - exec_local: |
@@ -170,9 +244,9 @@ export:
           docker rm $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
           rm -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
       - exec_local: |
-          echo 'You can now flash a Xavier module, using:'
+          echo 'You can now flash a Xavier module to use NFSROOT, using:'
           echo
-          echo '$ docker run -it --rm --privileged -v /dev/bus/usb:/dev/bus/usb/ -v /dev:/dev -v /$${target_rootfs_dataset}/rootfs0:$${l4t_dir}/rootfs $${target_docker_image} -N $NFS_ROOT cti/xavier/rogue/base eth0'
+          echo '$ docker run -it --rm --privileged -v /dev/bus/usb:/dev/bus/usb/ -v /dev:/dev -v /$${target_rootfs_dataset}/rootfs0:$${l4t_dir}/rootfs $${target_docker_image} -N $NFSROOT cti/xavier/rogue/base eth0'
           echo
-          echo 'Where for instance NFSROOT=172.16.127.3:/z/nodes/x-$N, with N the Xavier module #.'
+          echo 'Where for instance NFSROOT=172.16.127.3:/z/nodes/estats-$N, with N the Xavier module #.'
           echo
