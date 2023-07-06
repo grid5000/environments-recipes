@@ -70,6 +70,9 @@ setup:
     - download_and extract_cti_BSP:
       - exec_out: wget -O- -q "$${cti_BSP_url}" | tar -C $${l4t_dir} -zxv
       - exec_out: cd $${l4t_dir}/CTI-L4T && ./install.sh
+  - fix_cti_BSP:
+    - fix_kernel_console:
+      - exec_out: sed -i.bak -e 's/console=tty0 //' $${l4t_dir}/cti-agx.conf.common
   - install_kernel_sources:
     - install_cross_compilation_chain:
       - exec_out: mkdir -p "$${cross_compilation_toolchain_dir}"
