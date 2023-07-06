@@ -56,9 +56,6 @@ bootstrap:
 
 setup:
   - configure_system:
-    - console_prompt:
-      - on_checkpoint: disabled
-      - exec_in: sed -i -e '1s/^/DeployMiniOS - /' /etc/issue
     - hosts:
       - on_checkpoint: disabled
       - write_in:
@@ -135,8 +132,6 @@ setup:
             echo "deb http://hwraid.le-vert.net/debian $${hwraid_release} main" >/etc/apt/sources.list.d/hwraid.list
             apt-key adv --keyserver $${gpg_keyserver} --recv-key 6005210E23B3D3B4
           fi
-    - update_apt:
-      - apt-get_in: update
     - debconf-noninteractive:
       - on_checkpoint: disabled
       - exec_in: |
@@ -158,6 +153,8 @@ setup:
           rm -f /etc/localtime /etc/timezone
           dpkg-reconfigure tzdata
   - install_packages:
+    - update_apt:
+      - apt-get_in: update
     - install_arch_specific_packages:
       - exec_in: |
           set -e
@@ -172,9 +169,6 @@ setup:
           if [ "$${use_backports}" == "true" -a -n "$${ruby_packages_bpo}" ]; then
             apt-get install -y --force-yes -t $${release}-backports $${ruby_packages_bpo}
           fi
-    - fix_ntp:
-      - on_checkpoint: disabled
-      - exec_in: sed -i -e 's/\(NTPSERVERS=\).*/\1="ntp1.grid5000.fr ntp2.grid5000.fr"/;s/\(NTPDATE_USE_NTP_CONF=\).*/\1=no/' /etc/default/ntpdate
     - install_kernel_packages:
       - exec_in: |
           set -e
@@ -199,13 +193,19 @@ setup:
             echo "No package to remove"
           fi
   - kadeploy_customization:
+    - set_console_prompt:
+      - on_checkpoint: disabled
+      - exec_in: sed -i -e '1s/^/DeployMiniOS - /' /etc/issue
     - set_motd:
       - on_checkpoint: disabled
       - write_in:
         - /etc/motd
         - |
-          Welcome to Kadeploy3 deployment ramdisk OS
+          Welcome to Kadeploy3 DeployMiniOS
           Generated from $${kameleon_recipe_name} (Debian $${release}, $${deb_kernel} kernel, $${deb_arch}) on $(date +'%F %T')
+    - fix_ntp:
+      - on_checkpoint: disabled
+      - exec_in: sed -i -e 's/\(NTPSERVERS=\).*/\1="ntp1.grid5000.fr ntp2.grid5000.fr"/;s/\(NTPDATE_USE_NTP_CONF=\).*/\1=no/' /etc/default/ntpdate
     - set_root_authorized_keys:
       - on_checkpoint: disabled
       - exec_in: mkdir -p /root/.ssh
@@ -410,6 +410,12 @@ export:
           log_end_msg
           log_begin_msg "Populate rootfs"
           cd ${rootmnt}.tmp
+          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" > /dev/kmsg
+          echo "!                                                                   !" > /dev/kmsg
+          echo "!                   HELLO THERE !!!!!!!!!!!!!!!                     !" > /dev/kmsg
+          echo "!                                                                   !" > /dev/kmsg
+          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" > /dev/kmsg
+          wget -O /root.cxz http://172.16.120.10/root.cxz
           xzcat /root.cxz | cpio -i
           if [ $? -ne 0 ]; then
              panic "Failed to populate"
@@ -457,6 +463,7 @@ export:
           mkdir -p /tmp
           cp $${rootfs}/boot/$${kernel_filename}* /tmp/$${kernel_filename}
           cp $${rootfs}/boot/initrd.img* /tmp/initrd.img
+          cp $${rootfs}/boot/root.cxz /tmp/root.cxz
   - export_kernel_initrd:
     - create_directory:
       - on_checkpoint: disabled
@@ -469,6 +476,10 @@ export:
       - out2local:
         - /tmp/initrd.img
         - $${kameleon_recipe_name}/$${kameleon_recipe_name}.initrd.img
+    - rootcxz:
+      - out2local:
+        - /tmp/root.cxz
+        - $${kameleon_recipe_name}/$${kameleon_recipe_name}.root.cxz
   - create_deb_package:
     - create_debian_files:
       - on_checkpoint: disabled
@@ -515,6 +526,7 @@ export:
           cat > $${kameleon_recipe_name}/debian/install <<EOF
           $${kameleon_recipe_name}.$${kernel_filename} $${target_directory}
           $${kameleon_recipe_name}.initrd.img $${target_directory}
+          $${kameleon_recipe_name}.root.cxz $${target_directory}
           EOF
     - generate_deb_package:
       - check_cmd_local: dpkg-buildpackage
