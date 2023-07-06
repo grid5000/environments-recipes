@@ -57,7 +57,7 @@ global:
   # Docker image to use for the out context with debootstrap
   out_context_distro: "debian"
   out_context_release: "bookworm"
-  out_context_backports: false
+  out_context_debian_backports: false
   out_context_docker_image: "$${out_context_distro}:$${out_context_release}"
 
 bootstrap:
