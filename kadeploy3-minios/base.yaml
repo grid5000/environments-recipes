@@ -1,0 +1,180 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: A recipe that use a docker for the out context providing debootstrap
+#
+#==============================================================================
+---
+extend: ../steps/backend/$${backend}.yaml
+
+# Loads some helpful aliases (this files are located in steps/aliases/ directory)
+aliases: defaults.yaml
+
+# Custom shell environement (this files are located in steps/env/ directory)
+env:
+  - bashrc
+  - functions.sh
+
+# Global variables use by Kameleon engine and the steps
+global:
+  ## Select backend for in context isolation
+  backend: docker
+
+  # Include specific steps
+  include_steps:
+    - kadeploy3-minios
+    - $${distrib}/$${release}
+    - $${distrib}
+
+  # Docker image to use for the out context with debootstrap
+  out_context_distrib: "debian"
+  out_context_release: "bookworm"
+  out_context_docker_image: "$${out_context_distrib}:$${out_context_release}"
+  out_context_debian_backports: false
+
+  # Default hostname
+  hostname: kameleon-$${distrib}
+  # Default root password
+  root_password: kameleon
+  # Target system architecture
+  arch: x86_64
+  deb_arch: amd64
+  deb_kernel_arch: $${deb_arch}
+  # Target system distrib
+  distrib: debian
+  # Target system release
+  release: bullseye
+  # Deb mirror
+  deb_mirror_hostname: deb.debian.org
+  deb_mirror_uri: http://$${deb_mirror_hostname}/debian/
+
+  # APT config
+  apt_enable_contrib: true
+  apt_enable_nonfree: true
+
+  # Debootstrap config
+  build_packages: debootstrap
+  bootstrap_variant: minbase
+  # force use of busybox rather than klibc-utils (which breaks the mount)
+  bootstrap_packages: initramfs-tools busybox gnupg
+
+  # Lighten debian package installation (no man/doc/...)
+  enable_lighten: true
+
+  root_authorized_keys: $${kameleon_data_dir}/kadeploy_root_authorized_keys
+
+  arch_specific_packages: kexec-tools grub-pc grub-efi-amd64-bin
+  use_backports: true
+  hwraid_release: $${release}
+  #deb_kernel: default
+  # -> other option: bpo - e.g. set on command line using "-g deb_kernel:bpo"
+  deb_kernel: bpo
+  kernel_filename: vmlinuz
+  tmpfs_size: 1G
+  firmware_packages: firmware-linux firmware-bnx2 firmware-bnx2x firmware-qlogic
+  # haveged is used to provide more entropy during boot
+  system_packages: ash systemd systemd-sysv haveged
+  net_packages: ifupdown ntpdate isc-dhcp-client openssh-client openssh-server taktuk netcat
+  linux_fs_packages: e2fsprogs xfsprogs btrfs-progs
+  other_fs_packages: dosfstools #ntfs-3g
+  archive_file_packages: tar bzip2 xz-utils zstd
+  disk_packages: hdparm parted fdisk
+  ruby_packages: ruby ruby-net-ssh ruby-net-ssh-multi ruby-daemons
+  ruby_packages_bpo:
+  to_remove_packages:
+  embed_minios_ramdisk_archive: true
+  target_directory: /grid5000/kadeploy-kernels
+
+  # GPG keyserver
+  gpg_keyserver: keyserver.ubuntu.com
+
+bootstrap:
+  - "@base"
+  - install_build_packages
+
+setup:
+  - debootstrap
+  - prepare_system_fs_for_chroot
+  - debootstrap_post_config
+  - configure_debian
+  - install_required_packages
+  - install_minios_customizations
+  - create_minios_ramdisk_system
+  - create_minios_initramfs
+export:
+  - move_files_to_out:
+    - copy_files:
+      - exec_out: |
+          set -e
+          mkdir -p /tmp
+          cp $${rootfs}/boot/$${kernel_filename}* /tmp/$${kernel_filename}
+          cp $${rootfs}/boot/initrd.img* /tmp/initrd.img
+          cp $${rootfs}/boot/root.cxz /tmp/root.cxz
+  - export_kernel_initrd:
+    - create_directory:
+      - on_checkpoint: disabled
+      - exec_local: mkdir -p $${kameleon_recipe_name}
+    - kernel:
+      - out2local:
+        - /tmp/$${kernel_filename}
+        - $${kameleon_recipe_name}/$${kameleon_recipe_name}.$${kernel_filename}
+    - initrd:
+      - out2local:
+        - /tmp/initrd.img
+        - $${kameleon_recipe_name}/$${kameleon_recipe_name}.initrd.img
+    - rootcxz:
+      - out2local:
+        - /tmp/root.cxz
+        - $${kameleon_recipe_name}/$${kameleon_recipe_name}.root.cxz
+  - create_deb_package:
+    - create_debian_files:
+      - on_checkpoint: disabled
+      - check_cmd_local: dch
+      - exec_local: |
+          set -e
+          rm -rf $${kameleon_recipe_name}/debian
+          mkdir -p $${kameleon_recipe_name}/debian
+          export DEBEMAIL="Grid'5000 team <support-staff@lists.grid5000.fr>"
+          (cd $${kameleon_recipe_name} && \
+           dch --create \
+               --package $${kameleon_recipe_name} \
+               --newversion 1.$(date +%Y%m%d) \
+               "Generated with kameleon using recipe $${kameleon_recipe_name}")
+          cat > $${kameleon_recipe_name}/debian/control <<EOF
+          Source: $${kameleon_recipe_name}
+          Section: admin
+          Priority: optional
+          Maintainer: Grid'5000 team <support-staff@lists.grid5000.fr>
+          Build-Depends: debhelper (>= 9)
+          Standards-Version: 3.9.8
+          
+          Package: $${kameleon_recipe_name}
+          Architecture: all
+          Depends: ${shlibs:Depends}, ${misc:Depends}
+          Description: kadeploy3 deploy kernel
+           Deploymenet kernel used by kadeploy3
+          EOF
+          echo 9 > $${kameleon_recipe_name}/debian/compat
+          cat > $${kameleon_recipe_name}/debian/copyright <<EOF
+          Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+          Upstream-Name: $${kameleon_recipe_name}
+          Source: https://github.com/oar-team/kameleon-recipes/tree/master/kadeploy3_deploy_kernel_from_scratch
+          EOF
+          cat > $${kameleon_recipe_name}/debian/rules <<'EOF'
+          #!/usr/bin/make -f
+          
+          %:
+          	dh $@
+          EOF
+          chmod +x $${kameleon_recipe_name}/debian/rules
+          mkdir -p $${kameleon_recipe_name}/debian/source
+          echo "3.0 (native)" > $${kameleon_recipe_name}/debian/source/format
+          cat > $${kameleon_recipe_name}/debian/install <<EOF
+          $${kameleon_recipe_name}.$${kernel_filename} $${target_directory}
+          $${kameleon_recipe_name}.initrd.img $${target_directory}
+          $${kameleon_recipe_name}.root.cxz $${target_directory}
+          EOF
+    - generate_deb_package:
+      - check_cmd_local: dpkg-buildpackage
+      - exec_local: (cd $${kameleon_recipe_name} && dpkg-buildpackage -uc -us)
