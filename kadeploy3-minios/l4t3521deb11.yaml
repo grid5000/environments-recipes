@@ -1,0 +1,428 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Simple recipe that use a docker image directly.
+#
+# It is made to conserve docker layers for the exported image.  No setup section
+# is provided: You have to implement yours
+#
+#==============================================================================
+---
+extend: base.yaml
+
+# Loads some helpful aliases (this files are located in steps/aliases/ directory)
+aliases: defaults.yaml
+
+# Custom shell environement (this files are located in steps/env/ directory)
+env:
+  - bashrc
+  - functions.sh
+
+global:
+  # You should specify this in the global of your recipe
+  out_context_distrib: "ubuntu"
+  out_context_release: "20.04"
+
+  target_docker_image: "$${kameleon_recipe_name}"
+
+  build_packages: debootstrap wget
+  arch: aarch64
+  deb_arch: arm64
+  deb_kernel: other
+  deb_kernel_arch: $${arch}
+  arch_specific_packages:
+  firmware_packages:
+
+  tmpfs_size: 8G
+  rootfs: "$${l4t_dir}/rootfs"
+  embed_minios_ramdisk_archive: false
+  workdir: "/nvidia"
+  l4t_dir: "$${workdir}/Linux_for_Tegra"
+  nvidia_BSP_url: "https://developer.nvidia.com/downloads/jetson-linux-r3521-aarch64tbz2"
+  cross_compilation_toolchain_url: "https://developer.nvidia.com/embedded/jetson-linux/bootlin-toolchain-gcc-93"
+  cross_compilation_toolchain_dir: "$${workdir}/toolchain"
+  cti_BSP_url: "https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-35.2.1-V001.tgz"
+  cti_kernel_sources_url: "https://www.usesintegrated.com/files/xavier/r35.2.1/13264_cti-l4t-src-agx-35.2.1-v001.tgz"
+  l4t_kernel_version: "5.10"
+  l4t_kernel_config_file: "cti_tegra_defconfig"
+  debian_kernel_pkg_url: "http://ftp.fr.debian.org/debian/pool/main/l/linux/linux-image-5.10.0-20-arm64-unsigned_5.10.158-2_arm64.deb"
+  kernel_src_dir: $${l4t_dir}/src/kernel/kernel-$${l4t_kernel_version}
+  kernel_build_dir: $${l4t_dir}/src/kernel/build
+  kernel_version_suffix: -l4tdeb11
+  kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
+
+bootstrap:
+  - "@base"
+setup:
+  - install_nvidia_BSP:
+    - download_and_extract_nvidia_BSP:
+      - exec_out: mkdir -p $${workdir}
+      - exec_out: wget -O- -q "$${nvidia_BSP_url}" | tar -C $${workdir} -jxv
+  - debootstrap
+  - install_cti_BSP:
+    - download_and extract_cti_BSP:
+      - exec_out: wget -O- -q "$${cti_BSP_url}" | tar -C $${l4t_dir} -zxv
+      - exec_out: cd $${l4t_dir}/CTI-L4T && ./install.sh
+  - fix_cti_BSP:
+    - fix_kernel_console:
+      - exec_out: sed -i.bak -e 's/console=tty0 //' $${l4t_dir}/cti-agx.conf.common
+  - install_kernel_sources:
+    - install_cross_compilation_chain:
+      - exec_out: mkdir -p "$${cross_compilation_toolchain_dir}"
+      - exec_out: wget -O- -q "$${cross_compilation_toolchain_url}" | tar -C $${cross_compilation_toolchain_dir} -zxv
+    - download_and_extract_cti_kernel_sources:
+      - exec_out: mkdir -p $${l4t_dir}/src
+      - exec_out: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${l4t_dir}/src/ -zxv
+    - download_and_extract_debian_kernel_config:
+      - exec_out: mkdir -p $${workdir}/tmp
+      - exec_out: wget -O- -q $${debian_kernel_pkg_url} | dpkg -X - $${workdir}/tmp
+      - exec_out: cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
+      - exec_out: rm -r $${workdir}/tmp
+  - build_kernel:
+    - install_tools:
+      - apt-get_out: install make gcc xxd flex bison python3 bc rsync kmod libelf-dev libssl-dev
+    - merge_kernel_configs:
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}/arch/arm64/configs
+          cat debian_defconfig $${l4t_kernel_config_file} > debian_l4t_defconfig
+      - exec_out: |
+          set -e
+          $${kernel_make_cmd} debian_l4t_defconfig
+          cp $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
+          $${kernel_make_cmd} debian_l4t_defconfig
+          diff --brief $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
+    - disable_bogus_configs:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
+          for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
+            ./scripts/config --disable $c
+          done
+    - force_builtin_nfs_support:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          ./scripts/config --enable NFS_V4
+          ./scripts/config --enable NFS_V3
+          ./scripts/config --enable NFS_V2
+    - force_module_for_dummy:
+      - on_checkpoint: disabled
+      - exec_out: |
+          cd $${kernel_src_dir}
+          ./scripts/config --module DUMMY
+    - force_nvethernet_as_module:
+      - on_checkpoint: disabled
+      - exec_out: |
+          cd $${kernel_src_dir}
+          ./scripts/config --module NVETHERNET
+          ./scripts/config --enable NVETHERNET_SELFTESTS
+    - disable_useless_kernel_support:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          ./scripts/config --disable USB_SUPPORT
+          ./scripts/config --disable WLAN
+          ./scripts/config --disable WIRELESS
+          ./scripts/config --disable WIMAX
+          ./scripts/config --disable BT
+          ./scripts/config --disable NFC
+          ./scripts/config --disable HAMRADIO
+          ./scripts/config --disable SOUND
+          ./scripts/config --disable RFKILL
+          ./scripts/config --disable CAN
+          ./scripts/config --disable W1
+          ./scripts/config --disable GNSS
+          ./scripts/config --disable PARPORT
+          #./scripts/config --disable MEDIA_SUPPORT
+          ./scripts/config --disable MEMSTICK
+          ./scripts/config --disable SOUNDWIRE
+    #- dive_in:
+    #  - apt-get_out: install libncurses-dev
+    #  - exec_local: |
+    #      echo "Kernel make command: $${kernel_make_cmd}"
+    #  - breakpoint
+    - build_kernel_objects:
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          $${kernel_make_cmd} Image
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          $${kernel_make_cmd} dtbs
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          $${kernel_make_cmd} modules
+    - install_kernel_objects:
+      - exec_out: |
+          cp $${kernel_src_dir}/arch/arm64/boot/Image $${l4t_dir}/kernel/
+      - exec_out: |
+          cp $${kernel_src_dir}/arch/arm64/boot/dts/nvidia/* $${l4t_dir}/kernel/dtb/
+      - exec_out: |
+          set -e
+          KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
+          $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs}/usr/src/linux-headers-$KERNEL_RELEASE" headers_install
+          tar -C $${rootfs}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE
+      - exec_out: |
+          set -e
+          KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
+          $${kernel_make_cmd} INSTALL_MOD_PATH="$${rootfs}" modules_install
+          ln -sfn /usr/src/linux-headers-$KERNEL_RELEASE $${rootfs}/lib/modules/$KERNEL_RELEASE/build
+          tar -C $${rootfs} -jcvf $${l4t_dir}/kernel/kernel_supplements.tbz2 lib/modules/$KERNEL_RELEASE
+  - setup_for_flashing:
+    - install_required_debs:
+      - apt-get_out: install usbutils udev python-is-python3 python3-yaml lz4 cpio openssh-client libxml2-utils perl-modules-5.30 dosfstools
+  - prepare_system_fs_for_chroot
+  - debootstrap_post_config
+  - configure_debian
+  - install_required_packages
+  - install_minios_customizations
+  - create_minios_initramfs:
+    - install_busybox:
+      - apt-get_in: install busybox iputils-ping ethtool
+    - configure_initramfs:
+      - on_checkpoint: disabled
+      - exec_in: |
+          sed -i \
+            -e 's/^MODULES=.*/MODULES=list/' \
+            -e 's/^BUSYBOX=.*/BUSYBOX=y/' \
+            /etc/initramfs-tools/initramfs.conf
+          echo nvethernet > /etc/initramfs-tools/modules
+    - add_additional_bits_hook:
+      - on_checkpoint: disabled
+      - exec_in: |
+          set -e
+          cat <<'EOF' > /etc/initramfs-tools/hooks/copy-additional-bits
+          #!/bin/sh
+          PREREQ=""
+          prereqs()
+          {
+               echo "$PREREQ"
+          }
+          
+          case $1 in
+          prereqs)
+               prereqs
+               exit 0
+               ;;
+          esac
+          
+          . /usr/share/initramfs-tools/hook-functions
+          # Begin real processing below this line
+          
+          # Enable DNS lookups
+          copy_file binary /lib/$${arch}-linux-gnu/libnss_dns.so.2 /lib/$${arch}-linux-gnu/
+          echo "hosts: files dns" >> $DEST/etc/nsswitch.conf
+          # Add ethtool
+          copy_file binary /lib/$${arch}-linux-gnu/libmnl.so.0 /lib/$${arch}-linux-gnu/
+          copy_file binary /usr/sbin/ethtool /usr/sbin/
+          EOF
+          chmod 755 /etc/initramfs-tools/hooks/copy-additional-bits
+    - add_functions_patch:
+      - on_checkpoint: disabled
+      - exec_in: |
+          cat <<'EOF' > /etc/initramfs-tools/scripts/functions.patch
+          +++ /tmp/functions	2023-07-13 16:48:39.828909966 +0200
+          @@ -291,13 +291,13 @@
+           		log_end_msg
+           	fi
+          
+          -	wait_for_udev 10
+          +	wait_for_udev "${UDEV_WAIT:-10}"
+          
+           	# support ip options see linux sources
+           	# Documentation/filesystems/nfs/nfsroot.txt
+           	# Documentation/frv/booting.txt
+          
+          -	for ROUNDTTT in 2 3 4 6 9 16 25 36 64 100; do
+          +	for roundttt in ${ROUNDTTT:-2 3 4 6 9 16 25 36 64 100}; do
+          
+           		# The NIC is to be configured if this file does not exist.
+           		# Ip-Config tries to create this file and when it succeds
+          @@ -312,26 +312,25 @@
+           			;;
+           		""|on|any)
+           			# Bring up device
+          -			ipconfig -t ${ROUNDTTT} "${DEVICE}"
+          +			ipconfig -t "${roundttt}" "${DEVICE}"
+           			;;
+           		dhcp|bootp|rarp|both)
+          -			ipconfig -t ${ROUNDTTT} -c "${IP}" -d "${DEVICE}"
+          +			ipconfig -t "${roundttt}" -c "${IP}" -d "${DEVICE}"
+           			;;
+           		*)
+          -			ipconfig -t ${ROUNDTTT} -d "$IP"
+          +			ipconfig -t "${roundttt}" -d "$IP"
+           			;;
+           		esac
+           	done
+          
+          -	# source ipconfig output
+          -	if [ -n "${DEVICE}" ]; then
+          -		# source specific bootdevice
+          -		. "/run/net-${DEVICE}.conf"
+          -	else
+          -		# source any interface...
+          -		# ipconfig should have quit after first response
+          -		. /run/net-*.conf
+          -	fi
+          +	# source ipconfig output (first try specific bootdevice, then any interface...
+          +	# ipconfig should have quit after first response
+          +	for x in /run/net-"${DEVICE}".conf /run/net-*.conf ; do
+          +		if [ -e "$x" ]; then
+          +			. "$x"
+          +			break
+          +		fi
+          +	done
+           }
+          
+           # Wait for queued kernel/udev events
+          EOF        
+      - exec_in: |
+          set -e
+          cat <<'EOF' > /etc/initramfs-tools/scripts/local-top/apply-functions-patch
+          #!/bin/sh
+          PREREQ=""
+          prereqs()
+          {
+               echo "$PREREQ"
+          }
+          case $1 in
+          prereqs)
+               prereqs
+               exit 0
+               ;;
+          esac
+          . /scripts/functions
+          # Begin real processing below this line
+          
+          log_begin_msg "Apply patch"
+          # Ugly workaround/customization for the network configuration loop
+          cp /scripts/functions /scripts/functions.orig
+          patch -i /scripts/functions.patch /scripts/functions
+          log_end_msg
+          EOF
+          chmod 755 /etc/initramfs-tools/scripts/local-top/apply-functions-patch
+    - add_remote_initramfs_script:
+      - on_checkpoint: disabled
+      - exec_in: | 
+          set -e
+          cat <<'EOF' > /etc/initramfs-tools/scripts/local-top/handle-remote-initramfs-script
+          #!/bin/sh
+          PREREQ=""
+          prereqs()
+          {
+               echo "$PREREQ"
+          }
+          case $1 in
+          prereqs)
+               prereqs
+               exit 0
+               ;;
+          esac
+          . /scripts/functions
+          # Begin real processing below this line
+          
+          log_begin_msg "Configure networking"
+          IP=dhcp
+          DEVICE=eth0
+          for x in $(< /proc/cmdline); do
+            case $x in
+              ip=*)
+                IP=${ip#ip=}
+                ;;
+              ETH_DEV=*)
+                DEVICE=${ETH_DEV#ETH_DEV=}
+                ;;
+            esac
+          done
+          # Remove if file exists (typically when debugging)
+          rm -f /run/net-${DEVICE}.conf
+          UDEV_WAIT=30
+          ROUNDTTT="15 15"
+          while ! [ -e /run/net-${DEVICE}.conf ]; do
+            configure_networking
+            if ! [ -e /run/net-${DEVICE}.conf ]; then
+              log_failure_msg "Failed to configure networking. Reload driver and try again..."
+              # Ugly hardcoded unload/reload of the network driver
+              rmmod nvethernet
+              rmmod ptp
+              rmmod pps_core
+              sleep 1
+              modprobe nvethernet
+              sleep 1
+            fi
+          done
+          echo "domain $DNSDOMAIN" >> /etc/resolv.conf
+          echo "search $DOMAINSEARCH" >> /etc/resolv.conf
+          echo "nameserver $IPV4DNS0" >> /etc/resolv.conf
+          echo "nameserver $IPV4DNS1" >> /etc/resolv.conf
+          log_end_msg
+          URL=http://${ROOTSERVER}/initramfs-script/${IPV4ADDR}
+          log_begin_msg "Fetch initramfs remote script from $URL..."
+          if ! wget -q -O /initramfs-script.sh http://${ROOTSERVER}/initramfs-script/${IPV4ADDR}; then
+            panic "Could not fetch remote initramfs script."
+          fi
+          log_end_msg
+          log_begin_msg "Execute initramfs remote script..."
+          if ! sh /initramfs-script.sh; then
+            panic "Could not execute remote initramfs script."
+          fi
+          log_end_msg
+          EOF
+          chmod 755 /etc/initramfs-tools/scripts/local-top/handle-remote-initramfs-script
+    - generate_initrd:
+      - exec_in: |
+          set -e
+          KERNEL_RELEASE=$(cd /lib/modules/ && ls)
+          mkinitramfs -o /boot/initrd.img $KERNEL_RELEASE
+    - move_initrd:
+      - on_checkpoint: disabled
+      - exec_out: |
+          mv $${rootfs}/boot/initrd.img $${l4t_dir}/bootloader/$${distrib}_initrd.img
+    - dive_in_again:
+      - apt-get_out: install iproute2
+      - exec_out: |
+          echo
+          echo '$ scp $${l4t_dir}/kernel/Image $${l4t_dir}/bootloader/$${distrib}_initrd.img root@estats-9.toulouse.grid5000.fr:'
+      - breakpoint
+  - prepare_nvidia_flash:
+    - create_profile:
+      - on_checkpoint: disabled
+      - exec_out: |
+          cp $${l4t_dir}/cti/xavier/rogue/base.conf $${l4t_dir}/cti/xavier/rogue/g5k.conf
+          #echo 'CMDLINE_ADD="mminit_loglevel=4 console=ttyTCU0,115200n8 fbcon=map:0 net.ifnames=0 rootfstype=ext4 sdhci_tegra.en_boot_part_access=1 systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true";' >> $${l4t_dir}/cti/xavier/rogue/g5k.conf
+          echo 'CMDLINE_ADD="mminit_loglevel=4 console=ttyTCU0,115200n8 fbcon=map:0 root=/dev/rootdev sdhci_tegra.en_boot_part_access=1 systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true panic=5";' >> $${l4t_dir}/cti/xavier/rogue/g5k.conf
+    #- prebuild_flash_image:
+    #  - exec_out: |
+    #      set -e
+    #      cd $${l4t_dir}
+    #      ./flash.sh -I bootloader/$${distrib}_initrd.img --no-flash cti/xavier/rogue/g5k mmcblk0p1
+
+export:
+  - export_docker_image_ready_to_flash:
+    - commit_and_configure_to_flash:
+      - exec_local: |
+          set -e
+          # Stop the current docker container so that we can configure the image
+          docker stop $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null || docker kill $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
+          # Create the final version of the image, ready to flash
+          docker commit -c "ENV USER=root" -c "WORKDIR $${l4t_dir}" -c "ENTRYPOINT ./flash.sh" $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $${target_docker_image} > /dev/null
+          # Delete the container
+          docker rm $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
+          rm -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
+    - explain_how_to_flash:
+      - exec_local: |
+          echo 'You can now flash a Xavier module with the Kadeploy miniOS, using:'
+          echo
+          echo '$ docker run -it --rm --privileged -v /dev/bus/usb:/dev/bus/usb/ -v /dev:/dev $${target_docker_image} -I bootloader/$${distrib}_initrd.img cti/xavier/rogue/g5k mmcblk0p1'
+          echo
+          echo 'To test a kernel/initrd with grub, copy to a node:'
+          echo '$ scp rootfs/boot/Image rootfs/boot/initrd root@estats-9.toulouse.grid5000.fr:'
