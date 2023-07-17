@@ -333,20 +333,26 @@ setup:
           log_begin_msg "Configure networking"
           IP=dhcp
           DEVICE=eth0
+          UDEV_WAIT=30
+          ROUNDTTT="15 15"
           for x in $(< /proc/cmdline); do
             case $x in
               ip=*)
-                IP=${ip#ip=}
+                IP=${x#ip=}
                 ;;
               ETH_DEV=*)
-                DEVICE=${ETH_DEV#ETH_DEV=}
+                DEVICE=${x#ETH_DEV=}
+                ;;
+              ROUNDTTT=*)
+                ROUNDTTT=${x#ROUNDTTT=}
+                ;;
+              UDEV_WAIT=*)
+                UDEV_WAIT=${x#UDEV_WAIT=}
                 ;;
             esac
           done
           # Remove if file exists (typically when debugging)
           rm -f /run/net-${DEVICE}.conf
-          UDEV_WAIT=30
-          ROUNDTTT="15 15"
           while ! [ -e /run/net-${DEVICE}.conf ]; do
             configure_networking
             if ! [ -e /run/net-${DEVICE}.conf ]; then
