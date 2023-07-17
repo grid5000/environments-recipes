@@ -84,6 +84,9 @@
           DISK_TOUT=*)
             disk_timeout=${p#DISK_TOUT=}
           ;;
+          NTP)
+            do_ntp=1
+          ;;
         esac
       done
       echo "eth_dev: ${eth_dev:=eth0}"
@@ -124,6 +127,10 @@
       then
         echo "failed: no DHCP lease for $eth_dev."
         exit 1
+      fi
+      if [ -n "$do_ntp" ]; then
+        echo "Call ntpdate."
+        ntpdate-debian
       fi
       mkdir -p /rambin /mnt/dest /mnt/tmp
       echo "Listen on TCP port 25300 for kadeploy3 server."
