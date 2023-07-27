@@ -1,0 +1,147 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Recipe to build a custom Grid'5000 environment on top of an
+# existing pre-built one (such as one supported by the technical team).
+# The recipe takes a environment name, and first extracts its image tarball
+# before letting define some customizations in the setup section. It then
+# export the new environment. This recipe does not rebuild the Grid'5000
+# environment from scratch: neither the distribution installer nor Puppet is
+# involved. The recipe must be built on a Grid'5000 node.
+#
+#==============================================================================
+# This recipe extends another. To look at the step involed, run:
+#   kameleon dryrun debiantesting-arm64-custom.yaml
+# To see the variables that you can override, use the following command:
+#   kameleon info debiantesting-arm64-custom.yaml
+---
+extend: base.yaml
+
+global:
+  ### Grid'5000 environment information
+  ## (Uncomment and change any line if needed)
+
+  ## Frontend to run kaenv3 on
+  #grid5000_frontend: "frontend"
+
+  ## Site used in the build
+  grid5000_site: "toulouse"
+
+  ## Environment to build from
+  grid5000_environment_import_name: "debian11-arm64-std"
+  #grid5000_environment_import_user: "deploy"
+  grid5000_environment_import_arch: "aarch64"
+  #grid5000_environment_import_version: ""
+
+  ## New environment description
+  #grid5000_environment_export_name: "$${kameleon_recipe_name}"
+  #grid5000_environment_export_format: "tar.zst"
+  #grid5000_environment_export_description: "Customized $${grid5000_environment_import_name}"
+
+  ## Set where to store the environment and the assiated kadeploy URL base
+  #grid5000_environment_export_dir: "$HOME/public/"
+  #grid5000_environment_export_baseurl: "local://$HOME/public/"
+
+  ## Optionaly, the environment postinstall script can be changed, e.g. to
+  ## enable NFS homes, LDAP accounts, if not enabled in the imported env.
+  #grid5000_environment_export_postinstall_script: "g5k-postinstall --net debian --fstab nfs --restrict-user current"
+
+  ## Optionaly, an additional postinstall can be given, e.g. to do some custom
+  ## operations. Use the following variables to set the archive name and script.
+  #grid5000_environment_export_additional_postinstall_archive: "$${kameleon_recipe_name}-additional-postinstall.tar.gz"
+  #grid5000_environment_export_additional_postinstall_script: "additional_postinstall.sh"
+  ## The recipe will have to prepare the additional postinstall content in a
+  ## directory to create in the local context and name "additional_postinstall"
+  ## by default (next line to change it). The archive is created by the export.
+  #grid5000_environment_export_additional_postinstall_dir: "additional_postinstall"
+
+  ### Target machine/CPU architecture
+  ## If building an environment for another architecture than x86_64, uncomment
+  ## and adapt the next lines.
+  ## The following works for ARM64 machines, just uncomment for such machines.
+  arch: aarch64
+  qemu_arch: aarch64
+
+  backend: docker
+  out_context_docker_image: l4t3531deb11:latest
+  workdir: "/nvidia"
+  l4t_dir: "$${workdir}/Linux_for_Tegra"
+  rootfs: "$${l4t_dir}/rootfs"
+  g5k_check_deb_file: "../../g5k-checks_0.11.11_arm64.deb"
+  upstream_image: "$${kameleon_cwd}/g5k-image.tar"
+
+bootstrap:
+  - "@base"
+  - prepare_rootfs:
+    - install_necessary_debs:
+      - apt-get_out: install zstd lbzip2
+  - fetch_grid5000_image
+  - deploy_image_in_rootfs:
+    - copy_image_in_out:
+      - local2out:
+        - $${upstream_image}
+        - $${upstream_image}
+    - extract_image_in_rootfs:
+      - exec_out: tar -C $${rootfs} -xf $${upstream_image}
+    - remove_image:
+      - exec_out: rm $${upstream_image}
+setup:
+  - apply_l4t_binaries:
+    - apply_l4t_binaries:
+      - exec_out: $${l4t_dir}/apply_binaries.sh -r $${rootfs} --target-overlay
+  - prepare_system_fs_for_chroot
+  - fix_os_after_nvidia_script:
+    - rebuild_ld_cache:
+      - exec_in: ldconfig
+    - disable_nvidia_first_boot:
+      - exec_in: rm /etc/nv/nvfirstboot
+    - disable_unwanted_tegra_systemd:
+      - exec_in: systemctl disable nvargus-daemon.service
+      - exec_in: systemctl disable nv-l4t-usb-device-mode.service
+      - exec_in: systemctl disable nv-l4t-bootloader-config.service
+    - configure_nvpmodel_all_core:
+      - exec_in: |
+          set -e
+          dpkg-divert --no-rename /etc/systemd/nvpmodel.sh
+          sed -i.distrib -e 's@^\([[:space:]]*/usr/sbin/nvpmodel\) -f /etc/nvpmodel.conf@&\n\1 -m 3@' /etc/systemd/nvpmodel.sh
+  - g5kify_os:
+    - truify_ipmitool:
+      - exec_in: |
+          set -e
+          dpkg-divert --rename /usr/bin/ipmitool
+          ln -s /bin/true /usr/bin/ipmitool
+    - upgrade_g5k_check:
+      - local2in:
+        - $${g5k_check_deb_file}
+        - /tmp/g5k-check.deb
+      - exec_in: |
+          dpkg --force-confnew -i /tmp/g5k-check.deb
+  - copy_kernel_sources_in_rootfs:
+    - copy_files:
+      - exec_out: |
+          KERNEL_RELEASE=$(tar -tvf $${l4t_dir}/kernel/kernel_supplements.tbz2 | head -n 1 | sed -e 's@^.*lib/modules/\([^/]\+\).*$@\1@' || true)
+          cp -a $${l4t_dir}/src/kernel/kernel-* $${rootfs}/usr/src/linux-kbuild-$KERNEL_RELEASE
+          ln -sfn /usr/src/linux-kbuild-$KERNEL_RELEASE $${rootfs}/lib/modules/$KERNEL_RELEASE/source
+export:
+  - create_new_grid5000_image:
+    - create_tarball:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          declare -a tar_cmd
+          tar_cmd=(tar -C $${rootfs} --zstd -cvf $${appliance_filename}.$${appliance_formats})
+          for i in $${appliance_tar_excludes}; do
+            tar_cmd=("${tar_cmd[@]}" "--exclude='$i'")
+          done
+          tar_cmd=("${tar_cmd[@]}" .)
+          eval "${tar_cmd[@]}"
+    - copy2local:
+      - on_checkpoint: disabled
+      - out2local:
+        - $${appliance_filename}.$${appliance_formats}
+        - $${appliance_filename}.$${appliance_formats}
+    - remove_file_from_out:
+      - on_checkpoint: disabled
+      - exec_out: rm -f $${appliance_filename}.$${appliance_formats}
+  - create_kadeploy_environment
