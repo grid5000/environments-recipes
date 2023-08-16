@@ -121,6 +121,7 @@ setup:
           cd $${kernel_src_dir}
           ./scripts/config --module NVETHERNET
           ./scripts/config --enable NVETHERNET_SELFTESTS
+          ./scripts/config --module MICREL_PHY
     - disable_useless_kernel_support:
       - on_checkpoint: disabled
       - exec_out: |
@@ -142,11 +143,11 @@ setup:
           #./scripts/config --disable MEDIA_SUPPORT
           ./scripts/config --disable MEMSTICK
           ./scripts/config --disable SOUNDWIRE
-    #- dive_in:
-    #  - apt-get_out: install libncurses-dev
-    #  - exec_local: |
-    #      echo "Kernel make command: $${kernel_make_cmd}"
-    #  - breakpoint
+    - dive_in:
+      - apt-get_out: install libncurses-dev
+      - exec_local: |
+          echo "Kernel make command: $${kernel_make_cmd}"
+      - breakpoint
     - build_kernel_objects:
       - exec_out: |
           set -e
@@ -194,7 +195,8 @@ setup:
             -e 's/^MODULES=.*/MODULES=list/' \
             -e 's/^BUSYBOX=.*/BUSYBOX=y/' \
             /etc/initramfs-tools/initramfs.conf
-          echo nvethernet > /etc/initramfs-tools/modules
+          echo micrel >> /etc/initramfs-tools/modules
+          echo nvethernet >> /etc/initramfs-tools/modules
     - add_additional_bits_hook:
       - on_checkpoint: disabled
       - exec_in: |
