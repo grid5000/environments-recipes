@@ -30,18 +30,19 @@ global:
 
   ## Environment to build from
   grid5000_environment_import_name: "debian11-arm64-std"
-  #grid5000_environment_import_user: "deploy"
+  grid5000_environment_import_user: "deploy"
   grid5000_environment_import_arch: "aarch64"
   #grid5000_environment_import_version: ""
 
   ## New environment description
   #grid5000_environment_export_name: "$${kameleon_recipe_name}"
-  #grid5000_environment_export_format: "tar.zst"
-  #grid5000_environment_export_description: "Customized $${grid5000_environment_import_name}"
+  grid5000_environment_export_format: "tar.zst"
+  grid5000_environment_export_description: "Customized $${grid5000_environment_import_name} for Nvidia Tegra"
+  grid5000_environment_export_author: "deploy"
 
   ## Set where to store the environment and the assiated kadeploy URL base
-  #grid5000_environment_export_dir: "$HOME/public/"
-  #grid5000_environment_export_baseurl: "local://$HOME/public/"
+  grid5000_environment_export_dir: "/grid5000/l4t/"
+  grid5000_environment_export_baseurl: "server:///grid5000/l4t/"
 
   ## Optionaly, the environment postinstall script can be changed, e.g. to
   ## enable NFS homes, LDAP accounts, if not enabled in the imported env.
@@ -61,7 +62,7 @@ global:
   ## and adapt the next lines.
   ## The following works for ARM64 machines, just uncomment for such machines.
   arch: aarch64
-  qemu_arch: aarch64
+  #qemu_arch: aarch64
 
   backend: docker
   out_context_docker_image: l4t3531deb11:latest
@@ -70,6 +71,7 @@ global:
   rootfs: "$${l4t_dir}/rootfs"
   g5k_check_deb_file: "../../g5k-checks_0.11.11_arm64.deb"
   upstream_image: "$${kameleon_cwd}/g5k-image.tar"
+  docker_cleanup_section: setup
 
 bootstrap:
   - "@base"
@@ -82,6 +84,8 @@ bootstrap:
       - local2out:
         - $${upstream_image}
         - $${upstream_image}
+    - clean_rootfs:
+      - exec_out: rm -rf $${rootfs} && mkdir $${rootfs}
     - extract_image_in_rootfs:
       - exec_out: tar -C $${rootfs} -xf $${upstream_image}
     - remove_image:
@@ -123,14 +127,13 @@ setup:
           KERNEL_RELEASE=$(tar -tvf $${l4t_dir}/kernel/kernel_supplements.tbz2 | head -n 1 | sed -e 's@^.*lib/modules/\([^/]\+\).*$@\1@' || true)
           cp -a $${l4t_dir}/src/kernel/kernel-* $${rootfs}/usr/src/linux-kbuild-$KERNEL_RELEASE
           ln -sfn /usr/src/linux-kbuild-$KERNEL_RELEASE $${rootfs}/lib/modules/$KERNEL_RELEASE/source
-export:
-  - create_new_grid5000_image:
+  - create_new_kadeploy_image:
     - create_tarball:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
           declare -a tar_cmd
-          tar_cmd=(tar -C $${rootfs} --zstd -cvf $${appliance_filename}.$${appliance_formats})
+          tar_cmd=(tar -C $${rootfs} --zstd -cvf $${appliance_filename}.$${grid5000_environment_export_format})
           for i in $${appliance_tar_excludes}; do
             tar_cmd=("${tar_cmd[@]}" "--exclude='$i'")
           done
@@ -139,9 +142,10 @@ export:
     - copy2local:
       - on_checkpoint: disabled
       - out2local:
-        - $${appliance_filename}.$${appliance_formats}
-        - $${appliance_filename}.$${appliance_formats}
+        - $${appliance_filename}.$${grid5000_environment_export_format}
+        - $${appliance_filename}.$${grid5000_environment_export_format}
     - remove_file_from_out:
       - on_checkpoint: disabled
-      - exec_out: rm -f $${appliance_filename}.$${appliance_formats}
+      - exec_out: rm -f $${appliance_filename}.$${grid5000_environment_export_format}
+export:
   - create_kadeploy_environment
