@@ -19,10 +19,15 @@ global:
   deb_kernel_arch: $${deb_arch}
   deb_kernel: other
   arch_specific_packages: kexec-tools grub-efi-arm64 
-  out_context_docker_image: l4t3521-deb11
+  #  out_context_docker_image: l4t3531deb11
 
   ubuntu_deb_url_dpkg: http://ports.ubuntu.com/ubuntu-ports/pool/main/d/dpkg/dpkg_1.19.7ubuntu3.2_arm64.deb
-  ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.2.1-20230124153320_arm64.deb
+  #ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.2.1-20230124153320_arm64.deb
+  ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.3.1-20230319081403_arm64.deb
+  l4t_kernel_packages: nvidia-l4t-firmware nvidia-l4t-xusb-firmware
+  l4t_kernel_version: 5.10.104-tegra
+  cti_BSP_url: https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-35.3.1-V001.tgz
+  cti_kernel_package: nvidia-l4t-kernel_$${l4t_kernel_version}-*_arm64.deb
 
 bootstrap:
   - "@base"
@@ -37,8 +42,8 @@ setup:
     # them not compatible with Debian's dpkg-deb tool. We need to install
     # Ubuntu's one. Fortunately the deb package of Ubuntu's dpkg is compatible
     # with Debian's dpkg however.
-    - install_wget:
-      - exec_in: apt-get install -y --force-yes wget
+    - install_utils:
+      - apt-get_in: install wget pv
     - install_ubuntu_dpkg:
       - on_checkpoint: disabled
       - exec_in: |
@@ -47,35 +52,45 @@ setup:
           # apt download fails if _apt cannot access the download location
           chown _apt deb
           chmod 755 /root
-          UBUNTU_DEB_URL_DPKG=$${ubuntu_deb_url_dpkg}
-          wget $UBUNTU_DEB_URL_DPKG -O deb/${UBUNTU_DEB_URL_DPKG##*/}
-          dpkg-deb -x deb/${UBUNTU_DEB_URL_DPKG##*/} ubuntu
+          wget $${ubuntu_deb_url_dpkg} -O deb/dpkg-ubuntu.deb
+          dpkg-deb -x deb/dpkg-ubuntu.deb ubuntu
+          rm deb/dpkg-ubuntu.deb
     - install_nvidia_l4t_source:
       - exec_in: |
-          UBUNTU_DEB_URL_L4T_APT_SOURCE=$${ubuntu_deb_url_l4t_apt_source}
-          wget $UBUNTU_DEB_URL_L4T_APT_SOURCE -O deb/${UBUNTU_DEB_URL_L4T_APT_SOURCE##*/}
-          ubuntu/usr/bin/dpkg-deb -x deb/${UBUNTU_DEB_URL_L4T_APT_SOURCE##*/} ubuntu
+          set -e
+          wget $${ubuntu_deb_url_l4t_apt_source} -O deb/l4t-apt-source.deb
+          ubuntu/usr/bin/dpkg-deb -x deb/l4t-apt-source.deb ubuntu
+          rm deb/l4t-apt-source.deb
           cp -av ubuntu/etc/apt /etc/
           # Force the SoC id (tegra AGX Xavier)
           sed -i -e 's/<SOC>/t194/' /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
     - update_packages_list:
-      - exec_in: apt-get update
-      - breakpoint
-    - install_nvidia_l4t_kernel:
+      - apt-get_in: update
+    - download_kernel_firmware:
       - exec_in: |
-          (cd deb; apt-get download nvidia-l4t-kernel nvidia-l4t-firmware nvidia-l4t-xusb-firmware)
-          KERNEL_VERSION=$(cd deb; ls nvidia-l4t-kernel_* | sed -e 's/^nvidia-l4t-kernel_\(.\+\)-.\+-.\+_arm64.deb$/\1/')
-          ubuntu/usr/bin/dpkg-deb -x deb/nvidia-l4t-kernel_*.deb ubuntu
-          ubuntu/usr/bin/dpkg-deb -x deb/nvidia-l4t-firmware_*.deb ubuntu
-          ubuntu/usr/bin/dpkg-deb -x deb/nvidia-l4t-xusb-firmware_*.deb ubuntu
+          (cd deb; apt-get download $${l4t_kernel_packages})
+    - unpack_kernel_package_from_cti_BSP:
+      - exec_in: |
+          set -e
+          wget --progress=dot:giga $${cti_BSP_url} -O deb/cti_BSP.tgz
+          tar -C deb/ --strip-components=2 --wildcards -zxvf deb/cti_BSP.tgz CTI-L4T/kernel/$${cti_kernel_package}
+          rm deb/cti_BSP.tgz
+    - unpack_kernel_and_firmware:
+      - exec_in: |
+          set -e
+          for f in deb/*.deb; do
+            ubuntu/usr/bin/dpkg-deb -X $f ubuntu | pv -lbnti 5 > /dev/null
+          done
+    - install_kernel_and_firmware:
+      - exec_in: |
+          set -e
           mkdir -p /boot /lib/modules /lib/firmware
-          cp -av ubuntu/boot/Image /boot/$${kernel_filename}-${KERNEL_VERSION}-arm64
-          cp -av ubuntu/lib/modules/$KERNEL_VERSION /lib/modules/$KERNEL_VERSION
-          ln -snv /lib/modules/$KERNEL_VERSION /lib/modules/${KERNEL_VERSION}-arm64
+          cp -av ubuntu/boot/Image /boot/$${kernel_filename}_$${l4t_kernel_version}-arm64
+          cp -av ubuntu/lib/modules/$${l4t_kernel_version} /lib/modules/$${l4t_kernel_version}
+          ln -snv /lib/modules/$${l4t_kernel_version} /lib/modules/$${l4t_kernel_version}-arm64
           cp -av ubuntu/lib/firmware/* /lib/firmware/
-          mkinitramfs -v ${KERNEL_VERSION}-arm64 -o /boot/initrd.img-$KERNEL_VERSION-arm64
+          mkinitramfs -v $${l4t_kernel_version}-arm64 -o /boot/initrd.img_$${l4t_kernel_version}-arm64
     - disable_nvidia_l4t_apt_source:
-      - on_checkpoint: disabled
       - exec_in: sed -i -e "s/^/#/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
 export:
   - "@base"
