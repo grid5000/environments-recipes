@@ -1,0 +1,52 @@
+- upstream_image: "$${kameleon_cwd}/upstream-image.tar"
+- grid5000_environment_import_name: ""
+- grid5000_environment_import_user: ""
+- grid5000_environment_import_version: ""
+- grid5000_environment_import_arch: "x86_64"
+- grid5000_frontend: ""
+
+- download:
+  - on_checkpoint: disabled
+  - on_bootstrap_clean:
+    - exec_local: rm -f $${upstream_image}
+  - exec_local: |
+      set -e
+      kaenv_name=$${grid5000_environment_import_name}
+      kaenv_user=$${grid5000_environment_import_user}
+      kaenv_version=$${grid5000_environment_import_version}
+      kaenv_arch=$${grid5000_environment_import_arch}
+      kaenv_remote=$${grid5000_frontend}
+      echo "Retrieve kaenv_image from Grid'5000 environment '$kaenv_name'"
+      ${kaenv_remote:+ssh $kaenv_remote }which kaenv3 > /dev/null || fail "kaenv3 command not found (${kaenv_remote:-localhost})"
+      # retrieve kaenv_image[file], kaenv_image[kind] and kaenv_image[compression] from kaenv3
+      declare -A kaenv_image
+      __callback() { local k=${2%%:*}; kaenv_image[$k]=${2#*:}; }
+      mapfile -s 1 -t -c1 -C __callback < <(${kaenv_remote:+ssh $kaenv_remote }kaenv3${kaenv_user:+ -u $kaenv_user}${kaenv_version:+ --env-version $kaenv_version}${kaenv_arch:+ --env-arch $kaenv_arch} -p $kaenv_name | grep -A3 -e '^image:' | sed -e 's/ //g')
+      [ -n "${kaenv_image[file]}" ] || fail "Failed to retrieve environment $kaenv_name"
+      if [ "${kaenv_image[compression]}" == "gzip" ]; then
+          kaenv_image[compression]="gz"
+      elif [ "${kaenv_image[compression]}" == "bzip2" ]; then
+          kaenv_image[compression]="bz2"
+      elif [ "${kaenv_image[compression]}" == "zstd" ]; then
+          kaenv_image[compression]="zst"
+      fi
+      kaenv_image[protocol]=${kaenv_image[file]%%:*}
+      kaenv_image[path]=${kaenv_image[file]#*://}
+      kaenv_image[filename]=${kaenv_image[path]##*/}
+      if [ "${kaenv_image[kind]}" != "tar" ]; then # dd or whatever
+          echo "Image format${kaenv_image[kind]:+ ${kaenv_image[kind]}} is not supported" 1>&2
+          exit 1
+      fi
+      if [ "${kaenv_image[protocol]}" == "http" -o "${kaenv_image[protocol]}" == "https" ]; then
+          wget -O $${upstream_image} ${kaenv_image[file]}
+      else
+          if  [ "${kaenv_image[protocol]}" == "server" ]; then
+              # If server:// => see if available locally (NFS) or fail, same as if local:// <=> ""
+              echo "Image is server side, try and fetch it from local file ${kaenv_image[path]}"
+          fi
+          if ! [ -r ${kaenv_image[path]} ]; then
+              echo "Cannot retrieve ${kaenv_image[file]}" 1>&2
+              exit 1
+          fi
+          cp -v ${kaenv_image[path]} $${upstream_image}
+      fi
