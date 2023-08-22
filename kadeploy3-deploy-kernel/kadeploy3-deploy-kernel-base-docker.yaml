@@ -35,8 +35,6 @@ global:
   ruby_packages_bpo:
   to_remove_packages:
   target_directory: /grid5000/kadeploy-kernels
-  # xz is greedy in memory
-  qemu_memory_size: 2G
   out_context_debian_backports: false
 
 bootstrap:
@@ -410,12 +408,6 @@ export:
           log_end_msg
           log_begin_msg "Populate rootfs"
           cd ${rootmnt}.tmp
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" > /dev/kmsg
-          echo "!                                                                   !" > /dev/kmsg
-          echo "!                   HELLO THERE !!!!!!!!!!!!!!!                     !" > /dev/kmsg
-          echo "!                                                                   !" > /dev/kmsg
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" > /dev/kmsg
-          wget -O /root.cxz http://172.16.120.10/root.cxz
           xzcat /root.cxz | cpio -i
           if [ $? -ne 0 ]; then
              panic "Failed to populate"
@@ -463,7 +455,6 @@ export:
           mkdir -p /tmp
           cp $${rootfs}/boot/$${kernel_filename}* /tmp/$${kernel_filename}
           cp $${rootfs}/boot/initrd.img* /tmp/initrd.img
-          cp $${rootfs}/boot/root.cxz /tmp/root.cxz
   - export_kernel_initrd:
     - create_directory:
       - on_checkpoint: disabled
@@ -476,10 +467,6 @@ export:
       - out2local:
         - /tmp/initrd.img
         - $${kameleon_recipe_name}/$${kameleon_recipe_name}.initrd.img
-    - rootcxz:
-      - out2local:
-        - /tmp/root.cxz
-        - $${kameleon_recipe_name}/$${kameleon_recipe_name}.root.cxz
   - create_deb_package:
     - create_debian_files:
       - on_checkpoint: disabled
@@ -526,8 +513,7 @@ export:
           cat > $${kameleon_recipe_name}/debian/install <<EOF
           $${kameleon_recipe_name}.$${kernel_filename} $${target_directory}
           $${kameleon_recipe_name}.initrd.img $${target_directory}
-          $${kameleon_recipe_name}.root.cxz $${target_directory}
           EOF
     - generate_deb_package:
       - check_cmd_local: dpkg-buildpackage
-      - exec_local: (cd $${kameleon_recipe_name} && dpkg-buildpackage -uc -us)
+      - exec_local: (cd $${kameleon_recipe_name} && dpkg-buildpackage -uc -us -Zgzip -zfast)

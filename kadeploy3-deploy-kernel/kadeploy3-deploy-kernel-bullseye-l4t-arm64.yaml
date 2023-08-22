@@ -19,7 +19,7 @@ global:
   deb_kernel_arch: $${deb_arch}
   deb_kernel: other
   arch_specific_packages: kexec-tools grub-efi-arm64 
-  #  out_context_docker_image: l4t3531deb11
+  tmpfs_size: 8G
 
   ubuntu_deb_url_dpkg: http://ports.ubuntu.com/ubuntu-ports/pool/main/d/dpkg/dpkg_1.19.7ubuntu3.2_arm64.deb
   #ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.2.1-20230124153320_arm64.deb
@@ -85,11 +85,12 @@ setup:
       - exec_in: |
           set -e
           mkdir -p /boot /lib/modules /lib/firmware
-          cp -av ubuntu/boot/Image /boot/$${kernel_filename}_$${l4t_kernel_version}-arm64
+          cp -av ubuntu/boot/Image /boot/$${kernel_filename}-$${l4t_kernel_version}-arm64
           cp -av ubuntu/lib/modules/$${l4t_kernel_version} /lib/modules/$${l4t_kernel_version}
           ln -snv /lib/modules/$${l4t_kernel_version} /lib/modules/$${l4t_kernel_version}-arm64
           cp -av ubuntu/lib/firmware/* /lib/firmware/
-          mkinitramfs -v $${l4t_kernel_version}-arm64 -o /boot/initrd.img_$${l4t_kernel_version}-arm64
+          #mkinitramfs -v $${l4t_kernel_version}-arm64 -o /boot/initrd.img-$${l4t_kernel_version}-arm64
+          touch /boot/initrd.img-$${l4t_kernel_version}-arm64
     - disable_nvidia_l4t_apt_source:
       - exec_in: sed -i -e "s/^/#/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
 export:

@@ -97,30 +97,60 @@ setup:
     - merge_kernel_configs:
       - exec_out: |
           set -e
-          set -x
+          cd $${kernel_src_dir}
+          echo "Apply Debian kernel configs:"
           $${kernel_make_cmd} debian_defconfig
+          echo "Apply L4T kernel configs:"
+          i=0
           while IFS= read l; do
-            unset v
             c=${l%=*}
             case $l in
-              CONFIG_*=y)
-                ./scripts/config --enable ${c#CONFIG_} $v
-                ;;
-              CONFIG_*=m)
-                ./scripts/config --module ${c#CONFIG_} $v
-                ;;
-             esac
-          done < $${l4t_kernel_config_file}
-          cp $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
+            CONFIG_*=y)
+              echo -n "Y"
+              ./scripts/config --enable ${c#CONFIG_}
+              ((++i))
+              ;;
+            CONFIG_*=m)
+              echo -n "M"
+              ./scripts/config --module ${c#CONFIG_}
+              ((++i))
+              ;;
+            CONFIG_*="*")
+              echo -n "S"
+              ./scripts/config --set-str ${c#CONFIG_} ${l#*=}
+              ((++i))
+              ;;
+            CONFIG_*=*)
+              echo -n "V"
+              ./scripts/config --set-val ${c#CONFIG_} "${l#*=}"
+              ((++i))
+              ;;
+            esac
+            if [ $i -ge 80 ]; then
+              echo
+              i=0
+            fi
+          done < arch/arm64/configs/$${l4t_kernel_config_file}
+          echo
+    - finalize_kernel_configs:
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          cp .config arch/arm64/configs/debian_l4t_defconfig
           $${kernel_make_cmd} debian_l4t_defconfig
-          diff --brief $${kernel_src_dir}/.config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
+          #diff --brief .config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
+    #- dive_in:
+    #  - apt-get_out: install libncurses-dev
+    #  - exec_local: |
+    #      echo "Kernel make command: $${kernel_make_cmd}"
+    #  - breakpoint
     - disable_bogus_configs:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
           cd $${kernel_src_dir}
           ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
-          for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
+          for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB MEDIA_SUPPORT GPIO_BT8XX; do
             ./scripts/config --disable $c
           done
     # NEEDED FOR NFSROOT
@@ -139,6 +169,13 @@ setup:
           set -e
           cd $${kernel_src_dir}
           ./scripts/config --module DUMMY
+    - fix_iscsi_support:
+      - on_checkpoint: disabled
+      - exec_out: |
+          set -e
+          cd $${kernel_src_dir}
+          # May be done by default with current config: to verify.
+          ./scripts/config --module NETLINK_DIAG
     - force_nvethernet_as_module:
       - on_checkpoint: disabled
       - exec_out: |
