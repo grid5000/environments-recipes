@@ -97,34 +97,36 @@ setup:
     - merge_kernel_configs:
       - exec_out: |
           set -e
+          cd $${kernel_src_dir}/arch/arm64/configs
+          cat debian_defconfig $${l4t_kernel_config_file} > debian_l4t_defconfig
+          $${kernel_make_cmd} debian_l4t_defconfig
           cd $${kernel_src_dir}
           echo "Apply Debian kernel configs:"
-          $${kernel_make_cmd} debian_defconfig
           echo "Apply L4T kernel configs:"
           i=0
           while IFS= read l; do
             c=${l%=*}
             case $l in
-            CONFIG_*=y)
-              echo -n "Y"
-              ./scripts/config --enable ${c#CONFIG_}
-              ((++i))
-              ;;
-            CONFIG_*=m)
-              echo -n "M"
-              ./scripts/config --module ${c#CONFIG_}
-              ((++i))
-              ;;
-            CONFIG_*="*")
-              echo -n "S"
-              ./scripts/config --set-str ${c#CONFIG_} ${l#*=}
-              ((++i))
-              ;;
-            CONFIG_*=*)
-              echo -n "V"
-              ./scripts/config --set-val ${c#CONFIG_} "${l#*=}"
-              ((++i))
-              ;;
+              CONFIG_*=y)
+                echo -n "Y"
+                ./scripts/config --enable ${c#CONFIG_}
+                ((++i))
+                ;;
+              CONFIG_*=m)
+                echo -n "M"
+                ./scripts/config --module ${c#CONFIG_}
+                ((++i))
+                ;;
+              #CONFIG_*="*")
+              #  echo -n "S"
+              #  ./scripts/config --set-str ${c#CONFIG_} ${l#*=}
+              #  ((++i))
+              #  ;;
+              #CONFIG_*=*)
+              #  echo -n "V"
+              #  ./scripts/config --set-val ${c#CONFIG_} "${l#*=}"
+              #  ((++i))
+              #  ;;
             esac
             if [ $i -ge 80 ]; then
               echo
@@ -139,11 +141,11 @@ setup:
           cp .config arch/arm64/configs/debian_l4t_defconfig
           $${kernel_make_cmd} debian_l4t_defconfig
           #diff --brief .config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
-    #- dive_in:
-    #  - apt-get_out: install libncurses-dev
-    #  - exec_local: |
-    #      echo "Kernel make command: $${kernel_make_cmd}"
-    #  - breakpoint
+    - dive_in:
+      - apt-get_out: install libncurses-dev
+      - exec_local: |
+          echo "Kernel make command: $${kernel_make_cmd}"
+      - breakpoint
     - disable_bogus_configs:
       - on_checkpoint: disabled
       - exec_out: |
@@ -169,13 +171,20 @@ setup:
           set -e
           cd $${kernel_src_dir}
           ./scripts/config --module DUMMY
-    - fix_iscsi_support:
+    - reenable_joliet_zisofs:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
           cd $${kernel_src_dir}
-          # May be done by default with current config: to verify.
-          ./scripts/config --module NETLINK_DIAG
+          ./scripts/config --enable JOLIET
+          ./scripts/config --enable ZISOFS
+    #- fix_iscsi_support:
+    #  - on_checkpoint: disabled
+    #  - exec_out: |
+    #      set -e
+    #      cd $${kernel_src_dir}
+    #      # May be done by default with current config: to verify.
+    #      ./scripts/config --module NETLINK_DIAG
     - force_nvethernet_as_module:
       - on_checkpoint: disabled
       - exec_out: |
