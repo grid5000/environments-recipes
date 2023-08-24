@@ -43,7 +43,12 @@ class Environment:
             if key in ['author', 'description', 'filesystem', 'name', 'os', 'visibility', 'arch', 'alias']:
                 self.desc[key] = str(value)
             elif key in ['destructive', 'multipart', 'visibility', 'kexec']:
-                self.desc[key] = bool(value)
+                if value.lower() == "true":
+                    self.desc[key] = True
+                elif value.lower() == "false":
+                    self.desc[key] = False
+                else:
+                    raise Exception("Invalid value for {}: {}".format(key, value))
             elif key in ['partition_type', 'version']:
                 self.desc[key] = int(value)
             else:
