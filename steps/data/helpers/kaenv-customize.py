@@ -30,9 +30,12 @@ class Environment:
                 p = subprocess.Popen(["ssh", remote ] + kaenv_cmd.split(), stdout=subprocess.PIPE)
             else:
                 p = subprocess.Popen(kaenv_cmd.split(), stdout=subprocess.PIPE)
-            self.desc = yaml.load(p.stdout, Loader=yaml.SafeLoader)
+            docs = list(yaml.safe_load_all(p.stdout))
         except Exception as exc:
             raise Exception("Failed to import environment description with '{}'".format(kaenv_cmd))
+        if len(docs) > 1:
+            raise Exception("kaenv returned more than one environment, you may need to provide the architecture")
+        self.desc = docs[0]
         return self
 
     def modify(self, **kwargs):
