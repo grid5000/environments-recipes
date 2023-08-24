@@ -29,16 +29,20 @@ global:
   grid5000_site: "toulouse"
 
   ## Environment to build from
-  grid5000_environment_import_name: "debian11-arm64-std"
+  grid5000_environment_import_name: "debian11-std"
   grid5000_environment_import_user: "deploy"
-  grid5000_environment_import_arch: "aarch64"
+  grid5000_environment_import_arch: "$${arch}"
   #grid5000_environment_import_version: ""
 
   ## New environment description
   #grid5000_environment_export_name: "$${kameleon_recipe_name}"
+  grid5000_environment_export_alias: ""
   grid5000_environment_export_format: "tar.zst"
   grid5000_environment_export_description: "Customized $${grid5000_environment_import_name} for Nvidia Tegra"
   grid5000_environment_export_author: "deploy"
+  grid5000_environment_export_visibility: "shared"
+  grid5000_environment_export_no_kexec: "true"
+  grid5000_environment_export_custom_variables: "BOOTLOADER_NO_GRUB_MKCONFIG_FROM_DEST=1"
 
   ## Set where to store the environment and the assiated kadeploy URL base
   grid5000_environment_export_dir: "/grid5000/l4t/"
@@ -155,4 +159,4 @@ setup:
       - on_checkpoint: disabled
       - exec_out: rm -f $${appliance_filename}.$${grid5000_environment_export_format}
 export:
-  - create_kadeploy_environment
+  - export_modified_g5k_env
