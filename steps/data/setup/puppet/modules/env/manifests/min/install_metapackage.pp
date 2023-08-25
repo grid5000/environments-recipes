@@ -3,28 +3,9 @@ class env::min::install_metapackage ( $variant ) {
   include stdlib
   include env::common::software_versions
 
-  case $operatingsystem {
-    'Debian': {
-      case "${::lsbdistcodename}" {
-        'bullseye': {
-          $base = "g5k-meta-packages-debian11"
-        }
-        'buster': {
-          $base = "g5k-meta-packages-debian10"
-        }
-        default: {
-          fail "${::lsbdistcodename} not supported."
-        }
-      }
-    }
-    default: {
-      fail "${operatingsystem} not supported."
-    }
-  }
+  $g5kmetapackages = "g5k-meta-packages-${variant}"
 
-  $g5kmetapackages = "${base}-${variant}"
-
-  $pinned = join(['min', 'base', 'nfs','big'].map |$env| { "${base}-${env}" }," ")
+  $pinned = join(['min', 'base', 'nfs','big'].map |$env| { "g5k-meta-packages-${env}" }," ")
 
   env::common::apt_pinning {
     'g5k-meta-packages':
@@ -36,6 +17,7 @@ class env::min::install_metapackage ( $variant ) {
     'g5k-meta-packages':
       packages => $g5kmetapackages,
       ensure   => $::env::common::software_versions::g5k_meta_packages,
+      release  => "${lsbdistcodename}",
       require  => Env::Common::Apt_pinning['g5k-meta-packages'];
   }
 
