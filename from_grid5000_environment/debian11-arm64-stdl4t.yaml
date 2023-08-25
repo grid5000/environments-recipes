@@ -35,8 +35,8 @@ global:
   #grid5000_environment_import_version: ""
 
   ## New environment description
-  #grid5000_environment_export_name: "$${kameleon_recipe_name}"
-  grid5000_environment_export_alias: ""
+  grid5000_environment_export_name: "debian11-stdl4t"
+  grid5000_environment_export_alias: "debian11-arm64-stdl4t"
   grid5000_environment_export_format: "tar.zst"
   grid5000_environment_export_description: "Customized $${grid5000_environment_import_name} for Nvidia Tegra"
   grid5000_environment_export_author: "deploy"
@@ -104,10 +104,13 @@ setup:
       - exec_in: ldconfig
     - disable_nvidia_first_boot:
       - exec_in: rm /etc/nv/nvfirstboot
-    - disable_unwanted_tegra_systemd:
+    - disable_unwanted_l4t_services:
       - exec_in: systemctl disable nvargus-daemon.service
       - exec_in: systemctl disable nv-l4t-usb-device-mode.service
       - exec_in: systemctl disable nv-l4t-bootloader-config.service
+      - exec_in: systemctl disable nv_nvsciipc_init.service
+    - disable_unwanted_debian_services:
+      - exec_in: systemctl disable nvidia-persistenced.service
     - configure_nvpmodel_all_core:
       - exec_in: |
           set -e
