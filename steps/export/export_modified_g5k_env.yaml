@@ -10,6 +10,9 @@
 - grid5000_environment_export_format: "tar.zst"
 - grid5000_environment_export_image_file: "$${appliance_filename}.$${grid5000_environment_export_format}"
 - grid5000_environment_export_description: "Customized $${grid5000_environment_import_name}"
+- grid5000_environment_export_boot_kernel: ""
+- grid5000_environment_export_boot_initrd: ""
+- grid5000_environment_export_boot_kernel_params: ""
 - grid5000_environment_export_postinstall_script: ""
 - grid5000_environment_export_postinstall_archive: ""
 - grid5000_environment_export_postinstall_compression: ""
@@ -75,6 +78,15 @@
       else
         fail "Unknown grid5000 environment format: '$${grid5000_environment_export_format}'"
       fi
+      if [ -n "$${grid5000_environment_export_boot_kernel}" ]; then
+        kaenv_boot_kernel='--modify boot_kernel=$${grid5000_environment_export_boot_kernel}'
+      fi
+      if [ -n "$${grid5000_environment_export_boot_initrd}" ]; then
+        kaenv_boot_initrd='--modify boot_initrd=$${grid5000_environment_export_boot_initrd}'
+      fi
+      if [ -n "$${grid5000_environment_export_boot_kernel_params}" ]; then
+        kaenv_boot_kernel_params='--modify boot_kernel_params="$${grid5000_environment_export_boot_kernel_params}"'
+      fi
       if [ -n "$${grid5000_environment_export_postinstall_script}" ]; then
         kaenv_postinstall_script='--modify postinstalls_script0="$${grid5000_environment_export_postinstall_script}"'
       fi
@@ -114,6 +126,9 @@
         --modify description="$${grid5000_environment_export_description}" \
         --modify visibility="$${grid5000_environment_export_visibility}" \
         ${kaenv_alias} \
+        ${kaenv_boot_kernel} \
+        ${kaenv_boot_initrd} \
+        ${kaenv_boot_kernel_params} \
         ${kaenv_postinstall_script} \
         ${kaenv_postinstall_archive} \
         ${kaenv_postinstall_compression} \

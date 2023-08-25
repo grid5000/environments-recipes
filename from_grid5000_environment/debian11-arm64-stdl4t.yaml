@@ -41,7 +41,9 @@ global:
   grid5000_environment_export_description: "Customized $${grid5000_environment_import_name} for Nvidia Tegra"
   grid5000_environment_export_author: "deploy"
   grid5000_environment_export_visibility: "shared"
-  grid5000_environment_export_no_kexec: "true"
+  grid5000_environment_export_boot_kernel: "/boot/Image"
+  grid5000_environment_export_boot_initrd: "/boot/initrd.img"
+  grid5000_environment_export_boot_kernel_params: ""
   grid5000_environment_export_custom_variables: "BOOTLOADER_NO_GRUB_MKCONFIG_FROM_DEST=1"
 
   ## Set where to store the environment and the assiated kadeploy URL base
@@ -109,8 +111,6 @@ setup:
       - exec_in: systemctl disable nv-l4t-usb-device-mode.service
       - exec_in: systemctl disable nv-l4t-bootloader-config.service
       - exec_in: systemctl disable nv_nvsciipc_init.service
-    - disable_unwanted_debian_services:
-      - exec_in: systemctl disable nvidia-persistenced.service
     - configure_nvpmodel_all_core:
       - exec_in: |
           set -e
