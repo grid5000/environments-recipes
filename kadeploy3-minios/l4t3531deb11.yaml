@@ -465,7 +465,7 @@ export:
           # Stop the current docker container so that we can configure the image
           docker stop $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null || docker kill $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
           # Create the final version of the image, ready to flash
-          docker commit -c "ENV USER=root" -c "WORKDIR $${l4t_dir}" -c "ENTRYPOINT ./flash.sh" $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $${target_docker_image} > /dev/null
+          docker commit -c 'ENV USER=root' -c 'WORKDIR $${l4t_dir}' -c 'ENTRYPOINT ["./flash.sh"]' $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $${target_docker_image} > /dev/null
           # Delete the container
           docker rm $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
           rm -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
