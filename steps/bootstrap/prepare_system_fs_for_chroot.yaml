@@ -3,6 +3,7 @@
 - rootfs_system_fs_umount_section: export
 
 - mount_system_fs_in_chroot:
+  - on_checkpoint: disabled
   - exec_out: |
       set -e
       touch $KAMELEON_WORKDIR/.KAMELEON_MOUNT_SYSTEM_FS_IN_CHROOT
