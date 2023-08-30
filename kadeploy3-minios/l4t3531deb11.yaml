@@ -450,7 +450,7 @@ setup:
       - exec_out: |
           cp $${l4t_dir}/cti/xavier/rogue/base.conf $${l4t_dir}/cti/xavier/rogue/g5k.conf
           #echo 'CMDLINE_ADD="mminit_loglevel=4 console=ttyTCU0,115200n8 fbcon=map:0 net.ifnames=0 rootfstype=ext4 sdhci_tegra.en_boot_part_access=1 systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true";' >> $${l4t_dir}/cti/xavier/rogue/g5k.conf
-          echo 'CMDLINE_ADD="mminit_loglevel=4 console=ttyTCU0,115200n8 fbcon=map:0 root=/dev/rootdev sdhci_tegra.en_boot_part_access=1 systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true NTP panic=5";' >> $${l4t_dir}/cti/xavier/rogue/g5k.conf
+          echo 'CMDLINE_ADD="mminit_loglevel=4 console=ttyTCU0,115200n8 fbcon=map:0 root=/dev/rootdev sdhci_tegra.en_boot_part_access=1 systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true NTP";' >> $${l4t_dir}/cti/xavier/rogue/g5k.conf
     #- prebuild_flash_image:
     #  - exec_out: |
     #      set -e
