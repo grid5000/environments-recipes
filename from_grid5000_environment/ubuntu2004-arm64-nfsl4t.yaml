@@ -154,15 +154,32 @@ setup:
           systemctl disable nv-l4t-bootloader-config.service
           systemctl disable nv-l4t-usb-device-mode.service
       - exec_out: *2
+    - download_extra_packages:
+      - exec_out: *1
+      - apt-get_in: clean
+      - apt-get_in: update
+      - apt-get_in: install --download-only $${extra_packages_to_install}
+      - exec_out: *2
     - install_extra_packages:
-      - test:
-        - exec_out: test "$${extra_packages_to_install}" != ""
-        - group:
-          - exec_out: *1
-          - apt-get_in: update
-          - apt-get_in: install $${extra_packages_to_install}
-          - exec_out: *2
-        - exec_out: echo "No extra package to install"
+      - exec_out: *1
+      - exec_in: |
+            set -e
+            # Workaround installation for nsight-system that requires running on target
+            deb=$(ls /var/cache/apt/archives | grep -o -e 'nsight-systems-[^_]\+' || true)
+            if [ -n "$deb" ]; then
+              echo "Workaround installation of $deb..."
+              DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
+                $(apt-cache depends $deb | awk '/Depends:/{print $2}')
+              dpkg --unpack /var/cache/apt/archives/$deb*.deb
+              sed -i.orig \
+                  -e '4,7s/^/#/' \
+                  -e '9,15s/^/#/' \
+                   /var/lib/dpkg/info/$deb.*postinst
+              dpkg --configure --pending
+              mv /var/lib/dpkg/info/$deb.*postinst.orig /var/lib/dpkg/info/$deb.*postinst
+            fi
+      - apt-get_in: install $${extra_packages_to_install}
+      - exec_out: *2
     - purge_apt_cache:
       - exec_out: *1
       - apt-get_in: clean
