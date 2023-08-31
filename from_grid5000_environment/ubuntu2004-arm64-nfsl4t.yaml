@@ -71,40 +71,22 @@ global:
   #qemu_arch: aarch64
 
   backend: docker
-  docker_cleanup_section: setup
-  sdkmanager_docker_archive: /grid5000/l4t/sdkmanager-1.9.3.10904-Ubuntu_20.04_docker.tar.gz
-  out_context_docker_image: sdkmanager:1.9.3.10904-Ubuntu_20.04
-  # See https://connecttech.com/resource-center/l4t-board-support-packages/ to find out what version of Jetpack can be used ans the cti_BSP_url
-  jetpack_version: 5.1.1
+  docker_cleanup_section: export
+  out_context_docker_image: "ubuntu:20.04"
+  nvidia_BSP_url: "https://developer.download.nvidia.com/embedded/L4T/r35_Release_v3.1/release/Jetson_Linux_R35.3.1_aarch64.tbz2"
   cti_BSP_url: "https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-35.3.1-V001.tgz"
-  jetson_target: JETSON_AGX_XAVIER_TARGETS 
-  # See sdkmanager's GUI or sdkmanager --query to find out the available components and additional SDK
-  #jetpack_components: "--select 'Jetson Linux' --select 'Jetson Runtime Components' --select 'Jetson SDK Components' --deselect 'Developer Tools' --additionalsdk 'DeepStream 6.2'"
-  jetpack_components: "--select 'Jetson Linux' --deselect 'Jetson Runtime Components' --deselect 'Jetson SDK Components' --deselect 'Developer Tools'"
-  workdir: "/home/nvidia"
-  l4t_dir: "$${workdir}/nvidia/nvidia_sdk/JetPack_$${jetpack_version}_Linux_$${jetson_target}/Linux_for_Tegra"
+  workdir: "/nvidia"
+  l4t_dir: "$${workdir}/Linux_for_Tegra"
   rootfs: "$${workdir}/g5k-rootfs"
   upstream_image: "$${kameleon_cwd}/g5k-image.tar"
+  extra_packages_to_install: ""
 
 bootstrap:
-  - install_sdkmanager:
-    - install_docker_archive:
-      - exec_local: |
-          set -e
-          if [ -z "$(docker image ls -q '$${out_context_docker_image}')" ]; then
-              if ! [ -r "$${sdkmanager_docker_archive}" ]; then
-                  echo "Could not access the sdkmanager docker archive at '$${sdkmanager_docker_archive}'. Please provide it." 1>&2
-                  echo "It can be downloaded at https://developer.nvidia.com/sdk-manager" 1>&2
-                  exit 1
-              fi
-              docker load -i $${sdkmanager_docker_archive}
-          else
-              echo "sdkmanager docker image already available"
-          fi
   - "@base"
   - prepare_rootfs:
     - install_necessary_debs:
-      - apt-get_out: install zstd lbzip2
+      - apt-get_out: update
+      - apt-get_out: install zstd lbzip2 wget qemu-user-static
   - fetch_grid5000_image
   - deploy_image_in_rootfs:
     - copy_image_in_out:
@@ -112,86 +94,80 @@ bootstrap:
         - $${upstream_image}
         - $${upstream_image}
     - clean_rootfs:
-      - exec_out: rm -rf $${rootfs} && sudo -u nvidia mkdir -p $${rootfs}
+      - exec_out: rm -rf $${rootfs} && mkdir -p $${rootfs}
     - extract_image_in_rootfs:
       - exec_out: tar -C $${rootfs} -xf $${upstream_image}
     - remove_image:
       - exec_out: rm $${upstream_image}
 setup:
-  - install_L4T:
-    - sdkmanager_download:
-      - exec_out: |
-          set -eo pipefail
-          sudo -u nvidia sdkmanager --license accept --staylogin true --datacollection disable --logintype devzone --product Jetson --targetos Linux --version $${jetpack_version} --target $${jetson_target} $${jetpack_components} --flash skip --exitonfinish --cli downloadonly > /tmp/sdkmanager.log &
-          while ! [ -r /tmp/sdkmanager.log ] || ! grep http /tmp/sdkmanager.log; do
-            sleep 1
-          done
-          echo
-          echo "Please use the URL above, and follow Nvidia's authentication procedure to allow sdkmanager to continue."
-          echo
-          while ! grep -B 8 initialized /tmp/sdkmanager.log; do
-            sleep 1
-          done
-          echo
-          echo "Now just wait, this may be pretty long!"
-          echo
-          wait
-          if ! strings /tmp/sdkmanager.log | grep -A 100 "DOWNLOAD COMPLETED SUCCESSFULLY"; then
-              echo "Download failed!" 1>&2
-              exit 1
-          fi
-    - sdkmanager_install:
-      - exec_out: |
-          set -eo pipefail
-          sudo -u nvidia sdkmanager --license accept --staylogin true --datacollection disable --logintype devzone --product Jetson --targetos Linux --version $${jetpack_version} --target $${jetson_target} $${jetpack_components} --flash skip --exitonfinish --cli install > /tmp/sdkmanager.log &
-          while ! grep -B 8 initialized /tmp/sdkmanager.log; do
-            sleep 1
-          done
-          echo
-          echo "Now just wait, this may be pretty long!"
-          echo
-          wait
-          if ! strings /tmp/sdkmanager.log | grep -A 100 "INSTALLATION COMPLETED SUCCESSFULLY"; then
-              echo "Install failed!" 1>&2
-              exit 1
-          fi
-    - install_cti_BSP:
-      - apt-get_out: install wget
-      - exec_out: wget --progress=dot:giga -O- $${cti_BSP_url} | sudo -u nvidia tar -zx -C $${l4t_dir}
-      - exec_out: cd $${l4t_dir}/CTI-L4T && ./install.sh
-    - fix_cti_BSP_kernel_console:
-      - exec_out: sudo -u nvidia sed -i.bak -e 's/console=tty0 //' $${l4t_dir}/cti-agx.conf.common
-  - apply_L4T_overlay_over_g5k_ubuntu:
-    - prepare_g5k_ubuntu_system:
+  - prepare_g5k_ubuntu_system:
+    - setup_rootfs_for_apt:
+      - on_checkpoint: disabled
       - exec_out: &1 |
           set -e
           mv $${rootfs}/etc/resolv.conf{,.orig}
           cp /etc/resolv.conf $${rootfs}/etc/resolv.conf
-          mkdir -p $${rootfs}/{dev,dev/pts,proc,sys}
-          mount -t sysfs sysfs $${rootfs}/sys
-          mount -t proc proc $${rootfs}/proc
-          mount --bind /dev $${rootfs}/dev
-          mount --bind /dev/pts $${rootfs}/dev/pts
+          for d in dev dev/pts proc sys; do 
+            mkdir -p $${rootfs}/$d
+            mount --bind /$d $${rootfs}/$d
+          done
+    - install_L4T_required_packages:
       - apt-get_in: update
       - apt-get_in: -q=2 remove --purge linux-image-* linux-modules-* linux-headers-*
       - apt-get_in: install libegl1 python2 libcairo2 libegl1-mesa libgles2 libgtk-3-0 libwayland-egl1 libxkbcommon0 libasound2 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 device-tree-compiler libdatrie1 libfontconfig1 libharfbuzz0b libpangoft2-1.0-0 libpixman-1-0 libxrender1 libfontconfig1 libpango-1.0-0 libpangocairo-1.0-0 libnl-route-3-200 libevdev2 libinput10 libjpeg-turbo8 libunwind8 libwayland-cursor0
+    - unsetup_rootfs_for_apt: &2
+      - on_checkpoint: disabled
       - exec_out: &2 |
           set -e
           rm $${rootfs}/etc/resolv.conf
           mv $${rootfs}/etc/resolv.conf{.orig,}
-          umount $${rootfs}/dev/pts
-          umount $${rootfs}/dev
-          umount $${rootfs}/proc
-          umount $${rootfs}/sys
-    - apply_l4t_binaries:
+          for d in $(findmnt -o TARGET -l -n | grep $${rootfs} | sort -r); do
+            umount $d
+          done
+  - install_L4T:
+    - install_nvidia_BSP:
+      - exec_out: |
+          set -e
+          mkdir $${l4t_dir}
+          wget --progress=dot:giga -O- $${nvidia_BSP_url} | tar -jx --strip-components=1 -C $${l4t_dir}
+    - mount_rootfs_in_BSP:
+      - on_checkpoint: redo
+      - exec_out: mount --bind $${rootfs} $${l4t_dir}/rootfs
+    - install_cti_BSP:
+      - exec_out: |
+          set -e
+          wget --progress=dot:giga -O- $${cti_BSP_url} | tar -zx -C $${l4t_dir}
+          cd $${l4t_dir}/CTI-L4T && ./install.sh
+    - fix_cti_BSP_kernel_console:
+      - exec_out: sed -i.bak -e 's/console=tty0 //' $${l4t_dir}/cti-agx.conf.common
+  - apply_L4T_overlay_over_g5k_ubuntu:
+    - apply_L4T:
       - exec_out: $${l4t_dir}/apply_binaries.sh -r $${rootfs}
-    - fix_l4t_services:
+    - fix_L4T_apt_sources:
+      - exec_in: |
+          # fix bug in CTI BSP 35.3.1 + enable t194 source
+          sed -i -e 's/r35.1/r35.3/;s/#deb/deb/;s/<SOC>/t194/' /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+    - disable_unwanted_L4T_services:
       - exec_out: *1
       - exec_in: |
           set -e
           systemctl disable nv-l4t-bootloader-config.service
           systemctl disable nv-l4t-usb-device-mode.service
       - exec_out: *2
+    - install_extra_packages:
+      - test:
+        - exec_out: test "$${extra_packages_to_install}" != ""
+        - group:
+          - exec_out: *1
+          - apt-get_in: update
+          - apt-get_in: install $${extra_packages_to_install}
+          - exec_out: *2
+        - exec_out: echo "No extra package to install"
+    - purge_apt_cache:
+      - exec_out: *1
+      - apt-get_in: clean
+      - exec_out: *2
+export:
   - create_new_kadeploy_image:
     - create_tarball:
       - on_checkpoint: disabled
@@ -212,5 +188,4 @@ setup:
     - remove_file_from_out:
       - on_checkpoint: disabled
       - exec_out: rm -f $${appliance_filename}.$${grid5000_environment_export_format}
-export:
   - export_modified_g5k_env
