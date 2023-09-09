@@ -32,11 +32,12 @@ global:
   grid5000_environment_import_name: "debian11-std"
   grid5000_environment_import_user: "deploy"
   grid5000_environment_import_arch: "$${arch}"
-  #grid5000_environment_import_version: ""
+  grid5000_environment_import_version: ""
 
   ## New environment description
   grid5000_environment_export_name: "debian11-stdl4t"
   grid5000_environment_export_alias: "debian11-arm64-stdl4t"
+  grid5000_environment_export_version: "2023090716"
   grid5000_environment_export_format: "tar.zst"
   grid5000_environment_export_description: "Customized $${grid5000_environment_import_name} for Nvidia Tegra"
   grid5000_environment_export_author: "deploy"
@@ -80,6 +81,13 @@ global:
   docker_cleanup_section: setup
 
 bootstrap:
+  - pre-check:
+    - check_version:
+      - on_checkpoint: redo
+      - rescue:
+        - exec_local: test "$${grid5000_environment_export_version}" == "$(date +%Y%m%d%H)"
+        - breakpoint: |
+             "Environment version is outdated: $${grid5000_environment_export_version}. Please fix it in the recipe file or set '-g grid5000_environment_export_version:YYYYMMDDHH' on command line."
   - "@base"
   - prepare_rootfs:
     - install_necessary_debs:
@@ -135,6 +143,9 @@ setup:
         - /tmp/g5k-check.deb
       - exec_in: |
           dpkg --force-confnew -i /tmp/g5k-check.deb
+    - change_env_name:
+      - exec_in: |
+          sed -i -e '1s/-std-.\+$/-stdl4t-$${grid5000_environment_export_version}/' /etc/grid5000/release
   #- copy_kernel_sources_in_rootfs:
   #  - copy_files:
   #    - exec_out: |
