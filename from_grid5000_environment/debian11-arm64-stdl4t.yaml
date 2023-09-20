@@ -37,7 +37,7 @@ global:
   ## New environment description
   grid5000_environment_export_name: "debian11-stdl4t"
   grid5000_environment_export_alias: "debian11-arm64-stdl4t"
-  grid5000_environment_export_version: "2023091516"
+  grid5000_environment_export_version: "2023092015"
   grid5000_environment_export_format: "tar.zst"
   grid5000_environment_export_description: "Customized $${grid5000_environment_import_name} for Nvidia Tegra"
   grid5000_environment_export_author: "deploy"
@@ -76,7 +76,6 @@ global:
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   rootfs: "$${l4t_dir}/rootfs"
-  g5k_check_deb_file: "../../g5k-checks_0.11.11_arm64.deb"
   upstream_image: "$${kameleon_cwd}/g5k-image.tar"
   docker_cleanup_section: setup
 
@@ -137,12 +136,6 @@ setup:
           set -e
           dpkg-divert --rename /usr/bin/ipmitool
           ln -s /bin/true /usr/bin/ipmitool
-    - upgrade_g5k_check:
-      - local2in:
-        - $${g5k_check_deb_file}
-        - /tmp/g5k-check.deb
-      - exec_in: |
-          dpkg --force-confnew -i /tmp/g5k-check.deb
     - change_env_name:
       - exec_in: |
           sed -i -e '1s/-std-.\+$/-stdl4t-$${grid5000_environment_export_version}/' /etc/grid5000/release
