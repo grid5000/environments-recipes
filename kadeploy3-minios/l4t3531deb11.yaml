@@ -47,8 +47,9 @@ global:
   l4t_kernel_version: "5.10"
   l4t_kernel_config_file: "cti_tegra_defconfig"
   debian_kernel_pkg_url: "http://ftp.fr.debian.org/debian/pool/main/l/linux/linux-image-5.10.0-20-arm64-unsigned_5.10.158-2_arm64.deb"
-  kernel_src_dir: $${l4t_dir}/src/kernel/kernel-$${l4t_kernel_version}
-  kernel_build_dir: $${l4t_dir}/src/kernel/build
+  src_dir: $${workdir}/src
+  kernel_src_dir: $${src_dir}/kernel/kernel-$${l4t_kernel_version}
+  kernel_build_dir: $${src_dir}/build
   kernel_version_suffix: -l4tdeb11
   kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
 
@@ -80,8 +81,8 @@ setup:
       - exec_out: wget -O- -q "$${cross_compilation_toolchain_url}" | tar -C $${cross_compilation_toolchain_dir} -zxv
     - download_and_extract_cti_kernel_sources:
       - on_checkpoint: disabled
-      - exec_out: mkdir -p $${l4t_dir}/src
-      - exec_out: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${l4t_dir}/src/ -zxv
+      - exec_out: mkdir -p $${src_dir}
+      - exec_out: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${src_dir} -zxv
     - fix_cti_kernel:
       - on_checkpoint: disabled
       # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
