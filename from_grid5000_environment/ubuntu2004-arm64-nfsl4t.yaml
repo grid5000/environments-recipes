@@ -79,7 +79,8 @@ global:
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   rootfs: "$${workdir}/g5k-rootfs"
   upstream_image: "$${kameleon_cwd}/g5k-image.tar"
-  extra_packages_to_install: ""
+  extra_deb_packages: ""
+  extra_pip3_packages: ""
 
 bootstrap:
   - "@base"
@@ -154,13 +155,14 @@ setup:
           systemctl disable nv-l4t-bootloader-config.service
           systemctl disable nv-l4t-usb-device-mode.service
       - exec_out: *2
+  - install_extra_packages:
     - download_extra_packages:
       - exec_out: *1
       - apt-get_in: clean
       - apt-get_in: update
-      - apt-get_in: install --download-only $${extra_packages_to_install}
+      - apt-get_in: install --download-only $${extra_deb_packages}
       - exec_out: *2
-    - install_extra_packages:
+    - do_install_extra_deb_packages:
       - exec_out: *1
       - exec_in: |
             set -e
@@ -178,12 +180,19 @@ setup:
               dpkg --configure --pending
               mv /var/lib/dpkg/info/$deb.*postinst.orig /var/lib/dpkg/info/$deb.*postinst
             fi
-      - apt-get_in: install $${extra_packages_to_install}
-      - exec_out: *2
-    - purge_apt_cache:
-      - exec_out: *1
+      - apt-get_in: install $${extra_deb_packages}
       - apt-get_in: clean
       - exec_out: *2
+    - do_install_extra_pip3_packages:
+      - exec_out: *1
+      - apt-get_in: install python3-pip
+      - exec_in: pip3 install $${extra_pip3_packages}
+      - exec_out: *2
+    - clean_apt_cache:
+      - on_setup_clean:
+        - exec_out: *1
+        - apt-get_in: clean
+        - exec_out: *2
 export:
   - create_new_kadeploy_image:
     - create_tarball:
