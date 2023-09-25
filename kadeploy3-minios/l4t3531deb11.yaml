@@ -86,7 +86,7 @@ setup:
     - fix_cti_kernel:
       - on_checkpoint: disabled
       # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
-      - exec_out: sed -i -e 's/^#include "aquantia.h"$/#include "cti_aquantia.h"/' $${l4t_dir}/src/kernel/cti/drivers/net/phy/*
+      - exec_out: sed -i -e 's/^#include "aquantia.h"$/#include "cti_aquantia.h"/' $${src_dir}/kernel/cti/drivers/net/phy/*
     - download_and_extract_debian_kernel_config:
       - exec_out: mkdir -p $${workdir}/tmp
       - exec_out: wget -O- -q $${debian_kernel_pkg_url} | dpkg -X - $${workdir}/tmp
