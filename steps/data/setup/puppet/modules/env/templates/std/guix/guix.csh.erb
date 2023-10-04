@@ -1,0 +1,12 @@
+setenv GUIX_DAEMON_SOCKET "guix://guix.<%= scope['grid5000::location'] %>.grid5000.fr"
+setenv GUIX_LOCPATH /var/guix/profiles/per-user/root/guix-profile/lib/locale
+set GUIX_PROFILE=~/.guix-profile
+if (-e $GUIX_PROFILE/etc/cshrc) then
+    source $GUIX_PROFILE/etc/cshrc
+    setenv GUIX_PROFILE ~/.guix-profile
+endif
+set GUIX_PROFILE=~/.config/guix/current
+if (-e $GUIX_PROFILE/etc/cshrc) then
+    source $GUIX_PROFILE/etc/cshrc
+    setenv GUIX_PROFILE ~/.config/guix/current
+endif

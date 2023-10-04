@@ -16,4 +16,13 @@ class env::std::add_g5kcode_to_path {
       mode  => '0644',
       content => 'export PATH=$PATH:/grid5000/code/bin';
   }
+
+  file {
+    '/etc/profile.d/g5kcode.csh':
+      ensure  => present,
+      owner => root,
+      group => root,
+      mode  => '0644',
+      content => 'set path=(/usr/local/bin /usr/bin /bin /grid5000/code/bin)';
+  }
 }
