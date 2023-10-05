@@ -6,28 +6,17 @@
 #
 #==============================================================================
 ---
-extend: kadeploy3-deploy-kernel-base-docker.yaml
-# Global variables use by Kameleon engine and the steps
+extend: kadeploy3-deploy-kernel-bullseye-arm64.yaml
 global:
-  release: bullseye
-  bootstrap_packages: initramfs-tools busybox gnupg dirmngr
-  to_remove_packages: wget libpsl5
-  use_backports: no
-  security_release: $${release}-security
-  arch: aarch64
-  deb_arch: arm64
-  deb_kernel_arch: $${deb_arch}
   deb_kernel: other
-  arch_specific_packages: kexec-tools grub-efi-arm64 
-  tmpfs_size: 8G
 
   ubuntu_deb_url_dpkg: http://ports.ubuntu.com/ubuntu-ports/pool/main/d/dpkg/dpkg_1.19.7ubuntu3.2_arm64.deb
-  #ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.2.1-20230124153320_arm64.deb
   ubuntu_deb_url_l4t_apt_source: https://repo.download.nvidia.com/jetson/t194/pool/main/n/nvidia-l4t-apt-source/nvidia-l4t-apt-source_35.3.1-20230319081403_arm64.deb
   l4t_kernel_packages: nvidia-l4t-firmware nvidia-l4t-xusb-firmware
   l4t_kernel_version: 5.10.104-tegra
   cti_BSP_url: https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-35.3.1-V001.tgz
   cti_kernel_package: nvidia-l4t-kernel_$${l4t_kernel_version}-*_arm64.deb
+  qemu_memory_size: 32G
 
 bootstrap:
   - "@base"
@@ -81,21 +70,16 @@ setup:
           for f in deb/*.deb; do
             ubuntu/usr/bin/dpkg-deb -X $f ubuntu | pv -lbnti 5 > /dev/null
           done
-    - remove_deb_files:
-      - exec_in: rm -rf deb
     - install_kernel_and_firmware:
       - exec_in: |
           set -e
           mkdir -p /boot /lib/modules /lib/firmware
-          cp -av ubuntu/boot/Image /boot/$${kernel_filename}-$${l4t_kernel_version}-arm64
+          cp -av ubuntu/boot/Image /boot/$${kernel_filename}_$${l4t_kernel_version}-arm64
           cp -av ubuntu/lib/modules/$${l4t_kernel_version} /lib/modules/$${l4t_kernel_version}
           ln -snv /lib/modules/$${l4t_kernel_version} /lib/modules/$${l4t_kernel_version}-arm64
           cp -av ubuntu/lib/firmware/* /lib/firmware/
-          touch /boot/initrd.img-$${l4t_kernel_version}-arm64
-    - remove_ubuntu_files:
-      - exec_in: rm -rf ubuntu
+          mkinitramfs -v $${l4t_kernel_version}-arm64 -o /boot/initrd.img_$${l4t_kernel_version}-arm64
     - disable_nvidia_l4t_apt_source:
       - exec_in: sed -i -e "s/^/#/" /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
-      - apt-get_in: update
 export:
   - "@base"
