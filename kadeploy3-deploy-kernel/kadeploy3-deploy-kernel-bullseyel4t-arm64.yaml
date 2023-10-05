@@ -18,7 +18,7 @@ global:
   qemu_arch: x86_64
   arch_specific_packages: kexec-tools grub-efi-arm64 
   deb_kernel: other
-  g5k_l4t: g5k-l4t-r35.3.1-cti001-bullseye
+  g5k_l4t_version: r35.3.1-cti001-bullseye
 
 bootstrap:
   - "@base"
@@ -32,18 +32,20 @@ setup:
         - /etc/apt/sources.list.d/g5k-l4t.list
         - "deb http://packages.grid5000.fr/deb/g5k-l4t /"
       - apt-get_out: update
-      - exec_out: apt-get download $${g5k_l4t}
+      - exec_out: apt-get download g5k-l4t-$${g5k_l4t_version}
     - unpack_g5k_l4t_files:
-      - exec_out: dpkg-deb -X $${g5k_l4t}*.deb g5k-l4t
+      - exec_out: dpkg-deb -X g5k-l4t-*.deb g5k-l4t
+      - exec_out: tar -xvf g5k-l4t/grid5000/l4t/g5k-l4t-*.tgz Linux_for_Tegra/kernel/Image Linux_for_Tegra/kernel/kernel_supplements.tbz2
     - install_l4t_linux_kernel:
-      - exec_out: | 
-          set -e
-          tar -jxf g5k-l4t/kernel/kernel_supplements.tbz2 -C /rootfs/
-          KERNEL_VERSION=$(cd /rootfs/lib/modules; ls)
-          ln -snv /lib/modules/$KERNEL_VERSION /rootfs/lib/modules/$KERNEL_VERSION-arm64
-          cp -av g5k-l4t/kernel/Image /rootfs/boot/$${kernel_filename}-$KERNEL_VERSION-arm64
-          touch /rootfs/boot/initrd.img-$KERNEL_VERSION-arm64
-    - clean_g5k_l4t:
-      - exec_out: rm -rf g5k-l4t
+      - apt-get_out: install bzip2
+      - exec_out: tar -jxf Linux_for_Tegra/kernel/kernel_supplements.tbz2 -C $${rootfs}
+      - exec_out: cp -av Linux_for_Tegra/kernel/Image $${rootfs}/boot/
+      - exec_in: |
+          KERNEL_VERSION=$(cd /lib/modules; ls)
+          ln -snv /lib/modules/$KERNEL_VERSION /lib/modules/$KERNEL_VERSION-arm64
+          mv -v /boot/Image /boot/$${kernel_filename}-$KERNEL_VERSION-arm64
+          touch /boot/initrd.img-$KERNEL_VERSION-arm64
+    - clean_files:
+      - exec_out: rm -rf Linux_for_Tegra g5k-l4t*
 export:
   - "@base"
