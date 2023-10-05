@@ -27,24 +27,23 @@ setup:
   - "@base"
   - add_l4t_kernel:
     - fetch_g5k_l4t_package:
-      - write_in: 
-        - /etc/apt/sources.list/g5k-l4t.list
-        - "deb http://packages.grid5000.fr/deb/g5k-l4t"
-      - apt-get_in: update
-      - exec_in: apt-get download $${g5k_l4t}
-      - exec_in: rm /etc/apt/sources.list/g5k-l4t.list
-      - apt-get_in: update
+      - exec_out: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
+      - write_out: 
+        - /etc/apt/sources.list.d/g5k-l4t.list
+        - "deb http://packages.grid5000.fr/deb/g5k-l4t /"
+      - apt-get_out: update
+      - exec_out: apt-get download $${g5k_l4t}
     - unpack_g5k_l4t_files:
-      - exec_in: dpkg-deb -X $${g5k_l4t}*.deb g5k-l4t
+      - exec_out: dpkg-deb -X $${g5k_l4t}*.deb g5k-l4t
     - install_l4t_linux_kernel:
-      - exec_in: |
+      - exec_out: | 
           set -e
-          tar -jxf g5k-l4t/kernel/kernel_supplements.tbz2 -C /
-          KERNEL_VERSION=$(cd /lib/modules; ls)
-          ln -snv /lib/modules/$KERNEL_VERSION /lib/modules/$KERNEL_VERSION-arm64
-          cp -av g5k-l4t/kernel/Image /boot/$${kernel_filename}-$KERNEL_VERSION-arm64
-          touch /boot/initrd.img-$KERNEL_VERSION-arm64
+          tar -jxf g5k-l4t/kernel/kernel_supplements.tbz2 -C /rootfs/
+          KERNEL_VERSION=$(cd /rootfs/lib/modules; ls)
+          ln -snv /lib/modules/$KERNEL_VERSION /rootfs/lib/modules/$KERNEL_VERSION-arm64
+          cp -av g5k-l4t/kernel/Image /rootfs/boot/$${kernel_filename}-$KERNEL_VERSION-arm64
+          touch /rootfs/boot/initrd.img-$KERNEL_VERSION-arm64
     - clean_g5k_l4t:
-      - exec_in: rm -rf g5k-l4t
+      - exec_out: rm -rf g5k-l4t
 export:
   - "@base"
