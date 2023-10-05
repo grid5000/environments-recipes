@@ -37,7 +37,7 @@ setup:
         - /etc/apt/sources.list/g5k-l4t.list
         - "deb http://packages.grid5000.fr/deb/g5k-l4t"
       - apt-get_in: update
-      - exec_in: apt-get download $${g5l_l4t}
+      - exec_in: apt-get download $${g5k_l4t}
       - exec_in: rm /etc/apt/sources.list/g5k-l4t.list
       - apt-get_in: update
     - unpack_g5k_l4t_files:
