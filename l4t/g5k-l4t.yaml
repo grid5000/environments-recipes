@@ -38,22 +38,31 @@ global:
   deb_arch: arm64
   deb_kernel_arch: $${deb_arch}
 
+  l4t_version_major: "35"
+  l4t_version_minor: "3"
+  l4t_version_patch: "1"
+  cti_BSP_version: "001"
+  l4t_kernel_version: "5.10"
+  debian_version: bullseye
+  debian_kernel_package: linux-image-arm64
+  package_name: g5k-l4t-r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-cti$${cti_BSP_version}-$${debian_version}
+  target_directory: /grid5000/g5k-l4t
+
   rootfs: "$${l4t_dir}/rootfs"
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
-  nvidia_BSP_url: "https://developer.download.nvidia.com/embedded/L4T/r35_Release_v3.1/release/Jetson_Linux_R35.3.1_aarch64.tbz2"
-  nvidia_sample_fs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v3.1/release/tegra_linux_sample-root-filesystem_r35.3.1_aarch64.tbz2"
+  nvidia_BSP_url: "https://developer.download.nvidia.com/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
+  #nvidia_sample_fs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r$${l4t_version_major}_release_v$${l4t_version_minor}.$${l4t_version_patch}/release/tegra_linux_sample-root-filesystem_r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
   cross_compilation_toolchain_url: "https://developer.nvidia.com/embedded/jetson-linux/bootlin-toolchain-gcc-93"
   cross_compilation_toolchain_dir: "$${workdir}/toolchain"
-  cti_BSP_url: "https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-35.3.1-V001.tgz"
-  cti_kernel_sources_url: "http://www.connecttech.com/ftp/dropbox/82429_cti-l4t-src-agx-35.3.1-v001.tgz" 
-  l4t_kernel_version: "5.10"
+  cti_BSP_url: "https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-V$${cti_BSP_version}.tgz"
+  cti_kernel_sources_url: "http://www.connecttech.com/ftp/dropbox/82429_cti-l4t-src-agx-$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-v$${cti_BSP_version}.tgz" 
   l4t_kernel_config_file: "cti_tegra_defconfig"
   debian_kernel_pkg_url: "http://ftp.fr.debian.org/debian/pool/main/l/linux/linux-image-5.10.0-20-arm64-unsigned_5.10.158-2_arm64.deb"
   src_dir: $${workdir}/src
   kernel_src_dir: $${src_dir}/kernel/kernel-$${l4t_kernel_version}
   kernel_build_dir: $${src_dir}/build
-  kernel_version_suffix: -l4t3531deb11
+  kernel_version_suffix: -l4t$${l4t_version_major}$${l4t_version_minor}$${l4t_version_patch}$${cti_BSP_version}$${debian_version}
   kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/usr/bin/aarch64-buildroot-linux-gnu-"
 
 bootstrap:
@@ -71,22 +80,32 @@ setup:
     - download_and_extract_nvidia_BSP:
       - exec_out: mkdir -p $${workdir}
       - exec_out: wget -O- -q "$${nvidia_BSP_url}" | tar -C $${workdir} -jxv
-  - install_nvidia_sample_filesystem:
-    - download_and_extract_nvidia_sample_filesystem:
-      - exec_out: mkdir -p $${workdir}
-      - exec_out: wget -O- -q "$${nvidia_sample_fs_url}" | tar -C $${rootfs} -jxv
+  #- install_nvidia_sample_filesystem:
+  #  - download_and_extract_nvidia_sample_filesystem:
+  #    - exec_out: mkdir -p $${workdir}
+  #    - exec_out: wget -O- -q "$${nvidia_sample_fs_url}" | tar -C $${rootfs} -jxv
   - install_cti_BSP:
     - download_and extract_cti_BSP:
-      - on_checkpoint: disabled
       - exec_out: wget -O- -q "$${cti_BSP_url}" | tar -C $${l4t_dir} -zxv
+    - disable_run_of_apply_binaries:
+      - on_checkpoint: disabled
+      - exec_out: sed -i.bak -e 's@^\(\./apply_binaries\.sh.*\)$@echo Skip run of "\1" for now.@' $${l4t_dir}/CTI-L4T/./install.sh
+    - run_install:
+      - on_checkpoint: disabled
+      - exec_out: mkdir -p $${l4t_dir}/rootfs/etc
       - exec_out: cd $${l4t_dir}/CTI-L4T && bash -e ./install.sh
+    - remove_installation_files:
       - exec_out: rm -rf $${l4t_dir}/CTI-L4T 
-    # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
+  - fix_BSP:
     - fix_apply_binaries:
+      # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
+      - on_checkpoint: disabled
       - exec_out: sed -i.bak -e '/getopt/s/b:t:/t/' $${l4t_dir}/apply_binaries.sh
     - fix_kernel_console:
+      # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
+      - on_checkpoint: disabled
       - exec_out: sed -i.bak -e 's/console=tty0 //' $${l4t_dir}/cti-agx.conf.common
-    - remove_CTI_kernel:
+    - remove_compiled_kernel_packages:
       - exec_out: rm $${l4t_dir}/kernel/nvidia-l4t-*.deb
   - install_kernel_sources:
     - install_cross_compilation_chain:
@@ -96,29 +115,37 @@ setup:
       - on_checkpoint: disabled
       - exec_out: mkdir -p $${src_dir}
       - exec_out: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${src_dir} -zxv
-    # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
-    - fix_cti_kernel:
-      - on_checkpoint: disabled
+    - fix_cti_kernel_sources:
+      # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
       - exec_out: sed -i -e 's/^#include "aquantia.h"$/#include "cti_aquantia.h"/' $${src_dir}/kernel/cti/drivers/net/phy/*
     - download_and_extract_debian_kernel_config:
-      - exec_out: mkdir -p $${workdir}/tmp
-      - exec_out: wget -O- -q $${debian_kernel_pkg_url} | dpkg -X - $${workdir}/tmp
-      - exec_out: cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
-      - exec_out: rm -r $${workdir}/tmp
+      - exec_out: |
+          set -e
+          mkdir -p $${workdir}/tmp
+          pushd $${workdir}/tmp
+          wget -nv -r -l3 -nd -H -D packages.debian.org,ftp.fr.debian.org,security.debian.org \
+               --accept-regex "(packages\.debian\.org/$${debian_version}/(|arm64/)linux-image(|/download)|(ftp\.fr|security)\.debian\.org/debian(|-update|-security)/pool/(|updates/)main/l/linux-)" \
+               https://packages.debian.org/$${debian_version}/$${debian_kernel_package}
+          rm -f robot.txt
+          dpkg -X $(ls -S | head -n1) .
+          cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
+          popd
+          rm -r $${workdir}/tmp
   - build_kernel:
     - install_tools:
       - apt-get_out: install make gcc xxd flex bison python3 bc rsync kmod libelf-dev libssl-dev
     - merge_kernel_configs:
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}/arch/arm64/configs
+          pushd $${kernel_src_dir}/arch/arm64/configs
           cat debian_defconfig $${l4t_kernel_config_file} > debian_l4t_defconfig
           echo "Apply merged kernel configs:"
           $${kernel_make_cmd} debian_l4t_defconfig
+          popd
     - force_some_debian_kernel_configs:
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           echo "Force some debian kernel configs:"
           i=0
           grep -e "^CONFIG_NF_TABLES" -e "^CONFIG.*_NFT_" -e "^CONFIG.*_NF_" -e "^CONFIG.*_NETFILTER" \
@@ -141,46 +168,50 @@ setup:
                 ;;
             esac
           done
+          popd
     - finalize_kernel_configs:
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           cp .config arch/arm64/configs/debian_l4t_defconfig
           $${kernel_make_cmd} debian_l4t_defconfig
-          #diff --brief .config $${kernel_src_dir}/arch/arm64/configs/debian_l4t_defconfig
+          popd
     - disable_bogus_configs:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
           for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
             ./scripts/config --disable $c
           done
+          popd
     #- force_builtin_nfs_support:
     #  - on_checkpoint: disabled
     #  - exec_out: |
     #      set -e
-    #      cd $${kernel_src_dir}
+    #      pushd $${kernel_src_dir}
     #      # NEEDED FOR NFSROOT
     #      ./scripts/config --enable NFS_V4
     #      ./scripts/config --enable NFS_V3
     #      ./scripts/config --enable NFS_V2
+    #      popd
     - force_nvethernet_as_module:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           ./scripts/config --module NVETHERNET
           ./scripts/config --enable NVETHERNET_SELFTESTS
           ./scripts/config --module PTP_1588_CLOCK
           ./scripts/config --module PPS
           ./scripts/config --module MICREL_PHY
+          popd
     - disable_useless_kernel_support:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           ./scripts/config --disable USB_SUPPORT
           ./scripts/config --disable WLAN
           ./scripts/config --disable WIRELESS
@@ -197,12 +228,14 @@ setup:
           #./scripts/config --disable MEDIA_SUPPORT
           ./scripts/config --disable MEMSTICK
           ./scripts/config --disable SOUNDWIRE
+          popd
     - disable_kernel_debug_info:
       - on_checkpoint: disabled
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           ./scripts/config --disable DEBUG_INFO
+          popd
     #- dive_in: &1
     #  - on_checkpoint: disabled
     #  - apt-get_out: install libncurses-dev
@@ -212,16 +245,19 @@ setup:
     - build_kernel_objects:
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           $${kernel_make_cmd} Image
+          popd
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           $${kernel_make_cmd} dtbs
+          popd
       - exec_out: |
           set -e
-          cd $${kernel_src_dir}
+          pushd $${kernel_src_dir}
           $${kernel_make_cmd} modules
+          popd
     #- dive_in_again: *1
     - install_kernel_objects:
       - exec_out: |
@@ -246,41 +282,98 @@ setup:
       - exec_out: rm -rf $${workdir}/toolchain
     - delete_sources:
       - exec_out: rm -rf $${workdir}/src
-  - setup_for_flashing:
-    - install_required_debs:
-      - apt-get_out: install usbutils udev python-is-python3 python3-yaml lz4 cpio openssh-client libxml2-utils perl-modules-5.30 dosfstools
-  - prepare_nvidia_flash:
-    - prebuild_flash_image:
-      - exec_out: |
-          set -e
-          cd $${l4t_dir}
-          ./flash.sh --no-flash cti/xavier/rogue/base mmcblk0p1
     - delete_rootfs:
       - exec_out: rm -rf $${rootfs}/*
+  #- setup_for_flashing:
+  #  - install_required_debs:
+  #    - apt-get_out: install usbutils udev python-is-python3 python3-yaml lz4 cpio openssh-client libxml2-utils perl-modules-5.30 dosfstools
+  #- prepare_nvidia_flash:
+  #  - prebuild_flash_image:
+  #    - exec_out: |
+  #        set -e
+  #        pushd $${l4t_dir}
+  #        ./flash.sh --no-flash cti/xavier/rogue/base mmcblk0p1
+  #        popd
 export:
-  - export_BSP_tarball:
+  - create_BSP_deb_package:
     - create_BSP_tarball:
-      - exec_out: tar -C $${workdir} -zcvf $${workdir}/$${kameleon_recipe_name}.tgz Linux_for_Tegra
+      - exec_out: tar -C $${workdir} -zcvf $${workdir}/$${package_name}.tgz Linux_for_Tegra
+      - exec_local: mkdir -p $${package_name}
       - out2local:
-        - $${workdir}/$${kameleon_recipe_name}.tgz
-        - $${kameleon_recipe_name}/$${kameleon_recipe_name}.tgz
-      - exec_out: rm $${workdir}/$${kameleon_recipe_name}.tgz
-  - export_docker_image_ready_to_flash:
-    - commit_and_configure_to_flash:
+        - $${workdir}/$${package_name}.tgz
+        - $${package_name}/$${package_name}.tgz
+    - create_debian_files:
+      - check_cmd_local: dch
+      - exec_local: |
+          rm -rf $${package_name}/debian
+          mkdir -p $${package_name}/debian
+          export DEBEMAIL="Grid'5000 team <support-staff@lists.grid5000.fr>"
+          pushd $${package_name}
+          dch --create \
+              --package $${package_name} \
+              --newversion 1.$(date +%Y%m%d) \
+              "Generated with kameleon using recipe $${kameleon_recipe_name}"
+          cat > debian/control <<EOF
+          Source: $${package_name}
+          Section: admin
+          Priority: optional
+          Maintainer: Grid'5000 team <support-staff@lists.grid5000.fr>
+          Build-Depends: debhelper (>= 9)
+          Standards-Version: 3.9.8
+          
+          Package: $${package_name}
+          Architecture: all
+          Depends: ${shlibs:Depends}, ${misc:Depends}
+          Description: Grid'5000 L4T R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch} CTI V$${cti_BSP_version} for $${debian_version}
+           Grid'5000 modified Linux for Tegra
+           Nvidia BSP R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}
+           CTI BSP V$${cti_BSP_version}
+           Linux kernel compiled for Debian $${debian_version}
+          EOF
+          echo 9 > debian/compat
+          cat > debian/copyright <<EOF
+          Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+          Upstream-Name: Linux for Tegra
+          Source: https://gitlab.inria.fr/grid5000/environments-recipes/nvidia-l4t
+          EOF
+          cat > debian/rules <<'EOF'
+          #!/usr/bin/make -f
+          %:
+                dh $@
+          EOF
+          chmod +x debian/rules
+          mkdir -p debian/source
+          echo "3.0 (native)" > debian/source/format
+          cat > debian/install <<EOF
+          $${package_name}.tgz $${target_directory}
+          EOF
+          popd
+    - generate_deb_package:
+      - check_cmd_local: dpkg-buildpackage
       - exec_local: |
           set -e
-          # Stop the current docker container so that we can configure the image
-          docker stop $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null || docker kill $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
-          # Create the final version of the image, ready to flash
-          docker commit -c 'ENV USER=root' -c 'WORKDIR $${l4t_dir}' -c 'ENTRYPOINT ["./flash.sh"]' $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $${target_docker_image} > /dev/null
-          # Delete the container
-          docker rm $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
-          rm -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
-    - explain_how_to_flash:
-      - exec_local: |
-          echo 'You can now flash a Xavier module with the Kadeploy miniOS, using:'
-          echo
-          echo '$ docker run -it --rm --privileged -v /dev/bus/usb:/dev/bus/usb/ -v /dev:/dev $${target_docker_image} cti/xavier/rogue/base mmcblk0p1'
-          echo
-          echo 'To test a kernel/initrd with grub, copy to a node:'
-          echo '$ scp rootfs/boot/Image rootfs/boot/initrd root@estats-9.toulouse.grid5000.fr:'
+          pushd $${package_name}
+          dpkg-buildpackage -uc -us -A -Zgzip -zfast
+          popd
+      - exec_out: rm $${workdir}/$${package_name}.tgz
+  #- export_docker_image_ready_to_flash:
+  #  - commit_and_configure_to_flash:
+  #    - on_checkpoint: disabled
+  #    - exec_local: |
+  #        set -e
+  #        # Stop the current docker container so that we can configure the image
+  #        docker stop $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null || docker kill $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
+  #        # Create the final version of the image, ready to flash
+  #        docker commit -c 'ENV USER=root' -c 'WORKDIR $${l4t_dir}' -c 'ENTRYPOINT ["./flash.sh"]' $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $${target_docker_image} > /dev/null
+  #        # Delete the container
+  #        docker rm $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
+  #        rm -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
+  #  - explain_how_to_flash:
+  #    - on_checkpoint: disabled
+  #    - exec_local: |
+  #        echo 'You can now flash a Xavier module with the Kadeploy miniOS, using:'
+  #        echo
+  #        echo '$ docker run -it --rm --privileged -v /dev/bus/usb:/dev/bus/usb/ -v /dev:/dev $${target_docker_image} cti/xavier/rogue/base mmcblk0p1'
+  #        echo
+  #        echo 'To test a kernel/initrd with grub, copy to a node:'
+  #        echo '$ scp rootfs/boot/Image rootfs/boot/initrd root@estats-9.toulouse.grid5000.fr:'
