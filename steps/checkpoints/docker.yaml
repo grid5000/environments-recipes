@@ -1,4 +1,5 @@
 enabled?:
+  - exec_local: ! test -f $${checkpoint_disabled_file}
   - exec_local: test -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
 
 create:

@@ -6,6 +6,7 @@
 # checkpoint: btrfs.yaml
 
 global:
+  checkpoint_disabled_file: $${kameleon_cwd}/checkpoint_disabled
   # rootfs options
   rootfs: $${kameleon_cwd}/rootfs
 
@@ -25,7 +26,6 @@ global:
     proxy_cache: 127.0.0.1
 
 bootstrap:
-  - enable_checkpoint
   - download_upstream_tarball
   - extract_upstream_tarball_in_rootfs
   - start_chroot
