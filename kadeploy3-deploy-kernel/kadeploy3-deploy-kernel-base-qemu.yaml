@@ -25,7 +25,7 @@ global:
   tmpfs_size: 1G
   firmware_packages: firmware-linux firmware-bnx2 firmware-bnx2x firmware-qlogic
   # haveged is used to provide more entropy during boot
-  system_packages: ash systemd systemd-sysv haveged
+  system_packages: ash systemd systemd-sysv haveged gnupg
   net_packages: ifupdown ntpdate isc-dhcp-client openssh-client openssh-server taktuk netcat
   linux_fs_packages: e2fsprogs xfsprogs btrfs-progs
   other_fs_packages: dosfstools #ntfs-3g
@@ -36,7 +36,7 @@ global:
   to_remove_packages:
   target_directory: /grid5000/kadeploy-kernels
   # xz is greedy in memory
-  qemu_memory_size: 2G
+  qemu_memory_size: 4G
   out_context_debian_backports: false
 
 bootstrap:
@@ -65,13 +65,9 @@ bootstrap:
   - debootstrap_post_config
 
 setup:
-  - force_exit_on_errors:
-    - bash_set_-e:
-      - exec_in: set -e
   - configure_system:
-    - console_prompt:
-      - exec_in: sed -i -e '1s/^/DeployMiniOS - /' /etc/issue
     - hosts:
+      - on_checkpoint: disabled
       - write_in:
         - /etc/hosts
         - |
@@ -83,6 +79,7 @@ setup:
           ff02::2 ip6-allrouters
           ff02::3 ip6-allhosts
     - network_interfaces:
+      - on_checkpoint: disabled
       - write_in:
         - /etc/network/interfaces
         - |
@@ -92,6 +89,7 @@ setup:
           iface dhcp inet dhcp
   - configure_debian:
     - lighten_packages:
+      - on_checkpoint: disabled
       - write_in:
         - /etc/dpkg/dpkg.cfg.d/01lighten
         - |
@@ -112,7 +110,9 @@ setup:
           APT::Install-Recommends "0" ;
           APT::Install-Suggests "0" ;
     - configure_source_list:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           sed -i -e 's/^/#/' /etc/apt/sources.list
           if [ "$${release}" == "bookworm" ]; then
             echo "deb $${deb_mirror_uri} $${release} main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/$${release}.list
@@ -142,10 +142,10 @@ setup:
             echo "deb http://hwraid.le-vert.net/debian $${hwraid_release} main" >/etc/apt/sources.list.d/hwraid.list
             apt-key adv --keyserver $${gpg_keyserver} --recv-key 6005210E23B3D3B4
           fi
-    - update_apt:
-      - apt-get_in: update
     - debconf-noninteractive:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           debconf-set-selections <<'EOF'
           # Interface to use:
           # Choices: Dialog, Readline, Gnome, Kde, Editor, Noninteractive
@@ -155,6 +155,7 @@ setup:
           export DEBCONF_NONINTERACTIVE_SEEN=true
     - set_time:
       - exec_in: |
+          set -e
           debconf-set-selections <<'EOF'
           tzdata tzdata/Areas select Europe
           tzdata tzdata/Zones/Europe select Paris
@@ -162,22 +163,25 @@ setup:
           rm -f /etc/localtime /etc/timezone
           dpkg-reconfigure tzdata
   - install_packages:
+    - update_apt:
+      - apt-get_in: update
     - install_arch_specific_packages:
       - exec_in: |
+          set -e
           if [ -n "$${arch_specific_packages}" ]; then
             apt-get install -y --force-yes $${arch_specific_packages}
           fi
     - install_other_packages:
       - exec_in: |
+          set -e
           echo "Installing other required packages"
           apt-get install -y --force-yes $${firmware_packages} $${system_packages} $${net_packages} $${linux_fs_packages} $${other_fs_packages} $${archive_file_packages} $${disk_packages} $${ruby_packages}
           if [ "$${use_backports}" == "true" -a -n "$${ruby_packages_bpo}" ]; then
             apt-get install -y --force-yes -t $${release}-backports $${ruby_packages_bpo}
           fi
-    - fix_ntp:
-      - exec_in: sed -i -e 's/\(NTPSERVERS=\).*/\1="ntp1.grid5000.fr ntp2.grid5000.fr"/;s/\(NTPDATE_USE_NTP_CONF=\).*/\1=no/' /etc/default/ntpdate
     - install_kernel_packages:
       - exec_in: |
+          set -e
           if [ "$${use_backports}" == "true" -a "$${deb_kernel}" == "bpo" ]; then
             KERNEL_BPO=$(apt-cache search "^linux-image.[[:digit:].-]+deb[[:digit:].]+-$${deb_kernel_arch}$" | sort -h | tail -n1 | cut -f1 -d\ )
             [ -n "$KERNEL_BPO" ] || echo "No bpo kernel found, install the default one" 1>&2
@@ -192,23 +196,33 @@ setup:
           fi
     - remove_some_packages:
       - exec_in: |
+          set -e
           if [ -n "$${to_remove_packages}" ]; then
             apt-get remove --purge -y --force-yes $${to_remove_packages}
           else
             echo "No package to remove"
           fi
   - kadeploy_customization:
+    - set_console_prompt:
+      - on_checkpoint: disabled
+      - exec_in: sed -i -e '1s/^/DeployMiniOS - /' /etc/issue
     - set_motd:
+      - on_checkpoint: disabled
       - write_in:
         - /etc/motd
         - |
-          Welcome to Kadeploy3 deployment ramdisk OS
+          Welcome to Kadeploy3 DeployMiniOS
           Generated from $${kameleon_recipe_name} (Debian $${release}, $${deb_kernel} kernel, $${deb_arch}) on $(date +'%F %T')
+    - fix_ntp:
+      - on_checkpoint: disabled
+      - exec_in: sed -i -e 's/\(NTPSERVERS=\).*/\1="ntp1.grid5000.fr ntp2.grid5000.fr"/;s/\(NTPDATE_USE_NTP_CONF=\).*/\1=no/' /etc/default/ntpdate
     - set_root_authorized_keys:
+      - on_checkpoint: disabled
       - exec_in: mkdir -p /root/.ssh
       - exec_in: chmod 755 /root/.ssh
       - pipe:
         - exec_local: |
+            set -e
             if [ -r $${root_authorized_keys} ]; then
               cat $${root_authorized_keys}
             else
@@ -217,9 +231,12 @@ setup:
         - exec_in: cat > /root/.ssh/authorized_keys
       - exec_in: chmod 644 /root/.ssh/authorized_keys
     - set_root_passwordless:
+      - on_checkpoint: disabled
       - exec_in: passwd -d root
     - set_root_bashrc:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           cat <<'EOF' > /root/.bashrc
           export PS1='$? \h:\w \$'
           umask 022
@@ -235,7 +252,9 @@ setup:
           export LANG="C"
           EOF
     - set_rc_local:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           cat <<'EOF' > /etc/rc.local
           #!/bin/bash -e
           exec >& /dev/kmsg
@@ -314,7 +333,9 @@ setup:
           EOF
           chmod 755 /etc/rc.local
     - add_dhcp_hostname_script:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           mkdir -p /etc/dhcp/dhclient-enter-hooks.d
           cat <<'EOF' > /etc/dhcp/dhclient-enter-hooks.d/hostname
           if [ -n $new_host_name ] && [ -n $new_domain_name ]; then
@@ -338,6 +359,7 @@ export:
     - create_rootfs:
       - apt-get_out: install cpio xz-utils pixz
       - exec_out: |
+          set -e
           cd $${rootfs} # use out context: quicker if foreign arch
           find . -path './boot/*' -prune \
               -o -path './usr/share/locale/*' -prune \
@@ -353,7 +375,9 @@ export:
               -o -path './initrd.img' -prune \
               -o -xdev -print | cpio -o -H newc  | pixz -9 > $${rootfs}/boot/root.cxz
     - add_initramfs_hook:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           cat <<'EOF' > /etc/initramfs-tools/hooks/copy-root-archive
           #!/bin/sh
           PREREQ=""
@@ -373,7 +397,9 @@ export:
           EOF
           chmod 755 /etc/initramfs-tools/hooks/copy-root-archive
     - add_initramfs_scripts:
+      - on_checkpoint: disabled
       - exec_in: |
+          set -e
           cat <<'EOS' > /etc/initramfs-tools/scripts/local-premount/create-root-tmpfs
           #!/bin/sh
           PREREQ="lvm"
@@ -435,6 +461,7 @@ export:
           EOS
           chmod 755 /etc/initramfs-tools/scripts/local-bottom/remove-root-tmpfs
     - configure_initramfs:
+      - on_checkpoint: disabled
       - exec_in: |
           sed -i -e 's/^MODULES=.*/MODULES=list/' \
             /etc/initramfs-tools/initramfs.conf
@@ -443,11 +470,13 @@ export:
   - move_files_to_out:
     - copy_files:
       - exec_out: |
+          set -e
           mkdir -p /tmp
           cp $${rootfs}/boot/$${kernel_filename}* /tmp/$${kernel_filename}
           cp $${rootfs}/boot/initrd.img* /tmp/initrd.img
   - export_kernel_initrd:
     - create_directory:
+      - on_checkpoint: disabled
       - exec_local: mkdir -p $${kameleon_recipe_name}
     - kernel:
       - out2local:
@@ -459,8 +488,10 @@ export:
         - $${kameleon_recipe_name}/$${kameleon_recipe_name}.initrd.img
   - create_deb_package:
     - create_debian_files:
+      - on_checkpoint: disabled
       - check_cmd_local: dch
       - exec_local: |
+          set -e
           rm -rf $${kameleon_recipe_name}/debian
           mkdir -p $${kameleon_recipe_name}/debian
           export DEBEMAIL="Grid'5000 team <support-staff@lists.grid5000.fr>"
@@ -504,4 +535,4 @@ export:
           EOF
     - generate_deb_package:
       - check_cmd_local: dpkg-buildpackage
-      - exec_local: (cd $${kameleon_recipe_name} && dpkg-buildpackage -uc -us)
+      - exec_local: (cd $${kameleon_recipe_name} && dpkg-buildpackage -uc -us -Zgzip -zfast)
