@@ -49,12 +49,17 @@
                 if [ "$${force_vm_shutdown}" == "true" ]; then
                   if [ -S $${qemu_monitor_socket} ]; then
                     echo "Executing a graceful shutdown of the qemu VM via the monitor socket..."
-                    NEXT_WAIT_TIME=0
-                    echo system_powerdown | socat - UNIX-CONNECT:$${qemu_monitor_socket} || true
-                    while ps -p $_QEMU_PID > /dev/null && [ $NEXT_WAIT_TIME -lt $${shutdown_timeout} ];
-                    do
+                    _TIMEOUT_CTIME=$(($(date +%s) + $${shutdown_timeout}))
+                    while ! echo system_powerdown | socat - UNIX-CONNECT:$${qemu_monitor_socket} | grep -q 'system_powerdown' 2> /dev/null \
+                          && ps -p $_QEMU_PID > /dev/null \
+                          && [ $(date +%s) -lt $_TIMEOUT_CTIME ]; do
                       sleep 1
-                      echo -en "\rWaiting for qemu virtual machine to shutdown...($(( $${shutdown_timeout} - 1 - NEXT_WAIT_TIME++ ))s)"
+                      echo -en "\rTriggering qemu virtual machine to shutdown...($(( _TIMEOUT_CTIME - $(date +%s) ))s)"
+                    done
+                    while ps -p $_QEMU_PID > /dev/null \
+                          && [ $(date +%s) -lt $_TIMEOUT_CTIME ]; do
+                      sleep 1
+                      echo -en "\rWaiting for qemu virtual machine to shutdown...($(( _TIMEOUT_CTIME - $(date +%s) ))s)"
                     done
                   fi
                 else
