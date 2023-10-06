@@ -13,7 +13,6 @@ global:
   docker_extra_volumes:
 
   # rootfs options
-  rootfs: $${kameleon_cwd}/rootfs
   rootfs_container_work_dir: $${rootfs}
 
   # Shell session from where we launch exec_out commands. There is often a

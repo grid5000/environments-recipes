@@ -1,5 +1,7 @@
 # Generic Virtual Machine backend recipe
 ---
+extend: chroot.yaml
+
 global:
   ssh_config_file: $${kameleon_cwd}/ssh_config
   out_context:
