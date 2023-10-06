@@ -36,7 +36,7 @@ global:
   to_remove_packages:
   target_directory: /grid5000/kadeploy-kernels
   # xz is greedy in memory
-  qemu_memory_size: 4G
+  qemu_memory_size: 8G
   out_context_debian_backports: false
 
 bootstrap:
