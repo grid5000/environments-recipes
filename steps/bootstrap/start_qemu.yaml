@@ -44,28 +44,28 @@
       - group:
         - exec_local: &1 |
             if [ -f $${qemu_pidfile} ]; then
-              _QEMU_PID=$(< $${qemu_pidfile})
-              if ps -p $_QEMU_PID > /dev/null; then
+              QEMU_PID=$(< $${qemu_pidfile})
+              if ps -p $QEMU_PID > /dev/null; then
                 if [ "$${force_vm_shutdown}" == "true" ]; then
                   if [ -S $${qemu_monitor_socket} ]; then
                     echo "Executing a graceful shutdown of the qemu VM via the monitor socket..."
-                    _TIMEOUT_CTIME=$(($(date +%s) + $${shutdown_timeout}))
+                    TIMEOUT=$(($(date +%s) + $${shutdown_timeout}))
                     while ! echo system_powerdown | socat - UNIX-CONNECT:$${qemu_monitor_socket} | grep -q 'system_powerdown' 2> /dev/null \
-                          && ps -p $_QEMU_PID > /dev/null \
-                          && [ $(date +%s) -lt $_TIMEOUT_CTIME ]; do
+                          && ps -p $QEMU_PID > /dev/null \
+                          && [ $(date +%s) -lt $TIMEOUT ]; do
                       sleep 1
-                      echo -en "\rTriggering qemu virtual machine to shutdown...($(( _TIMEOUT_CTIME - $(date +%s) ))s)"
+                      echo -en "\rTriggering qemu virtual machine to shutdown...($(( TIMEOUT - $(date +%s) ))s)"
                     done
-                    while ps -p $_QEMU_PID > /dev/null \
-                          && [ $(date +%s) -lt $_TIMEOUT_CTIME ]; do
+                    while ps -p $QEMU_PID > /dev/null \
+                          && [ $(date +%s) -le $TIMEOUT ]; do
                       sleep 1
-                      echo -en "\rWaiting for qemu virtual machine to shutdown...($(( _TIMEOUT_CTIME - $(date +%s) ))s)"
+                      echo -en "\rWaiting for qemu virtual machine to shutdown...($(( TIMEOUT - $(date +%s) ))s)"
                     done
                   fi
                 else
                   echo "Waiting for the VM to shutdown"
                   echo "Run 'vncviewer :$VNC_PORT' to see what's happening in the VM"
-                  while ps -p $_QEMU_PID > /dev/null;
+                  while ps -p $QEMU_PID > /dev/null;
                   do
                     sleep 2
                   done
@@ -74,13 +74,13 @@
             fi
         - exec_local: &2 |
             if [ -f $${qemu_pidfile} ]; then
-              _QEMU_PID=$(< $${qemu_pidfile})
-              if ps -p $_QEMU_PID > /dev/null; then
+              QEMU_PID=$(< $${qemu_pidfile})
+              if ps -p $QEMU_PID > /dev/null; then
                 if [ -S $${qemu_monitor_socket} ]; then
                   echo "The graceful shutdown of the qemu VM should have failed (monitor socket is there)..."
                 fi
-                echo "Killing qemu (pid: $_QEMU_PID)."
-                kill -9 "$_QEMU_PID"
+                echo "Killing qemu (pid: $QEMU_PID)."
+                kill -9 "$QEMU_PID"
               fi
               rm -f $${qemu_pidfile}
             fi
