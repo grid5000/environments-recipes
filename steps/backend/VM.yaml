@@ -18,10 +18,10 @@ bootstrap:
   - download_upstream_tarball
   - create_appliance
   - prepare_appliance
+  - prepare_ssh_to_out_context
 
 setup:
   - "@base"
 
 export:
-  - disable_checkpoint
-  - save_appliance_VM
+  - "@base"

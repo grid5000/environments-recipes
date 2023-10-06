@@ -37,6 +37,7 @@ bootstrap:
   - start_docker
 
 setup:
+  - "@base"
 
 export:
   - export_docker_image

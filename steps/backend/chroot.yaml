@@ -30,6 +30,8 @@ bootstrap:
   - extract_upstream_tarball_in_rootfs
   - start_chroot
 
+setup:
+
 export:
   - disable_checkpoint
   - save_appliance
