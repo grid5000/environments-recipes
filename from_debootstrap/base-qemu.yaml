@@ -64,7 +64,7 @@ global:
   deb_mirror_uri: http://$${deb_mirror_hostname}/debian/
 
   bootstrap_packages: locales openssh-server
-  build_packages: debootstrap curl parted e2fsprogs
+  build_packages: debootstrap curl parted e2fsprogs gnupg
   apt_enable_contrib: true
   apt_enable_nonfree: true
 
