@@ -19,7 +19,7 @@
 - qemu_sendkeys_commands:
 - vm_expected_service: ssh
 - vm_cleanup_section: setup
-- shutdown_vm_immediately: false
+- shutdown_vm_synchrone: false
 - force_vm_shutdown: true
 - qemu_enable_kvm: true
 - qemu_cpus: 2
@@ -40,7 +40,7 @@
   - check_cmd_local: kvm-ok
   - on_bootstrap_clean:
     - test:
-      - exec_local: test "$${shutdown_vm_immediately}" == "false" -a "$${vm_cleanup_section}" == "bootstrap" -a ! -f $${checkpoint_disabled_file}
+      - exec_local: test "$${shutdown_vm_synchrone}" == "false" -a "$${vm_cleanup_section}" == "bootstrap"
       - group:
         - exec_local: &1 |
             if [ -f $${qemu_pidfile} ]; then
@@ -87,25 +87,23 @@
             rm -f $${qemu_monitor_socket}
   - on_setup_clean:
     - test:
-      - exec_local: test "$${shutdown_vm_immediately}" == "false" -a "$${vm_cleanup_section}" == "setup" -a ! -f $${checkpoint_disabled_file}
+      - exec_local: test "$${shutdown_vm_synchrone}" == "false" -a "$${vm_cleanup_section}" == "setup"
       - group:
         - exec_local: *1
         - exec_local: *2
   - on_export_clean:
     - test:
-      - exec_local: test "$${shutdown_vm_immediately}" == "false" -a "$${vm_cleanup_section}" == "export" -a ! -f $${checkpoint_disabled_file}
+      - exec_local: test "$${shutdown_vm_synchrone}" == "false" -a "$${vm_cleanup_section}" == "export"
       - group:
         - exec_local: *1
         - exec_local: *2
   - test:
-    - exec_local: ! test -f $${checkpoint_disabled_file}
-    - group:
-      - exec_local: |
-          if [ "$${shutdown_vm_immediately}" == "true" ]; then
-            echo "Qemu VM shutdown: immediately"
-          else
-            echo "Qemu VM shutdown: in $${vm_cleanup_section} section cleaning"
-          fi
+    - exec_local: test "$${shutdown_vm_synchrone}" == "false"
+    - exec_local: echo "Qemu start VM, VM shutdown in $${vm_cleanup_section} section cleaning"
+    - exec_local: echo "Do nothing here, actual start done in the start_vm_synchrone step"
+  - test:
+    - exec_local: test "$${shutdown_vm_synchrone}" == "false"
+    - group: &3
       - exec_local: |
           if [ -r $${qemu_pidfile} ] && pgrep -F $${qemu_pidfile} > /dev/null; then
             echo "Qemu pid file found, with process running: killing it !" 1>&2
@@ -155,9 +153,9 @@
           QEMU_APPEND_CMDLINE=
           if [ "$${qemu_uefi}" == "true" ]; then
             if [ ! -f $${kameleon_cwd}/qemu_uefi_vars.fd ]; then
-              cp $${qemu_uefi_vars_path} $${kameleon_cwd}/qemu_uefi_vars.fd
+              qemu-img convert -O qcow2 $${qemu_uefi_vars_path} $${kameleon_cwd}/qemu_uefi_vars.fd
             fi
-            QEMU_BOOT="-drive if=pflash,format=raw,readonly,file=$${qemu_uefi_code_path} -drive if=pflash,format=raw,file=$${kameleon_cwd}/qemu_uefi_vars.fd"
+            QEMU_BOOT="-drive if=pflash,format=raw,readonly,file=$${qemu_uefi_code_path} -drive if=pflash,format=qcow2,file=$${kameleon_cwd}/qemu_uefi_vars.fd"
           fi
           if [ -n "$${qemu_iso_path}" ]; then
             QEMU_DRIVES="-drive file=$${qemu_iso_path},readonly,media=cdrom $QEMU_DRIVES"
@@ -176,7 +174,16 @@
             fi
           fi
           if [ -n "$${qemu_netdev_user_options}" ]; then
-            QEMU_NETDEV_USER_OPTIONS=",$${qemu_netdev_user_options}"
+            if echo "$${qemu_netdev_user_options}" | grep -q -e 'domainname=FROM_HOST' -e 'dnssearch=FROM_HOST'; then
+              QEMU_DNSSEARCH=""
+              for d in $(grep -e '^search ' /etc/resolv.conf | sed -e 's/^search //'); do
+                QEMU_DNSSEARCH="${QEMU_DNSSEARCH:+$QEMU_DNSSEARCH,}dnssearch=$d"
+              done
+              QEMU_DOMAINNAME="$(grep -e '^domain ' /etc/resolv.conf | sed -e 's/^domain //')"
+              QEMU_NETDEV_USER_OPTIONS=",$(echo $${qemu_netdev_user_options} | sed -e s/dnssearch=FROM_HOST/$QEMU_DNSSEARCH/ -e s/domainname=FROM_HOST/${QEMU_DOMAINNAME:+domainname=$QEMU_DOMAINNAME/)"
+            else
+              QEMU_NETDEV_USER_OPTIONS=",$${qemu_netdev_user_options}"
+            fi
           fi
           if [ "$${no_reboot}" == "true" ]; then
             NO_REBOOT="-no-reboot"
@@ -223,12 +230,22 @@
             ruby $${qemu_sendkeys_script} -d 0.05 "$(sed -e s/%LOCAL_IP%/$${local_ip}/g -e s/%HTTP_PORT%/$HTTP_PORT/g $${qemu_sendkeys_commands})" | $${socat_monitor} > /dev/null
         - exec_local: echo "No keyboard commands to send"
 
-- shutdown_vm:
-  - on_checkpoint: redo
+- start_vm_synchrone:
+  - on_checkpoint: use_cache
+  - check_cmd_local: qemu-system-$${qemu_arch}
+  - check_cmd_local: socat
+  - check_cmd_local: kvm-ok
   - on_clean:
     - test:
-      - exec_local: test "$${shutdown_vm_immediately}" == "true" -a ! -f $${checkpoint_disabled_file}
+      - exec_local: test "$${shutdown_vm_synchrone}" == "true"
       - exec_local: *2
   - test:
-    - exec_local: test "$${shutdown_vm_immediately}" == "true" -a ! -f $${checkpoint_disabled_file}
+    - exec_local: test "$${shutdown_vm_synchrone}" == "true"
+    - exec_local: echo "Qemu start VM synchrone, VM will shutdown by itself"
+    - exec_local: echo "Do nothing here, actual start done in the start_vm step"
+  - test:
+    - exec_local: test "$${shutdown_vm_synchrone}" == "true"
+    - group: *3
+  - test:
+    - exec_local: test "$${shutdown_vm_synchrone}" == "true"
     - exec_local: *1
