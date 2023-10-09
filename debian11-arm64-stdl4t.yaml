@@ -23,7 +23,7 @@ global:
   qemu_image_size: 16G
   # Visibility override
   g5k_visibility: shared
-  g5k_l4t: g5k-l4t-r34.3.1-cti0001-bullseye
+  g5k_l4t_version: r35.3.1-cti001-bullseye
   g5k_no_chroot_for_grub: true
 
 bootstrap:
@@ -33,20 +33,20 @@ setup:
   - "@base"
   - add_l4t_overlay:
     - fetch_g5k_l4t_package:
+      - exec_out: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
       - write_in: 
-        - /etc/apt/sources.list/g5k-l4t.list
-        - "deb http://packages.grid5000.fr/deb/g5k-l4t"
+        - /etc/apt/sources.list.d/g5k-l4t.list
+        - "deb http://packages.grid5000.fr/deb/g5k-l4t /"
       - apt-get_in: update
-      - exec_in: apt-get download $${g5k_l4t}
-      - exec_in: rm /etc/apt/sources.list/g5k-l4t.list
-      - apt-get_in: update
+      - apt-get_in: download g5k-l4t-$${g5k_l4t_version}
     - unpack_g5k_l4t_files:
-      - exec_in: dpkg-deb -X $${g5k_l4t}*.deb g5k-l4t
+      - exec_in: dpkg-deb -X g5k_l4t-*.deb g5k-l4t
+      - exec_out: tar -xvf g5k-l4t/grid5000/l4t/g5k-l4t-*.tgz
       - apt-get_in: install lbzip2 qemu-user-static
     - apply_g5k_l4t_overlay:
       - exec_in: g5k-l4t/apply-binaries.sh --root / --target-overlay
     - clean_g5k_l4t:
-      - exec_in: rm -rf g5k-l4t
+      - exec_out: rm -rf Linux_for_Tegra g5k-l4t*
     - rebuild_ld_cache:
       - exec_in: ldconfig
     - disable_nvidia_first_boot:
@@ -70,14 +70,6 @@ setup:
     - truify_ipmitool:
       - exec_in: dpkg-divert --rename /usr/bin/ipmitool
       - exec_in: ln -s /bin/true /usr/bin/ipmitool
-    - change_env_name:
-      - exec_in: sed -i -e '1s/-std-.\+$/-stdl4t-$${grid5000_environment_export_version}/' /etc/grid5000/release
-    - change_motd:
-      - exec_in: |
-          sed -i \
-              -e 's/-std-.\+$/-stdl4t-$${grid5000_environment_export_version}/' \
-              -e 's/\(based on .\+\))/\1 + Nvidia L4T layer)/' \
-              /etc/motd
   - set_and_clear_var_log
 
 export:
