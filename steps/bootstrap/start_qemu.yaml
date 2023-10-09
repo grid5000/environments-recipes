@@ -180,7 +180,7 @@
                 QEMU_DNSSEARCH="${QEMU_DNSSEARCH:+$QEMU_DNSSEARCH,}dnssearch=$d"
               done
               QEMU_DOMAINNAME="$(grep -e '^domain ' /etc/resolv.conf | sed -e 's/^domain //')"
-              QEMU_NETDEV_USER_OPTIONS=",$(echo $${qemu_netdev_user_options} | sed -e s/dnssearch=FROM_HOST/$QEMU_DNSSEARCH/ -e s/domainname=FROM_HOST/${QEMU_DOMAINNAME:+domainname=$QEMU_DOMAINNAME/)"
+              QEMU_NETDEV_USER_OPTIONS=",$(echo $${qemu_netdev_user_options} | sed -e s/dnssearch=FROM_HOST/$QEMU_DNSSEARCH/ -e s/domainname=FROM_HOST/${QEMU_DOMAINNAME:+domainname=$QEMU_DOMAINNAME}/)"
             else
               QEMU_NETDEV_USER_OPTIONS=",$${qemu_netdev_user_options}"
             fi
