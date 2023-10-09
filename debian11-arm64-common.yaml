@@ -9,6 +9,7 @@
 extend: from_scratch/aarch64/debian-bullseye.yaml
 
 global:
+  qemu_netdev_user_options: "domainname=FROM_HOST,dnssearch=FROM_HOST"
   # Export format to generate
   appliance_formats: qcow2 tar.zst
   # Output base filename
