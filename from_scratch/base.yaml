@@ -118,9 +118,9 @@ bootstrap:
     - vm_cleanup_section: bootstrap
     - vm_expected_service:
     - boot_timeout: $${boot_timeout_installer}
-  - enable_checkpoint
   - prepare_ssh_to_out_context
   - prepare_appliance
+  - enable_checkpoint
   - start_qemu:
     - force_vm_shutdown: true
     - shutdown_vm_immediately: false
