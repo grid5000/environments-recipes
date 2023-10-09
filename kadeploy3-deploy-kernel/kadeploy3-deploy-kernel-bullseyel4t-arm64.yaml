@@ -32,7 +32,7 @@ setup:
         - /etc/apt/sources.list.d/g5k-l4t.list
         - "deb http://packages.grid5000.fr/deb/g5k-l4t /"
       - apt-get_out: update
-      - exec_out: apt-get download g5k-l4t-$${g5k_l4t_version}
+      - apt-get_out: download g5k-l4t-$${g5k_l4t_version}
     - unpack_g5k_l4t_files:
       - exec_out: dpkg-deb -X g5k-l4t-*.deb g5k-l4t
       - exec_out: tar -xvf g5k-l4t/grid5000/l4t/g5k-l4t-*.tgz Linux_for_Tegra/kernel/Image Linux_for_Tegra/kernel/kernel_supplements.tbz2
