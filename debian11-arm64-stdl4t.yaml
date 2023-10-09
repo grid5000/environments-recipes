@@ -33,18 +33,18 @@ setup:
   - "@base"
   - add_l4t_overlay:
     - fetch_g5k_l4t_package:
-      - exec_out: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
+      - exec_in: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
       - write_in: 
         - /etc/apt/sources.list.d/g5k-l4t.list
         - "deb http://packages.grid5000.fr/deb/g5k-l4t /"
       - apt-get_in: update
       - apt-get_in: download g5k-l4t-$${g5k_l4t_version}
     - unpack_g5k_l4t_files:
-      - exec_in: dpkg-deb -X g5k_l4t-*.deb g5k-l4t
+      - exec_in: dpkg-deb -X g5k-l4t-*.deb g5k-l4t
       - exec_out: tar -xvf g5k-l4t/grid5000/l4t/g5k-l4t-*.tgz
       - apt-get_in: install lbzip2 qemu-user-static
     - apply_g5k_l4t_overlay:
-      - exec_in: g5k-l4t/apply-binaries.sh --root / --target-overlay
+      - exec_in: Linux_for_Tegra/apply_binaries.sh --root / --target-overlay
     - clean_g5k_l4t:
       - exec_out: rm -rf Linux_for_Tegra g5k-l4t*
     - rebuild_ld_cache:
