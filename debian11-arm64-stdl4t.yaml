@@ -33,6 +33,7 @@ setup:
   - "@base"
   - add_l4t_overlay:
     - fetch_g5k_l4t_package:
+      - on_checkpoint: disabled
       - exec_in: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
       - write_in: 
         - /etc/apt/sources.list.d/g5k-l4t.list
@@ -43,33 +44,43 @@ setup:
       - exec_in: dpkg-deb -X g5k-l4t-*.deb g5k-l4t
       - exec_out: tar -xvf g5k-l4t/grid5000/l4t/g5k-l4t-*.tgz
       - apt-get_in: install lbzip2 qemu-user-static
-    - apply_g5k_l4t_overlay:
+  - apply_g5k_l4t_overlay:
+    - run_apply_binaries:
+      - on_checkpoint: disabled
       - exec_in: Linux_for_Tegra/apply_binaries.sh --root / --target-overlay
     - clean_g5k_l4t:
       - exec_out: rm -rf Linux_for_Tegra g5k-l4t*
     - rebuild_ld_cache:
+      - on_checkpoint: disabled
       - exec_in: ldconfig
     - disable_nvidia_first_boot:
+      - on_checkpoint: disabled
       - exec_in: rm /etc/nv/nvfirstboot
     - disable_unwanted_l4t_services:
+      - on_checkpoint: disabled
       - exec_in: systemctl disable nvargus-daemon.service
       - exec_in: systemctl disable nv-l4t-usb-device-mode.service
       - exec_in: systemctl disable nv-l4t-bootloader-config.service
       - exec_in: systemctl disable nv_nvsciipc_init.service
     - configure_nvpmodel_all_core:
+      - on_checkpoint: disabled
       - exec_in: dpkg-divert --no-rename /etc/systemd/nvpmodel.sh
       - exec_in: sed -i.distrib -e 's@^\([[:space:]]*/usr/sbin/nvpmodel\) -f /etc/nvpmodel.conf@&\n\1 -m 3@' /etc/systemd/nvpmodel.sh
   - setup_linux_kernel_and_initrd:
     - fix_kernel_image_symlink:
+      - on_checkpoint: disabled
       - exec_in: ln -sfn /boot/Image /vmlinuz
     - uninstall_debian_kernel:
+      - on_checkpoint: disabled
       - apt-get_in: -q=2 remove --purge linux-image-*
     - generate_initramfs:
       - exec_in: mkinitramfs -o /boot/initrd.img $(ls -d /lib/modules/*/kernel | cut -d/ -f4)
   - other_adaptations:
     - truify_ipmitool:
+      - on_checkpoint: disabled
       - exec_in: dpkg-divert --rename /usr/bin/ipmitool
       - exec_in: ln -s /bin/true /usr/bin/ipmitool
+  - disable_checkpoint
   - set_and_clear_var_log
 
 export:
