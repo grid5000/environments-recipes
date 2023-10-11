@@ -9,8 +9,8 @@ class env::big::configure_postfix () {
       before  => Exec['newaliases', 'set_root_alias'];
   }
 
-  exec {
-    if ($::lsbdistcodename != 'bookworm') {
+  if ($::lsbdistcodename != 'bookworm') {
+    exec {
       # This is a damn dirty patch due to a bug in the debian package for
       # postfix. In the package, the postinst script creates a
       # /etc/postfix/main.cfg with a myhostname attribute which is retrieved by
@@ -23,6 +23,8 @@ class env::big::configure_postfix () {
       'fix_resolv_conf':
         command  => "/bin/sed -i -e 's/\.\([[:space:]]\|$\)/\1/g' /etc/resolv.conf";
     }
+  }
+  exec {
     'fix_hostname':
       command  => "/bin/sed -i -e 's/localhost//' /etc/hostname";
     # set root alias to local + internal mailbox
