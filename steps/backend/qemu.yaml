@@ -16,6 +16,7 @@ global:
   image_disk: $${kameleon_cwd}/base_$${kameleon_recipe_name}
   qemu_image_size: 8G
   qemu_pidfile: $${kameleon_cwd}/qemu.pid
+  qemu_netdev_user_options: "domainname=FROM_HOST,dnssearch=FROM_HOST"
   qemu_kernel_path: $${kameleon_cwd}/qemu_kernel
   qemu_initrd_path: $${kameleon_cwd}/qemu_initrd
   qemu_append_cmdline: ""
