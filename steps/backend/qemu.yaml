@@ -11,6 +11,7 @@ global:
   qemu_cpus: "$(nproc)"
   qemu_memory_size:   2G
   qemu_monitor_socket: "/tmp/kameleon_qemu_monitor.$${kameleon_recipe_name}.$${kameleon_short_uuid}.socket"
+  qemu_checkpoint_timeout: 300
   qemu_arch: $${arch}
   image_disk: $${kameleon_cwd}/base_$${kameleon_recipe_name}
   qemu_image_size: 8G

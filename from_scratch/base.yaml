@@ -113,7 +113,6 @@ bootstrap:
   - prepare_autoinstall
   - disable_checkpoint
   - start_qemu:
-    - force_vm_shutdown: false
     - shutdown_vm_synchrone: true
     - vm_expected_service:
     - boot_timeout: $${boot_timeout_installer}
@@ -122,7 +121,6 @@ bootstrap:
   - prepare_appliance
   - enable_checkpoint
   - start_qemu:
-    - force_vm_shutdown: true
     - shutdown_vm_synchrone: false
     - vm_cleanup_section: setup
     - vm_expected_server: ssh

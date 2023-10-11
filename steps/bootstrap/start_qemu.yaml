@@ -14,13 +14,11 @@
 - debug: false
 - telnet_port: ""
 - no_reboot: true
-- socat_monitor: socat - UNIX-CONNECT:$${qemu_monitor_socket}
 - qemu_sendkeys_script: $${kameleon_data_dir}/qemu-sendkeys.rb
 - qemu_sendkeys_commands:
 - vm_expected_service: ssh
 - vm_cleanup_section: setup
 - shutdown_vm_synchrone: false
-- force_vm_shutdown: true
 - qemu_enable_kvm: true
 - qemu_cpus: 2
 - qemu_memory_size: 1024
@@ -43,10 +41,11 @@
       - exec_local: test "$${shutdown_vm_synchrone}" == "false" -a "$${vm_cleanup_section}" == "bootstrap"
       - group:
         - exec_local: &1 |
+            set -e -o pipefail
             if [ -f $${qemu_pidfile} ]; then
               QEMU_PID=$(< $${qemu_pidfile})
               if ps -p $QEMU_PID > /dev/null; then
-                if [ "$${force_vm_shutdown}" == "true" ]; then
+                if [ "$${shutdown_vm_synchrone}" == "false" ]; then
                   if [ -S $${qemu_monitor_socket} ]; then
                     echo "Executing a graceful shutdown of the qemu VM via the monitor socket..."
                     TIMEOUT=$(($(date +%s) + $${shutdown_timeout}))
@@ -63,7 +62,7 @@
                     done
                   fi
                 else
-                  echo "Waiting for the VM to shutdown"
+                  echo "Waiting for the VM to shutdown by itself"
                   echo "Run 'vncviewer :$VNC_PORT' to see what's happening in the VM"
                   while ps -p $QEMU_PID > /dev/null;
                   do
@@ -73,6 +72,7 @@
               fi
             fi
         - exec_local: &2 |
+            set -e -o pipefail
             if [ -f $${qemu_pidfile} ]; then
               QEMU_PID=$(< $${qemu_pidfile})
               if ps -p $QEMU_PID > /dev/null; then
@@ -105,16 +105,18 @@
     - exec_local: test "$${shutdown_vm_synchrone}" == "false"
     - group: &3
       - exec_local: |
+          set -e -o pipefail
           if [ -r $${qemu_pidfile} ] && pgrep -F $${qemu_pidfile} > /dev/null; then
             echo "Qemu pid file found, with process running: killing it !" 1>&2
             pkill -F $${qemu_pidfile}
             sleep 0.5
-            if pgrep -F $${qemu_pidfile} > /dev/null; then
+            if [ -r $${qemu_pidfile} ] && pgrep -F $${qemu_pidfile} > /dev/null; then
               echo "Failed to kill qemu process." 1>&2
               exit 1
             fi
           fi
       - exec_local: |
+          set -e -o pipefail
           echo "Starting qemu..."
           if [ "$${qemu_enable_kvm}" == "true" ] && (/usr/sbin/kvm-ok > /dev/null || egrep '(vmx|svm)' /proc/cpuinfo > /dev/null) ; then # print warning if /usr/sbin/kvm-ok is not installed
             if [ "$${qemu_arch}" == "aarch64" ]; then
@@ -199,6 +201,7 @@
             $VNC_OPT $SERIAL_TELNET\
             $LOADVM
       - exec_local: |
+          set -e -o pipefail
           VM_AVAILABLE=0
           if [ "$${vm_expected_service}" == "ssh" ]; then
             TIMEOUT=$(( $(date +%s) + $BOOT_TIMEOUT ))
@@ -225,9 +228,10 @@
       - test:
         - exec_local: test -e "$${qemu_sendkeys_commands}" -a -s "$${qemu_sendkeys_commands}"
         - exec_local: |
+            set -e -o pipefail
             echo "Sending keyboard commands to the VM: $${qemu_sendkeys_commands}"
             echo "(Local httpd server url: http://$${local_ip}:$HTTP_PORT)"
-            ruby $${qemu_sendkeys_script} -d 0.05 "$(sed -e s/%LOCAL_IP%/$${local_ip}/g -e s/%HTTP_PORT%/$HTTP_PORT/g $${qemu_sendkeys_commands})" | $${socat_monitor} > /dev/null
+            ruby $${qemu_sendkeys_script} -d 0.05 "$(sed -e s/%LOCAL_IP%/$${local_ip}/g -e s/%HTTP_PORT%/$HTTP_PORT/g $${qemu_sendkeys_commands})" | socat - UNIX-CONNECT:$${qemu_monitor_socket} > /dev/null
         - exec_local: echo "No keyboard commands to send"
 
 - start_vm_synchrone:

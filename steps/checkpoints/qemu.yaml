@@ -3,7 +3,9 @@ enabled?:
   - exec_local: test -S $${qemu_monitor_socket}
 
 create:
-  - exec_local: echo -e "savevm @microstep_id" | socat - UNIX-CONNECT:$${qemu_monitor_socket}
+  - exec_local: |
+      set -e -o pipefail
+      echo -e "savevm @microstep_id" | socat -t$${qemu_checkpoint_timeout} - UNIX-CONNECT:$${qemu_monitor_socket} > /dev/null
 
 apply:
   - exec_local: |
