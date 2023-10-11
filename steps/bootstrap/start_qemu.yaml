@@ -46,10 +46,11 @@
               QEMU_PID=$(< $${qemu_pidfile})
               if ps -p $QEMU_PID > /dev/null; then
                 if [ "$${shutdown_vm_synchrone}" == "false" ]; then
-                  if [ -S $${qemu_monitor_socket} ]; then
+                  QEMU_MONITOR_SOCKET="$${qemu_monitor_socket}"
+                  if [ -S $QEMU_MONITOR_SOCKET ]; then
                     echo "Executing a graceful shutdown of the qemu VM via the monitor socket..."
                     TIMEOUT=$(($(date +%s) + $${shutdown_timeout}))
-                    while ! echo system_powerdown | socat - UNIX-CONNECT:$${qemu_monitor_socket} | grep -q 'system_powerdown' 2> /dev/null \
+                    while ! echo system_powerdown | socat - UNIX-CONNECT:$QEMU_MONITOR_SOCKET | grep -q 'system_powerdown' 2> /dev/null \
                           && ps -p $QEMU_PID > /dev/null \
                           && [ $(date +%s) -lt $TIMEOUT ]; do
                       sleep 1
@@ -76,7 +77,11 @@
             if [ -f $${qemu_pidfile} ]; then
               QEMU_PID=$(< $${qemu_pidfile})
               if ps -p $QEMU_PID > /dev/null; then
-                if [ -S $${qemu_monitor_socket} ]; then
+                QEMU_MONITOR_SOCKET="$${qemu_monitor_socket}"
+                if [ "$${shutdown_vm_synchrone}" == "true" ]; then
+                  QEMU_MONITOR_SOCKET="${QEMU_MONITOR_SOCKET%.socket}.synchrone.socket"
+                fi
+                if [ -S $QEMU_MONITOR_SOCKET ]; then
                   echo "The graceful shutdown of the qemu VM should have failed (monitor socket is there)..."
                 fi
                 echo "Killing qemu (pid: $QEMU_PID)."
@@ -84,7 +89,7 @@
               fi
               rm -f $${qemu_pidfile}
             fi
-            rm -f $${qemu_monitor_socket}
+            rm -f $QEMU_MONITOR_SOCKET
   - on_setup_clean:
     - test:
       - exec_local: test "$${shutdown_vm_synchrone}" == "false" -a "$${vm_cleanup_section}" == "setup"
@@ -193,10 +198,14 @@
           if [ -n "${SSH_FWD_PORT}" ]; then
             HOSTFWD=",hostfwd=tcp::${SSH_FWD_PORT}-:22"
           fi
+          QEMU_MONITOR_SOCKET="$${qemu_monitor_socket}"
+          if [ "$${shutdown_vm_synchrone}" == "true" ]; then
+            QEMU_MONITOR_SOCKET="${QEMU_MONITOR_SOCKET%.socket}.synchrone.socket"
+          fi
           qemu-system-$${qemu_arch} $ENABLE_KVM -smp $${qemu_cpus} -m $${qemu_memory_size} -rtc base=localtime \
             -net nic,model=virtio -net user${QEMU_NETDEV_USER_OPTIONS}${HOSTFWD} \
             $QEMU_DRIVES \
-            -monitor unix:$${qemu_monitor_socket},server,nowait -pidfile $${qemu_pidfile} -daemonize \
+            -monitor unix:$QEMU_MONITOR_SOCKET,server,nowait -pidfile $${qemu_pidfile} -daemonize \
             $QEMU_BOOT ${QEMU_APPEND_CMDLINE:+-append "$QEMU_APPEND_CMDLINE"} $NO_REBOOT \
             $VNC_OPT $SERIAL_TELNET\
             $LOADVM
@@ -231,7 +240,11 @@
             set -e -o pipefail
             echo "Sending keyboard commands to the VM: $${qemu_sendkeys_commands}"
             echo "(Local httpd server url: http://$${local_ip}:$HTTP_PORT)"
-            ruby $${qemu_sendkeys_script} -d 0.05 "$(sed -e s/%LOCAL_IP%/$${local_ip}/g -e s/%HTTP_PORT%/$HTTP_PORT/g $${qemu_sendkeys_commands})" | socat - UNIX-CONNECT:$${qemu_monitor_socket} > /dev/null
+            QEMU_MONITOR_SOCKET="$${qemu_monitor_socket}"
+            if [ "$${shutdown_vm_synchrone}" == "true" ]; then
+              QEMU_MONITOR_SOCKET="${QEMU_MONITOR_SOCKET%.socket}.synchrone.socket"
+            fi
+            ruby $${qemu_sendkeys_script} -d 0.05 "$(sed -e s/%LOCAL_IP%/$${local_ip}/g -e s/%HTTP_PORT%/$HTTP_PORT/g $${qemu_sendkeys_commands})" | socat - UNIX-CONNECT:$QEMU_MONITOR_SOCKET > /dev/null
         - exec_local: echo "No keyboard commands to send"
 
 - start_vm_synchrone:
