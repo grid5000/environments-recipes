@@ -9,6 +9,8 @@
 extend: ./debian11-arm64-common.yaml
 
 global:
+  # Export format to generate
+  appliance_formats: tar.zst
   # Grid'5000 environment variant
   g5k_variant: std
 
@@ -72,6 +74,11 @@ setup:
       - exec_in: ln -sfn /boot/Image /vmlinuz
     - uninstall_debian_kernel:
       - on_checkpoint: disabled
+      - exec_in: |
+          # stop apt timer so that it does not block the kernel uninstall
+          set -e
+          systemctl stop apt-daily.timer
+          systemctl stop apt-daily-upgrade.timer
       - apt-get_in: -q=2 remove --purge linux-image-*
     - generate_initramfs:
       - exec_in: mkinitramfs -o /boot/initrd.img $(ls -d /lib/modules/*/kernel | cut -d/ -f4)
@@ -80,8 +87,20 @@ setup:
       - on_checkpoint: disabled
       - exec_in: dpkg-divert --rename /usr/bin/ipmitool
       - exec_in: ln -s /bin/true /usr/bin/ipmitool
-  - disable_checkpoint
+    - fix_env_name:
+      - exec_in: |
+          sed -i -e '1s/-std-/-stdl4t-/' /etc/grid5000/release
+    - change_motd:
+      - exec_in: |
+          sed -i \
+              -e 's/-std-/-stdl4t-/' \
+              -e 's/\(based on .\+\))/\1 + Nvidia L4T $${g5k_l4t_version})/' \
+              /etc/motd
   - set_and_clear_var_log
 
 export:
-  - "@base"
+  - clean_dhcp_leases
+  - save_appliance_VM
+  - export_g5k:
+    - g5k_variant: stdl4t
+    - g5k_description: "debian 11 (bullseye) for arm64 - std + Nvidia L4T overlay"
