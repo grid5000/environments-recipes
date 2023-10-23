@@ -1,1 +1,1 @@
-^(|from_grid5000_environment/)[^/]+$
+^(|from_grid5000_environment/|kadeploy3-deploy-kernel/)[^/]+$
