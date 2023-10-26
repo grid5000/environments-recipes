@@ -24,4 +24,5 @@ setup:
   - "@base"
 
 export:
-  - "@base"
+  - disable_checkpoint
+  - save_appliance_VM
