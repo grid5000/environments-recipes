@@ -17,10 +17,10 @@ global:
   qemu_image_size: 8G
   qemu_pidfile: $${kameleon_cwd}/qemu.pid
   qemu_netdev_user_options: "domainname=FROM_HOST,dnssearch=FROM_HOST"
-  qemu_kernel_path: $${kameleon_cwd}/qemu_kernel
-  qemu_initrd_path: $${kameleon_cwd}/qemu_initrd
+  qemu_kernel_path:
+  qemu_initrd_path:
   qemu_append_cmdline: ""
-  qemu_iso_path: $${kameleon_cwd}/qemu.iso
+  qemu_iso_path:
   disk_device: /dev/vda
   filesystem_type: ext4
 
