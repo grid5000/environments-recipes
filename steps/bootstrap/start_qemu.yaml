@@ -184,12 +184,12 @@
             # eg. qemu_netdev_user_options: "domainename=FROM_HOST,dnssearch=FROM_HOST" (no space)
             if echo "$${qemu_netdev_user_options}" | grep -q -e 'domainname=FROM_HOST' -e 'dnssearch=FROM_HOST'; then
               QEMU_DNSSEARCH=""
-              # \\s will translate to \s (YAML) ; grep || true because set -o pipefail
-              for d in $(grep -e '^search\\s' /etc/resolv.conf || true | sed -e 's/^search\\s\\+//'); do
+              # '(grep || true) | sed ...' because set -eo pipefail will make the script fail if grep does not find any matching line
+              for d in $((grep -e '^search\s' /etc/resolv.conf || true) | sed -e 's/^search\s\+//'); do
                 QEMU_DNSSEARCH="$QEMU_DNSSEARCH,dnssearch=$d"
               done
-              QEMU_DOMAINNAME="$(grep -e '^domain\\s' /etc/resolv.conf || true | sed -e 's/^domain\\s\\+//')"
-              QEMU_NETDEV_USER_OPTIONS="$(echo ,$${qemu_netdev_user_options} | sed -e s/,\\s*dnssearch=FROM_HOST/$QEMU_DNSSEARCH/ -e s/,\\s*domainname=FROM_HOST/${QEMU_DOMAINNAME:+,domainname=$QEMU_DOMAINNAME}/)"
+              QEMU_DOMAINNAME=$((grep -e '^domain\s' /etc/resolv.conf || true) | sed -e 's/^domain\s\+//')
+              QEMU_NETDEV_USER_OPTIONS=$(echo ',$${qemu_netdev_user_options}' | sed -e "s/,\s*dnssearch=FROM_HOST/$QEMU_DNSSEARCH/" -e "s/,\s*domainname=FROM_HOST/${QEMU_DOMAINNAME:+,domainname=$QEMU_DOMAINNAME}/")
             else
               QEMU_NETDEV_USER_OPTIONS=",$${qemu_netdev_user_options}"
             fi
