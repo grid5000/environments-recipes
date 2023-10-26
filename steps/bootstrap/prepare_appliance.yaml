@@ -28,6 +28,8 @@
 - add_insecure_key_to_ssh_config:
   - on_checkpoint: redo
   - exec_local: |
-      cat <<EOF >> $${ssh_config_file}
+      if grep -q "^IdentityFile $${insecure_ssh_key}$" $${ssh_config_file}; then
+        cat <<EOF >> $${ssh_config_file}
       IdentityFile $${insecure_ssh_key}
       EOF
+      fi

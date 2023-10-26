@@ -15,10 +15,10 @@ global:
     proxy_cache: $${local_ip}
 
 bootstrap:
+  - prepare_ssh_to_out_context
   - download_upstream_tarball
   - create_appliance
   - prepare_appliance
-  - prepare_ssh_to_out_context
 
 setup:
   - "@base"
