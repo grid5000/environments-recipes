@@ -10,6 +10,8 @@ extend: from_scratch/ppc64le/centos-8.yaml
 
 global:
   appliance_formats: qcow2 tar.zst
+  # disable kexec boot
+  grid5000_environment_export_no_kexec: true
   # Output base filename
   output: "$${kameleon_cwd}/$${kameleon_recipe_name}"
   # Grid'5000 environment variant
