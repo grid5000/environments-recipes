@@ -1,9 +1,4 @@
-stages:
- - dryrun
- - build
-
 lint:
-  stage: .pre
   tags:
     - grid5000-docker
   image: debian:bullseye
@@ -19,7 +14,6 @@ lint:
     - BUNDLE_GEMFILE=ci/Gemfile bundle exec rake --rakefile ci/rakefile_lint lint
 
 dryrun_all:
-  stage: dryrun
   tags:
    - grid5000-docker
   image: ${CI_REGISTRY}/grid5000/docker/kameleon:2.10.11.1-bullseye
@@ -29,7 +23,6 @@ dryrun_all:
    - tags
 
 .defaults-build: &defaults-build
-  stage: build
   tags:
    - grid5000-shell
   script:
@@ -42,58 +35,21 @@ dryrun_all:
 #    - build/*tar.gz
 #   expire_in: '1 week'
 
-### Build
-## x64
-# Debian 10
-build_debian10-x64-std:
-  <<: *defaults-build
+.jenkins-scripts-env-wrapper: &jenkins-scripts-env-wrapper
+  tags:
+   - grid5000-shell
+  script:
+   - /srv/jenkins-scripts/bin/env-ci ${CI_JOB_NAME}
+  except:
+   - tags
 
-# Debian 11
-  <<: *defaults-build
-build_debian11-x64-std:
-  <<: *defaults-build
+build_debian12-x64-min:
+  <<: *jenkins-scripts-env-wrapper
 
-# Debian 12
-build_debian12-x64-big:
-  <<: *defaults-build
+test_debian12-x64-min_nancy-grappe:
+  <<: *jenkins-scripts-env-wrapper
+  needs: ["build_debian12-x64-min"]
 
-# Debian testing
-build_debiantesting-x64-min:
-  <<: *defaults-build
-
-# Ubuntu
-build_ubuntu2004-x64-min:
-  <<: *defaults-build
-
-build_ubuntu2204-x64-nfs:
-  <<: *defaults-build
-
-# Centos
-build_centos7-x64-min:
-  <<: *defaults-build
-
-build_centos8-x64-min:
-  <<: *defaults-build
-
-# Centos Stream
-build_centosstream8-x64-min:
-  <<: *defaults-build
-
-build_centosstream9-x64-min:
-  <<: *defaults-build
-
-# Rocky
-build_rocky8-x64-min:
-  <<: *defaults-build
-
-build_rocky9-x64-min:
-  <<: *defaults-build
-
-# MiniOS Bullseye
-build_kadeploy3-deploy-kernel/kadeploy3-deploy-kernel-bullseye:
-  <<: *defaults-build
-
-# from_grid5000_environment
-build_from_grid5000_environment/base:
-  <<: *defaults-build
-
+test_debian12-x64-min_rennes-paradoxe:
+  <<: *jenkins-scripts-env-wrapper
+  needs: ["build_debian12-x64-min"]
