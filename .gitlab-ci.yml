@@ -53,3 +53,11 @@ test_debian12-x64-min_nancy-grappe:
 test_debian12-x64-min_rennes-paradoxe:
   <<: *jenkins-scripts-env-wrapper
   needs: ["build_debian12-x64-min"]
+
+push_debian12-x64-min:
+  <<: *jenkins-scripts-env-wrapper
+  needs: ["build_debian12-x64-min"]
+  parallel:
+    matrix:
+      - SITE: ['grenoble', 'lille', 'luxembourg', 'lyon', 'nancy', 'nantes', 'rennes', 'sophia', 'toulouse']
+  when: manual
