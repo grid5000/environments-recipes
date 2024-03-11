@@ -1,0 +1,130 @@
+spec:
+  inputs:
+    os:
+    version:
+    arch:
+    matrix-variants:
+    environment-name:
+---
+
+# This script assumes that OS, VERSION, and ARCH are defined as variables
+# by the including script, and that .matrix-variants is also defined by the
+# including script.
+# The inputs are there mainly for cosmetic purpose of defining a job name
+# including the value of these variables
+
+"gen-$[[ inputs.environment-name ]]":
+  stage: generate
+  extends:
+    - $[[ inputs.matrix-variants ]]
+    - .autostart
+  variables:
+    OS: $[[ inputs.os ]]
+    VERSION: $[[ inputs.version ]]
+    ARCH: $[[ inputs.arch ]]
+    MIN: /$[[ inputs.environment-name ]]-min/
+    BASE: /$[[ inputs.environment-name ]]-base/
+    STD: /$[[ inputs.environment-name ]]-std/
+    BIG: /$[[ inputs.environment-name ]]-big/
+    NFS: /$[[ inputs.environment-name ]]-nfs/
+  rules:
+    # NOTE: could not manage to make use of !reference [...] with an external
+    # file.
+    # Attempt to start the job automatically if it's present in GENERATE_OS variable
+    - if: '$GENERATE_OS =~ $MIN && $VARIANT == "min"'
+    - if: '$GENERATE_OS =~ $BASE && $VARIANT == "base"'
+    - if: '$GENERATE_OS =~ $STD && $VARIANT == "std"'
+    - if: '$GENERATE_OS =~ $BIG && $VARIANT == "big"'
+    - if: '$GENERATE_OS =~ $NFS && $VARIANT == "nfs"'
+    - when: manual
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: clone-refrepo
+  tags:
+    - linux
+  script:
+    - echo "fullname ${MIN}"
+    - sleep 30
+    - echo "Generating ${OS}-${VERSION}-${ARCH} - ${VARIANT}"
+
+# FIXME: the part below is here because using something like this in
+# test-image-on-cluster does not work currently:
+# rules:
+#   - if: '$GENERATE_OS =~ $MIN && $VARIANT == "min"'
+#     needs:
+#       job: "gen-$[[ inputs.environment-name ]]"
+#       parallel:
+#         matrix:
+#           - VARIANT: min
+# Therefore instead of creating needs:parallel in a rules we create one job
+# per variant which can be used as a simple needs.
+.phony-job:
+  extends:
+    - .autostart
+  stage: generate
+  variables:
+    MIN: /$[[ inputs.environment-name ]]-min/
+    BASE: /$[[ inputs.environment-name ]]-base/
+    STD: /$[[ inputs.environment-name ]]-std/
+    BIG: /$[[ inputs.environment-name ]]-big/
+    NFS: /$[[ inputs.environment-name ]]-nfs/
+  tags:
+    - linux
+  script:
+    - echo ok
+
+phony-dep-min:
+  extends:
+    - .phony-job
+  rules:
+    - if: '$GENERATE_OS =~ $MIN'
+  needs:
+    - job: "gen-$[[ inputs.environment-name ]]"
+      optional: true
+      parallel:
+        matrix:
+          - VARIANT: min
+phony-dep-base:
+  extends:
+    - .phony-job
+  rules:
+    - if: '$GENERATE_OS =~ $BASE'
+  needs:
+    - job: "gen-$[[ inputs.environment-name ]]"
+      optional: true
+      parallel:
+        matrix:
+          - VARIANT: base
+phony-dep-std:
+  extends:
+    - .phony-job
+  rules:
+    - if: '$GENERATE_OS =~ $STD'
+  needs:
+    - job: "gen-$[[ inputs.environment-name ]]"
+      optional: true
+      parallel:
+        matrix:
+          - VARIANT: std
+phony-dep-big:
+  extends:
+    - .phony-job
+  rules:
+    - if: '$GENERATE_OS =~ $BIG'
+  needs:
+    - job: "gen-$[[ inputs.environment-name ]]"
+      optional: true
+      parallel:
+        matrix:
+          - VARIANT: big
+phony-dep-nfs:
+  extends:
+    - .phony-job
+  rules:
+    - if: '$GENERATE_OS =~ $NFS'
+  needs:
+    - job: "gen-$[[ inputs.environment-name ]]"
+      optional: true
+      parallel:
+        matrix:
+          - VARIANT: nfs

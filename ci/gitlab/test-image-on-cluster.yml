@@ -1,0 +1,59 @@
+spec:
+  inputs:
+    site:
+    cluster:
+    os:
+    version:
+    arch:
+    matrix-variants:
+    environment-name:
+---
+
+"$[[ inputs.cluster ]]":
+  stage: $[[ inputs.site ]]
+  extends:
+    - $[[ inputs.matrix-variants ]]
+    - .autostart
+  variables:
+    CLUSTER: $[[ inputs.cluster ]]
+    SITE: $[[ inputs.site ]]
+    OS: $[[ inputs.os ]]
+    VERSION: $[[ inputs.version ]]
+    ARCH: $[[ inputs.arch ]]
+    MIN: /$[[ inputs.environment-name ]]-min/
+    BASE: /$[[ inputs.environment-name ]]-base/
+    STD: /$[[ inputs.environment-name ]]-std/
+    BIG: /$[[ inputs.environment-name ]]-big/
+    NFS: /$[[ inputs.environment-name ]]-nfs/
+    RCLUSTER: /$[[ inputs.cluster ]]/
+  rules:
+    # NOTE: could not manage to make use of !reference [...] with an external
+    # file.
+    # Attempt to start the job automatically if it's present in GENERATE_OS variable,
+    # and if the cluster is in the selected clusters (or if there are no selected
+    # clusters).
+    - if: '$GENERATE_OS =~ $MIN && $VARIANT == "min" && ($TEST_CLUSTERS == "" || $TEST_CLUSTERS =~ $RCLUSTER)'
+      needs:
+        job: phony-dep-min
+    - if: '$GENERATE_OS =~ $BASE && $VARIANT == "base" && ($TEST_CLUSTERS == "" || $TEST_CLUSTERS =~ $RCLUSTER)'
+      needs:
+        job: phony-dep-base
+    - if: '$GENERATE_OS =~ $STD && $VARIANT == "std" && ($TEST_CLUSTERS == "" || $TEST_CLUSTERS =~ $RCLUSTER)'
+      needs:
+        job: phony-dep-std
+    - if: '$GENERATE_OS =~ $BIG && $VARIANT == "big" && ($TEST_CLUSTERS == "" || $TEST_CLUSTERS =~ $RCLUSTER)'
+      needs:
+        job: phony-dep-big
+    - if: '$GENERATE_OS =~ $NFS && $VARIANT == "nfs" && ($TEST_CLUSTERS == "" || $TEST_CLUSTERS =~ $RCLUSTER)'
+      needs:
+        job: phony-dep-nfs
+    - when: manual
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: clone-refrepo
+  tags:
+    - linux
+  script:
+    - echo "min ${MIN}"
+    - ls reference-repository
+    - echo "Testing ${OS}-${VERSION}-${ARCH} - ${VARIANT} on ${CLUSTER}-${SITE}"

@@ -1,0 +1,14 @@
+.matrix-all-archs:
+  parallel:
+    matrix:
+      - ARCH: [x64, arm64, ppc64]
+
+.matrix-x-arm:
+  parallel:
+    matrix:
+      - ARCH: [x64, arm64]
+
+.matrix-arm:
+  parallel:
+    matrix:
+      - ARCH: [arm64]

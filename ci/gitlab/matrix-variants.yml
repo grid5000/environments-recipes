@@ -1,0 +1,25 @@
+.matrix-variants-min-base-nfs-big-std:
+  parallel:
+    matrix:
+      - VARIANT: [min, base, nfs, big, std]
+.matrix-variants-min-base-nfs-big:
+  parallel:
+    matrix:
+      - VARIANT: [min, base, nfs, big]
+.matrix-variants-min-nfs:
+  parallel:
+    matrix:
+      - VARIANT: [min, nfs]
+.matrix-variants-min-nfs-big:
+  parallel:
+    matrix:
+      - VARIANT: [min, nfs, big]
+# NOTE: chose to use a variant to be consistent with other jobs.
+.matrix-variants-std:
+  parallel:
+    matrix:
+      - VARIANT: [std]
+.matrix-variants-big:
+  parallel:
+    matrix:
+      - VARIANT: [big]

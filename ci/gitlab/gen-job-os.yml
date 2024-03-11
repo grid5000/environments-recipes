@@ -1,0 +1,22 @@
+spec:
+  inputs:
+    os:
+    version:
+    extends:
+---
+
+"$[[ inputs.os ]]-$[[ inputs.version ]]":
+  stage: $[[ inputs.os ]]
+  needs:
+    - generate-config
+  extends:
+    - $[[ inputs.extends ]]
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  trigger:
+    include:
+      # NOTE: it seems that including through artifacts or local doesn't behave
+      # the same regarding the handling of inputs variables!
+      # Therefore I generated all the config...
+      - artifact: generated/$[[ inputs.os ]]-$[[ inputs.version ]]-$ARCH.yml
+        job: generate-config
