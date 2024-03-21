@@ -9,14 +9,9 @@
 #
 #==============================================================================
 ---
-extend: kadeploy3-deploy-kernel-bookworm.yaml
+extend: kadeploy3-deploy-kernel-bookworm-arm64.yaml
 
 global:
-  arch: aarch64
-  deb_arch: arm64
-  deb_kernel_arch: $${deb_arch}
-  qemu_arch: x86_64
-  arch_specific_packages: kexec-tools grub-efi-arm64 
   use_backports: no
   deb_kernel: other
   firmware_packages:
