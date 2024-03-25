@@ -22,7 +22,7 @@ global:
   # -> other option: bpo - e.g. set on command line using "-g deb_kernel:bpo"
   deb_kernel: bpo
   kernel_filename: vmlinuz
-  tmpfs_size: 1G
+  tmpfs_size: 8G
   firmware_packages: firmware-linux firmware-bnx2 firmware-bnx2x firmware-qlogic
   # haveged is used to provide more entropy during boot
   system_packages: ash systemd systemd-sysv haveged gnupg
