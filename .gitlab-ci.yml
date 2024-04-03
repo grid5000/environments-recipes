@@ -42,6 +42,8 @@ dryrun_all:
    - /srv/jenkins-scripts/bin/env-ci ${CI_JOB_NAME}
   except:
    - tags
+  after_script:
+   - /srv/jenkins-scripts/bin/env-ci cleanup ${CI_JOB_NAME}
 
 build_debian12-x64-min:
   <<: *jenkins-scripts-env-wrapper
