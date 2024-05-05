@@ -349,7 +349,7 @@ export:
       - apt-get_in: purge
       - apt-get_in: clean
     - create_rootfs:
-      - apt-get_out: install cpio xz-utils pixz
+      - apt-get_out: install cpio zstd
       - exec_out: |
           set -e
           cd $${rootfs} # use out context: quicker if foreign arch
@@ -365,7 +365,7 @@ export:
               -o -path './root/kameleon_workdir' -prune \
               -o -path './$${kernel_filename}' -prune \
               -o -path './initrd.img' -prune \
-              -o -xdev -print | cpio -o -H newc  | pixz -9 > $${rootfs}/boot/root.cxz
+              -o -xdev -print | cpio -o -H newc | pzstd -vvv -19 -o $${rootfs}/boot/root.cpio.zstd
     - add_initramfs_hook:
       - on_checkpoint: disabled
       - exec_in: |
@@ -385,7 +385,14 @@ export:
           esac
           . /usr/share/initramfs-tools/hook-functions
           # Begin real processing below this line
-          cp -v /boot/root.cxz $DESTDIR
+          # We use sed to change PPC64 arch, because it doesn't match the
+          # architecture name used for the /lib/$ARCH-linux-gnu directory.
+          MACHINE_ARCH=$(uname -m | sed 's/ppc64le/powerpc64le/g')
+          for lib in libstdc++.so.6 libgcc_s.so.1 libc.so.6 libm.so.6; do
+            cp /lib/$MACHINE_ARCH-linux-gnu/$lib $DESTDIR/lib/
+          done
+          cp /usr/bin/pzstd $DESTDIR/bin/
+          cp -v /boot/root.cpio.zstd $DESTDIR
           EOF
           chmod 755 /etc/initramfs-tools/hooks/copy-root-archive
     - add_initramfs_scripts:
@@ -419,7 +426,7 @@ export:
           log_end_msg
           log_begin_msg "Populate rootfs"
           cd ${rootmnt}.tmp
-          xzcat /root.cxz | cpio -i
+          pzstd -dcf /root.cpio.zstd --stdout | cpio -i
           if [ $? -ne 0 ]; then
              panic "Failed to populate"
           fi
