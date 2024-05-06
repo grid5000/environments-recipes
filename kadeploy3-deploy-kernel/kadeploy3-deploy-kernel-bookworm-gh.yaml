@@ -1,0 +1,32 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Kadeploy3 ramdisk OS (used in the deployment phase) for ARM64
+#
+# Notes:
+# - force use of busybox rather than klibc-utils (which breaks the mount)
+#
+#==============================================================================
+---
+extend: kadeploy3-deploy-kernel-bookworm-arm64.yaml
+
+global:
+  deb_kernel: other
+  firmware_packages:
+  qemu_memory_size: 16G
+  tmpfs_size: 8G
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - install_backport_kernel:
+    - update_apt:
+      - apt-get_in: update
+    - install_linux_image:
+      - apt-get_in: install -t bookworm-backports linux-image-arm64
+
+export:
+  - "@base"
