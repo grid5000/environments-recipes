@@ -130,12 +130,16 @@ setup:
           elif [ "$${release}" == "buster" ]; then
             echo "deb http://security.debian.org/ $${release}/updates main contrib non-free" >> /etc/apt/sources.list.d/$${release}.list
           fi
+          
+          if [ "$${release}" == "bookworm" ]; then
+            echo "deb $${deb_mirror_uri} $${release} main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/$${release}.list
+          fi 
           if [ "$${use_backports}" == "true" ]; then
-            if [ "$${release}" == "bookworm" ]; then
-              echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free non-free-firmware" > /etc/apt/sources.list.d/$${release}-backports.list
-            elif ! [[ "$${release}" =~ sid|testing ]]; then
-              echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free" > /etc/apt/sources.list.d/$${release}-backports.list
-            fi
+           if [ "$${release}" == "bookworm" ]; then
+             echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free non-free-firmware" > /etc/apt/sources.list.d/$${release}-backports.list
+           elif ! [[ "$${release}" =~ sid|testing ]]; then
+             echo "deb $${deb_mirror_uri} $${release}-backports main contrib non-free" > /etc/apt/sources.list.d/$${release}-backports.list
+           fi
           fi
           if [ "$${deb_arch}" == "amd64" ] && [ "$${release}" != "trixie" ]; then
             echo "deb http://hwraid.le-vert.net/debian $${hwraid_release} main" >/etc/apt/sources.list.d/hwraid.list
