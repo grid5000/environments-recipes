@@ -19,8 +19,10 @@ variables:
     description: The refrepo branch you want to use for the pipeline
     value: master
   ENVIRONMENTS:
+    value: debian10-x64-min
     description: A regexp of environments to build
   CLUSTERS:
+    value: gros
     description: The coma separated list of clusters to test automatically
   ENABLE_UNUSED_GEN_JOBS:
     description: Should non-matching generation job be created? Leave blank to avoid generation.
