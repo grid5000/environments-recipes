@@ -19,7 +19,7 @@ variables:
     description: The refrepo branch you want to use for the pipeline
     value: master
   ENVIRONMENTS:
-    value: debian10-x64-min
+    value: debian10-x64-base
     description: A regexp of environments to build
   CLUSTERS:
     value: gros
