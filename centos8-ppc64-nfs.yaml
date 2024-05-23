@@ -14,7 +14,7 @@ global:
   # packages to install
   packages: "$${packages} nfs-utils autofs openldap-clients nss-pam-ldapd ruby"
   # Grid'5000 Kadeploy environment parameters
-  g5k_postinst_script: g5k-postinstall --net redhat --fstab nfs --restrict-user current --disk-aliases
+  g5k_postinst_script: g5k-postinstall --net redhat --net force-ref-api-names --fstab nfs --restrict-user current --disk-aliases
 
 bootstrap:
   - "@base"
