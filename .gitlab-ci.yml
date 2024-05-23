@@ -20,8 +20,10 @@ variables:
     value: master
   ENVIRONMENTS:
     description: A regexp of environments to build
+    value: centos8-x64-min
   CLUSTERS:
     description: The coma separated list of clusters to test automatically
+    value: abacus11
   ENABLE_UNUSED_GEN_JOBS:
     description: Should non-matching generation job be created? Leave blank to avoid generation.
   ENABLE_UNUSED_TEST_JOBS:
