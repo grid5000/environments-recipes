@@ -35,6 +35,14 @@ class env::std::dell (
       $_packages_names = $packages_names - 'libssl1.0.0'
       $service_status = 'systemctl status dsm_sa_datamgrd.service dsm_sa_eventmgrd.service'
     }
+    'bookworm': {
+      # Ubuntu 22.04 packages
+      $_location = "https://linux.dell.com/repo/community/openmanage/11010/jammy"
+      $_release = "jammy"
+      $_repos = "main"
+      $_packages_names = $packages_names - 'libssl1.0.0'
+      $service_status = 'systemctl status dsm_sa_datamgrd.service dsm_sa_eventmgrd.service'
+    }
     default : {
       fail "${::lsbdistcodename} not supported."
     }
@@ -76,7 +84,7 @@ class env::std::dell (
       }
     }
     # OMSA >= 9.3.0
-    'bullseye': {
+    'bullseye', 'bookworm': {
       service {
         'dsm_sa_datamgrd':
           enable  => true,
@@ -93,7 +101,7 @@ class env::std::dell (
     }
   }
 
-  if ($::lsbdistcodename == 'buster') or ($::lsbdistcodename == 'bullseye') {
+  if ($::lsbdistcodename == 'buster') or ($::lsbdistcodename == 'bullseye') or ($::lsbdistcodename == 'bookworm') {
     # Using enable => false doesn't seem to work, maybe because openipmi use systemd-sysv-generator
     exec {
       'disable openipmi service':
