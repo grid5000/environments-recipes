@@ -19,9 +19,11 @@ variables:
     description: The refrepo branch you want to use for the pipeline
     value: master
   ENVIRONMENTS:
+    value: ^(rocky|centos).*$
     description: A regexp of environments to build
   CLUSTERS:
     description: The coma separated list of clusters to test automatically
+    value: gros,drac,pyxis
   ENABLE_UNUSED_GEN_JOBS:
     description: Should non-matching generation job be created? Leave blank to avoid generation.
   ENABLE_UNUSED_TEST_JOBS:
