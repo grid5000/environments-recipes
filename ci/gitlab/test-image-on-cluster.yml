@@ -27,4 +27,4 @@ spec:
     - grid5000-shell
   script:
     - echo "Testing ${ENV_NAME} on ${CLUSTER}"
-    - RUBYLIB=/srv/jenkins-scripts/lib ci/gitlab/run_job.rb --job test --env ${ENV_NAME} --cluster ${SITE}-${CLUSTER}
+    - RUBYLIB=/srv/jenkins-scripts/lib:reference-repository/lib ci/gitlab/run_job.rb --job test --env ${ENV_NAME} --cluster ${SITE}-${CLUSTER}
