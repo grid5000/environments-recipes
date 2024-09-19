@@ -53,54 +53,53 @@ def gen_environments_push
   # includes limit that we hit :(
   # For these jobs it's not bad so I have inlined them.
 
-  # Start by gathering all environments
-  selected_envs = map_all_envs do |os, version, arch, variant|
+  full_pipeline = {}
+  all_stages = %w(generate)
+  # TODO: group by os-arch, then one line per variant, each job does all sites.
+  map_all_envs do |os, version, arch, variant|
     environment = env_name(os, version, arch, variant)
     next unless environment.start_with?(ENV_NAME)
-    environment
-  end.flatten.compact
-  base_pipeline = {
-    'stages' => ['generate', *selected_envs],
-  }
-  stuff = selected_envs.reduce(base_pipeline) do |jobs, environment|
+    env_with_arch = "#{os}#{version}-#{arch}"
+    all_stages << env_with_arch
+
     # FIXME: check if site needs the arch!
-    all_sites.each do |site|
-      jobs.merge!({
-        "#{site}-#{environment}" => {
-          'stage' => environment,
-          'variables' => {
-            'AUTOSTART' => false,
-            'ENV_NAME' => environment,
-            'SITE' => site,
-          },
-          # We start the job automatically if we're told to do so, otherwise we put
-          # the job in manual mode.
-          'rules' => [
-            { 'if' => '$AUTOSTART == "true"' },
-            { 'when' => 'manual' },
-          ],
-          # FIXME: either "need" the generate job, or probably nothing actually!
-          'needs' => [],
-          'tags' => %w(grid5000-shell),
-          'script' => [
-            'echo "Pushing ${ENV_NAME} on ${SITE}"',
-            'echo "FIXME: when testing is over I would use commit ${CI_COMMIT_SHORT_SHA}"',
-            # TODO: ssh on site!
-            # NOTE: currently this is a harmless rsync/cat of some files
-            'ci/gitlab/push/create-image-locally.sh -e ${ENV_NAME} -c 62b4ee8a -t ${CI_COMMIT_TAG}',
-          ],
-        }
-      })
-    end
-    jobs
-  end
+    # FIXME: put the list of valid sites in parameters
+    #all_sites.each do |site|
+    full_pipeline["#{environment}"] = {
+      'stage' => env_with_arch,
+      'variables' => {
+        'AUTOSTART' => false,
+        'ENV_NAME' => environment,
+      },
+      # We start the job automatically if we're told to do so, otherwise we put
+      # the job in manual mode.
+      'rules' => [
+        { 'if' => '$AUTOSTART == "true"' },
+        { 'when' => 'manual' },
+      ],
+      # FIXME: either "need" the generate job, or probably nothing actually!
+      'needs' => [],
+      'tags' => %w(grid5000-shell),
+      'script' => [
+        'echo "Pushing ${ENV_NAME} on sophia"',
+        'echo "FIXME: when testing is over I would use commit ${CI_COMMIT_SHORT_SHA}"',
+        # TODO: ssh on site!
+        # NOTE: currently this is a harmless rsync/cat of some files
+        'scp ci/gitlab/push/create-image-locally.sh ajenkins@sophia:/tmp/create-image-locally-${CI_COMMIT_SHORT_SHA}.sh',
+        'ssh ajenkins@sophia /tmp/create-image-locally-${CI_COMMIT_SHORT_SHA}.sh -e debian11-x64-big -c 62b4ee8a -t 2024091901',
+      ],
+    }
+  end.flatten.compact
+  full_pipeline['stages'] = all_stages.uniq
+  full_pipeline
 end
 
 def main_pipeline
   {
     'stages' => ['generate', *all_sites],
     'include' => [
-      *gen_environments_includes,
+      # FIXME: optionally do this
+      # *gen_environments_includes,
     ],
     **gen_environments_push,
   }
