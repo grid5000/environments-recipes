@@ -2,29 +2,21 @@
 
 set -euo pipefail
 
-environment=""
-architecture=""
-variant=""
+environment_name=""
 commit=""
 tag=""
 local_user=false
 
 function usage {
-  echo "Usage: $0 -e <env> -a <arch> -v <variant> -c <commit> -t <tag> [-l]"
+  echo "Usage: $0 -e <environment_name> -c <commit> -t <tag> [-l]"
   echo "Set '-l' to connect as the local user instead of ajenkins."
   exit 1
 }
 
-while getopts ":e:a:v:c:t:l" o; do
+while getopts ":e:c:t:l" o; do
   case "${o}" in
     e)
-      environment=${OPTARG}
-      ;;
-    a)
-      architecture=${OPTARG}
-      ;;
-    v)
-      variant=${OPTARG}
+      environment_name=${OPTARG}
       ;;
     c)
       commit=${OPTARG}
@@ -43,7 +35,9 @@ done
 
 # NOTE: we intentionally do not check the values; we assume we only get called
 # by scripts which know what they are doing.
-if [ -z "${environment}" ] || [ -z "${architecture}" ] || [ -z "${variant}" ] || [ -z "${commit}" ] || [ -z "${tag}" ]; then
+# FIXME: checking that commit matches tag could be useful, but from a gitlab
+# CI job we should have correct values.
+if [ -z "${environment_name}" ] || [ -z "${commit}" ] || [ -z "${tag}" ]; then
   usage
 fi
 
@@ -59,7 +53,7 @@ function remove_tmp_folder {
 # Make sure we cleanup behind us.
 trap remove_tmp_folder EXIT
 
-environment_name="${environment}-${architecture}-${variant}"
+cd "${TMP_DIR}"
 
 readarray -d '' matching_envs < <(ssh nancy "find ~ajenkins/public/environments/pipelines/*-${commit} -name \"${environment_name}.dsc\" -print0")
 
