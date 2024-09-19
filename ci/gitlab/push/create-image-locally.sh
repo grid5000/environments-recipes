@@ -49,9 +49,17 @@ fi
 
 set -x
 
-environment_name="${environment}-${architecture}-${variant}"
+# Create a temporary directory in which we'll work
+TMP_DIR="$(mktemp -d)"
 
-# TODO: mktemp -d, then trap and rm
+function remove_tmp_folder {
+  rm -rf "${TMP_DIR}"
+}
+
+# Make sure we cleanup behind us.
+trap remove_tmp_folder EXIT
+
+environment_name="${environment}-${architecture}-${variant}"
 
 readarray -d '' matching_envs < <(ssh nancy "find ~ajenkins/public/environments/pipelines/*-${commit} -name \"${environment_name}.dsc\" -print0")
 
@@ -93,6 +101,8 @@ touch "${environment_name}-${tag}.qcow2"
 # Let's fix the image url in the description file.
 sed -e "s|\\(file: \\)[^$]*|\\1server:///grid5000/images/${environment_name}-${tag}.tar.zst|" -i "${environment_name}-${tag}.dsc"
 
+ls "${TMP_DIR}"
+cat "${TMP_DIR}"/*.dsc
 # TODO: mv the files
 # TODO: remove environment
 # FIXME: check/figure out if/why we need to first do the deploy job
