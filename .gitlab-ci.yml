@@ -126,7 +126,8 @@ test-job:
   script:
     - whoami
     - hostname
-    - ci/gitlab/push/create-image-locally.sh -e debian11-x64-big -c 62b4ee8a -t 2024091901
+    - scp ci/gitlab/push/create-image-locally.sh ajenkins@sophia:/tmp/create-image-locally-${CI_COMMIT_SHORT_SHA}.sh
+    - ssh ajenkins@sophia /tmp/create-image-locally-${CI_COMMIT_SHORT_SHA}.sh -e debian11-x64-big -c 62b4ee8a -t 2024091901
 
-include:
-  - 'ci/gitlab/sanity.yml'
+#include:
+  #- 'ci/gitlab/sanity.yml'

@@ -95,7 +95,7 @@ touch "${environment_name}-${tag}.qcow2"
 # Let's fix the image url in the description file.
 sed -e "s|\\(file: \\)[^$]*|\\1server:///grid5000/images/${environment_name}-${tag}.tar.zst|" -i "${environment_name}-${tag}.dsc"
 
-ls "${TMP_DIR}"
+ls -al "${TMP_DIR}"
 cat "${TMP_DIR}"/*.dsc
 # TODO: mv the files
 # TODO: remove environment

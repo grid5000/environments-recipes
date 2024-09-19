@@ -85,6 +85,7 @@ def gen_environments_push
           'script' => [
             'echo "Pushing ${ENV_NAME} on ${SITE}"',
             'echo "FIXME: when testing is over I would use commit ${CI_COMMIT_SHORT_SHA}"',
+            # TODO: ssh on site!
             # NOTE: currently this is a harmless rsync/cat of some files
             'ci/gitlab/push/create-image-locally.sh -e ${ENV_NAME} -c 62b4ee8a -t ${CI_COMMIT_TAG}',
           ],
