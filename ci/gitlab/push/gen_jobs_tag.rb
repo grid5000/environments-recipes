@@ -63,6 +63,7 @@ def gen_environments_push
     'stages' => ['generate', *selected_envs],
   }
   stuff = selected_envs.reduce(base_pipeline) do |jobs, environment|
+    # FIXME: check if site needs the arch!
     all_sites.each do |site|
       jobs.merge!({
         "#{site}-#{environment}" => {

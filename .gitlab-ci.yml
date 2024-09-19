@@ -103,7 +103,7 @@ gen-tag-pipeline:
     paths:
       - generated
 
-environments-pipeline:
+push-environments:
   stage: environments
   needs:
     - gen-tag-pipeline
@@ -116,6 +116,17 @@ environments-pipeline:
     include:
       - artifact: generated/main-tag.yml
         job: gen-tag-pipeline
+
+# FIXME: this is just a test job to debug the script
+test-job:
+  stage: setup
+  needs: []
+  tags:
+    - grid5000-shell
+  script:
+    - whoami
+    - hostname
+    - ci/gitlab/push/create-image-locally.sh -e debian11-x64-big -c 62b4ee8a -t 2024091901
 
 include:
   - 'ci/gitlab/sanity.yml'
