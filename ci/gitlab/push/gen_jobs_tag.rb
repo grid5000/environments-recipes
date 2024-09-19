@@ -5,7 +5,7 @@ require 'yaml'
 require 'refrepo/data_loader'
 require 'optparse'
 
-require_relative 'config'
+require_relative '../config'
 
 options = {}
 OptionParser.new do |parser|
@@ -13,6 +13,7 @@ OptionParser.new do |parser|
   parser.on('-t TTT', '--tag', 'Tag')
 end.parse!(into: options)
 
+# FIXME: check the tag name matches 'envname/YYYYMMDDXX'
 ENV_NAME=options[:tag].split('/').first
 
 unless File.directory?(options[:output])
@@ -37,26 +38,69 @@ def gen_environments_includes
   map_all_envs do |os, version, arch, variant|
     environment = env_name(os, version, arch, variant)
     next unless environment.start_with?(ENV_NAME)
-    common_inputs = {
-      'environment-name' => environment,
-    }
     {
       'local' => 'ci/gitlab/generate-image.yml',
       'inputs' => {
         'autostart' => false,
-        **common_inputs,
+        'environment-name' => environment,
       },
     }
   end.flatten.compact
 end
 
-# TODO: create per site push job
+def gen_environments_push
+  # NOTE: I would have loved to use includes here too, but there is a 150
+  # includes limit that we hit :(
+  # For these jobs it's not bad so I have inlined them.
+
+  # Start by gathering all environments
+  selected_envs = map_all_envs do |os, version, arch, variant|
+    environment = env_name(os, version, arch, variant)
+    next unless environment.start_with?(ENV_NAME)
+    environment
+  end.flatten.compact
+  base_pipeline = {
+    'stages' => ['generate', *selected_envs],
+  }
+  stuff = selected_envs.reduce(base_pipeline) do |jobs, environment|
+    all_sites.each do |site|
+      jobs.merge!({
+        "#{site}-#{environment}" => {
+          'stage' => environment,
+          'variables' => {
+            'AUTOSTART' => false,
+            'ENV_NAME' => environment,
+            'SITE' => site,
+          },
+          # We start the job automatically if we're told to do so, otherwise we put
+          # the job in manual mode.
+          'rules' => [
+            { 'if' => '$AUTOSTART == "true"' },
+            { 'when' => 'manual' },
+          ],
+          # FIXME: either "need" the generate job, or probably nothing actually!
+          'needs' => [],
+          'tags' => %w(grid5000-shell),
+          'script' => [
+            'echo "Pushing ${ENV_NAME} on ${SITE}"',
+            'echo "FIXME: when testing is over I would use commit ${CI_COMMIT_SHORT_SHA}"',
+            # NOTE: currently this is a harmless rsync/cat of some files
+            'ci/gitlab/push/create-image-locally.sh -e ${ENV_NAME} -c 62b4ee8a -t ${CI_COMMIT_TAG}',
+          ],
+        }
+      })
+    end
+    jobs
+  end
+end
+
 def main_pipeline
   {
     'stages' => ['generate', *all_sites],
     'include' => [
-      *environments_pipelines,
+      *gen_environments_includes,
     ],
+    **gen_environments_push,
   }
 end
 

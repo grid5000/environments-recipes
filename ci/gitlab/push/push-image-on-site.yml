@@ -1,0 +1,30 @@
+spec:
+  inputs:
+    autostart:
+      type: boolean
+    environment-name:
+    site:
+---
+
+"push-$[[ inputs.environment-name ]]":
+  stage: $[[ inputs.site ]]
+  variables:
+    AUTOSTART: $[[ inputs.autostart ]]
+    ENV_NAME: $[[ inputs.environment-name ]]
+    SITE: $[[ inputs.site ]]
+  rules:
+    # We start the job automatically if we're told to do so, otherwise we put
+    # the job in manual mode.
+    - if: '$AUTOSTART == "true"'
+    - when: manual
+  # FIXME: either "need" the generate job, or probably nothing actually!
+  needs:
+    - pipeline: $ROOT_PIPELINE_ID
+      job: clone-refrepo
+  tags:
+    - grid5000-shell
+  script:
+    - echo "Pushing ${ENV_NAME} on ${SITE}"
+    - echo "FIXME: when testing is over I would use commit ${CI_COMMIT_SHORT_SHA}"
+    # NOTE: currently this is a harmless rsync/cat of some files
+    - ci/gitlab/push/create-image-locally.sh -e ${ENV_NAME} -c 62b4ee8a -t ${CI_COMMIT_TAG}

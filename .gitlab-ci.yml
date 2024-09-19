@@ -36,6 +36,9 @@ clone-refrepo:
   rules:
     # If variables are filled then just start, otherwise wait for user input.
     - if: '$ENVIRONMENTS != "" || $CLUSTERS != ""'
+    # If we're this is a pipeline triggered for a tag we definitely need this
+    # job.
+    - if: $CI_COMMIT_TAG
     # There is no alternative, we don't show up the job if these variables are
     # not set. Read the documentation in TechTeam:Environment-recipes to learn
     # about manually creating a pipeline for this.
@@ -79,6 +82,40 @@ environments-pipeline:
     include:
       - artifact: generated/main.yml
         job: gen-child-pipelines
+
+
+# FIXME: DRY some part for these!
+gen-tag-pipeline:
+  stage: setup
+  image: ${CI_REGISTRY}/grid5000/docker/g5k-debian:bullseye
+  tags:
+    - grid5000-docker
+  needs:
+    - clone-refrepo
+  rules:
+    - if: $CI_COMMIT_TAG
+  variables:
+    RUBYLIB: reference-repository/lib
+  script:
+    - rm -rf generated && mkdir generated
+    - ruby ci/gitlab/push/gen_jobs_tag.rb -o generated -t $CI_COMMIT_TAG
+  artifacts:
+    paths:
+      - generated
+
+environments-pipeline:
+  stage: environments
+  needs:
+    - gen-tag-pipeline
+  rules:
+    - if: $CI_COMMIT_TAG
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  trigger:
+    strategy: depend
+    include:
+      - artifact: generated/main-tag.yml
+        job: gen-tag-pipeline
 
 include:
   - 'ci/gitlab/sanity.yml'
