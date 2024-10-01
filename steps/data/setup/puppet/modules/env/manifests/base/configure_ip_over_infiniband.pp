@@ -57,7 +57,7 @@ class env::base::configure_ip_over_infiniband (){
           ensure  => directory;
         '/etc/systemd/system/ibacm.service.d/override.conf':
           ensure  => present,
-          content => "[Service]\nType=exec\nExecStart=\nExecStart=-/usr/sbin/ibacm --systemd",
+          content => "[Service]\nType=exec\nExecStart=\nExecStart=-/usr/sbin/ibacm --systemd\nWantedBy=rdma-hw.target",
           require => File['/etc/systemd/system/ibacm.service.d/'];
       }
     }
