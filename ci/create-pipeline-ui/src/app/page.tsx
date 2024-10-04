@@ -1,18 +1,10 @@
-import Button from '@mui/material/Button';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CreatePipeline from "@/components/CreatePipeline";
+
 export default function Home() {
   return (
     <div>
       <main>
-        <Button
-          component="label"
-          role={undefined}
-          variant="contained"
-          tabIndex={-1}
-          startIcon={<CloudUploadIcon />}
-        >
-          coucou
-        </Button>
+        <CreatePipeline />
       </main>
     </div>
   );
