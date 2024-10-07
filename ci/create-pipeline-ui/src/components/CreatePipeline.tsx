@@ -1,10 +1,15 @@
 'use client';
 
+import { GenState, getEnabledEnvs } from '@/lib/generation';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import GenerationTabContent from './GenerationTabContent';
+import PushImagesTabContent from './PushImagesTabContent';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import TestImagesTabContent from './TestImagesTabContent';
 import Typography from '@mui/material/Typography';
 
 import config from '@/lib/config';
@@ -27,14 +32,26 @@ function CustomTabPanel(props: TabPanelProps) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ mb: 2 }}>{children}</Box>}
     </div>
   );
 }
 
-type GenState = {
-  [name: string]: boolean;
-};
+function CreatePipelineButton({ generations }: { generations: GenState }) {
+  const enabledEnvs = getEnabledEnvs(generations);
+  return (
+    <Button
+      component="label"
+      role={undefined}
+      variant="contained"
+      disabled={enabledEnvs.length === 0}
+      color="success"
+      sx={{ ml: 'auto' }}
+    >
+      Create the pipeline
+    </Button>
+  );
+}
 
 function initialState() {
   const allEnvNames = Object.entries(config.environments).flatMap(([name, desc]) => {
@@ -49,18 +66,7 @@ function initialState() {
 export default function CreatePipeline() {
   // TODO: we need:
   //   - the list of active branches
-  //   - checkboxes for all envs
-  //   - checkboxes for all variants
-  //   - checkboxes for all arch?
-  const environments = Object.keys(config.environments);
-  // Idea: one card per env
-  // title: env
-  // content: list of variant + arch
-  // List grouped by arch!
-  // actions: select all, deselect all
-  // below: "check all [arch]"
-  // one tab "generation", one tab "tests", one tab "push"
-  // state: { envname: boolean }
+  //   - the list of sites for enabled arch
   const [value, setValue] = useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -69,38 +75,31 @@ export default function CreatePipeline() {
 
   const [generations, setGenerations] = useState<GenState>(initialState());
 
-  console.log(generations);
-
   return (
     <Container maxWidth="xl">
       <Typography variant="h1">
         Environments pipeline
       </Typography>
-      All environments: {environments.join(', ')}.
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Tabs value={value} onChange={handleChange}>
           <Tab label="Generation" />
           <Tab label="Tests" />
           <Tab label="Push" />
+          <CreatePipelineButton generations={generations} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        Item One
+        <GenerationTabContent
+          generations={generations}
+          setGenerations={setGenerations}
+        />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        Item Two
+        <TestImagesTabContent />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
-        Item Three
+        <PushImagesTabContent />
       </CustomTabPanel>
-      <Button
-        component="label"
-        role={undefined}
-        variant="contained"
-        color="success"
-      >
-        Create the pipeline
-      </Button>
     </Container>
   );
 }

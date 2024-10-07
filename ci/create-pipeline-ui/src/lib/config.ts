@@ -1,14 +1,15 @@
 import rawconfig from '@/generated/config.json';
 
-type Architecture = 'x64' | 'arm64' | 'ppc64';
-type Variant = 'min' | 'base' | 'nfs' | 'big' | 'std';
-type Site = string;
-type EnvironmentDescription = {
+export type Architecture = 'x64' | 'arm64' | 'ppc64';
+export type Variant = 'min' | 'base' | 'nfs' | 'big' | 'std';
+export type Site = string;
+export type Cluster = string;
+export type EnvironmentDescription = {
   archs: Architecture[],
   variants: Variant[],
 };
 
-type Config = {
+export type Config = {
   environments: {
     [name: string]: EnvironmentDescription,
   },
@@ -17,7 +18,13 @@ type Config = {
   sites_per_arch: {
     // FIXME: it seems I can't put 'Architecture' as type key, but they are.
     [arch: string]: Site[],
-  }
+  },
+  clusters_per_site: {
+    [site: string]: Cluster[],
+  },
+  clusters_per_arch: {
+    [arch: string]: Cluster[],
+  },
 };
 
 const config = rawconfig as Config;
