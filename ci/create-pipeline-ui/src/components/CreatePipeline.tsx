@@ -1,10 +1,11 @@
 'use client';
 
-import { GenState, getEnabledEnvs } from '@/lib/generation';
+import { ClusterList, GenState, getEnabledEnvs } from '@/lib/generation';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import EnabledEnvAlert from './EnabledEnvAlert';
 import GenerationTabContent from './GenerationTabContent';
 import PushImagesTabContent from './PushImagesTabContent';
 import Tab from '@mui/material/Tab';
@@ -58,7 +59,12 @@ function initialState() {
     return desc.archs.flatMap(arch => desc.variants.map(variant => `${name}-${arch}-${variant}`));
   });
   return allEnvNames.reduce((s, envName) => {
-    s[envName] = false;
+    // TODO: remove dev hack
+    if (envName === 'debian10-x64-min' || envName === 'debian10-arm64-min') {
+      s[envName] = true;
+    } else {
+      s[envName] = false;
+    }
     return s;
   }, {} as GenState);
 }
@@ -67,13 +73,14 @@ export default function CreatePipeline() {
   // TODO: we need:
   //   - the list of active branches
   //   - the list of sites for enabled arch
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(1);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
   const [generations, setGenerations] = useState<GenState>(initialState());
+  const [clusters, setClusters] = useState<ClusterList>([]);
 
   return (
     <Container maxWidth="xl">
@@ -89,13 +96,19 @@ export default function CreatePipeline() {
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
+        <EnabledEnvAlert generations={generations} />
         <GenerationTabContent
           generations={generations}
           setGenerations={setGenerations}
         />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <TestImagesTabContent />
+        <EnabledEnvAlert generations={generations} />
+        <TestImagesTabContent
+          generations={generations}
+          clusters={clusters}
+          setClusters={setClusters}
+        />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
         <PushImagesTabContent />

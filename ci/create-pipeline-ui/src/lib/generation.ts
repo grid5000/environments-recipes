@@ -1,7 +1,15 @@
 import { Dispatch, SetStateAction } from "react";
+import { Cluster } from "./config";
 
 export type GenState = {
   [name: string]: boolean;
+};
+
+export type ClusterList = Cluster[];
+
+export type TestClustersProps = {
+  clusters: ClusterList,
+  setClusters: Dispatch<SetStateAction<ClusterList>>,
 };
 
 export type GenStateProps = {
