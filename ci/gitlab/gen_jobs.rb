@@ -29,9 +29,11 @@ ENABLE_UNUSED_TEST_JOBS = !(ENV['ENABLE_UNUSED_TEST_JOBS'] || '').empty?
 
 CLUSTERS = (ENV['CLUSTERS'] || '').split(',').freeze
 ENVIRONMENTS_REGEX = /#{ENV['ENVIRONMENTS'] || '.*'}/.freeze
+EXPLICIT_ENVIRONMENTS_LIST = (ENV['ENVIRONMENTS_LIST'] || '').split(',').freeze
 
 GENERATE_ENVS = map_all_envs do |os, version, arch, variant|
-  env_name(os, version, arch, variant) if ENVIRONMENTS_REGEX.match?(env_name(os, version, arch, variant))
+  full_name = env_name(os, version, arch, variant)
+  full_name if ENVIRONMENTS_REGEX.match?(full_name) || EXPLICIT_ENVIRONMENTS_LIST.include?(full_name)
 end.flatten.compact.freeze
 
 puts "unused gen jobs enabled: #{ENABLE_UNUSED_GEN_JOBS}"
