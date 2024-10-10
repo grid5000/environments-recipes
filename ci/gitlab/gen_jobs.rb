@@ -100,7 +100,9 @@ def pipeline_for_config(clusters_config, os, version, arch, variant)
   generate_image_job = {
     'local' => 'ci/gitlab/generate-image.yml',
     'inputs' => {
-      'autostart' => autostart_generation?(environment),
+      # TODO do not include this, here for debug purposese only
+      #'autostart' => autostart_generation?(environment),
+      'autostart' => false,
       **common_inputs,
     },
   }
