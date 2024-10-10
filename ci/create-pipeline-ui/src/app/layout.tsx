@@ -7,6 +7,7 @@ import type { Metadata, Viewport } from "next";
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import CssBaseline from '@mui/material/CssBaseline';
+import OpenIDProvider from '@/components/OpenIDProvider';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -32,7 +33,9 @@ export default function RootLayout({
         */}
         <AppRouterCacheProvider options={{ prepend: true }}>
           <CssBaseline />
-          {children}
+          <OpenIDProvider>
+            {children}
+          </OpenIDProvider>
         </AppRouterCacheProvider>
       </body>
     </html>

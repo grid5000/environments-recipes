@@ -1,6 +1,6 @@
 'use client';
 
-import { ClusterList, GenState, getEnabledEnvs } from '@/lib/generation';
+import { GenState, TestState, getEnabledElements, getValidSelectedClusters } from '@/lib/generation';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -11,7 +11,6 @@ import PushImagesTabContent from './PushImagesTabContent';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TestImagesTabContent from './TestImagesTabContent';
-import Typography from '@mui/material/Typography';
 
 import config from '@/lib/config';
 import { useState } from 'react';
@@ -38,8 +37,20 @@ function CustomTabPanel(props: TabPanelProps) {
   );
 }
 
-function CreatePipelineButton({ generations }: { generations: GenState }) {
-  const enabledEnvs = getEnabledEnvs(generations);
+function createPipelineAction(generations: GenState, clusters: TestState) {
+  console.log("Create pipeline with the following variables:");
+  console.log("ENVIRONMENTS_LIST", getEnabledElements(generations));
+  console.log("CLUSTERS", getValidSelectedClusters(generations, clusters));
+}
+
+function CreatePipelineButton({
+  generations,
+  clusters,
+}: {
+  generations: GenState,
+  clusters: TestState,
+}) {
+  const enabledEnvs = getEnabledElements(generations);
   return (
     <Button
       component="label"
@@ -47,6 +58,7 @@ function CreatePipelineButton({ generations }: { generations: GenState }) {
       variant="contained"
       disabled={enabledEnvs.length === 0}
       color="success"
+      onClick={() => createPipelineAction(generations, clusters)}
       sx={{ ml: 'auto' }}
     >
       Create the pipeline
@@ -59,51 +71,50 @@ function initialState() {
     return desc.archs.flatMap(arch => desc.variants.map(variant => `${name}-${arch}-${variant}`));
   });
   return allEnvNames.reduce((s, envName) => {
-    // TODO: remove dev hack
-    if (envName === 'debian10-x64-min' || envName === 'debian10-arm64-min') {
-      s[envName] = true;
-    } else {
-      s[envName] = false;
-    }
+    s[envName] = false;
     return s;
   }, {} as GenState);
 }
 
+function initialTestState() {
+  const allClusterNames = Object.entries(config.clusters_per_arch).flatMap(([, clusters]) => clusters);
+  return allClusterNames.reduce((s, cluster) => {
+    s[cluster] = false;
+    return s;
+  }, {} as TestState);
+}
+
 export default function CreatePipeline() {
-  // TODO: we need:
-  //   - the list of active branches
-  //   - the list of sites for enabled arch
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
   const [generations, setGenerations] = useState<GenState>(initialState());
-  const [clusters, setClusters] = useState<ClusterList>([]);
+  const [clusters, setClusters] = useState<TestState>(initialTestState());
 
   return (
     <Container maxWidth="xl">
-      <Typography variant="h1">
-        Environments pipeline
-      </Typography>
+      <EnabledEnvAlert generations={generations} clusters={clusters} />
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
         <Tabs value={value} onChange={handleChange}>
           <Tab label="Generation" />
           <Tab label="Tests" />
           <Tab label="Push" />
-          <CreatePipelineButton generations={generations} />
+          <CreatePipelineButton
+            generations={generations}
+            clusters={clusters}
+          />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        <EnabledEnvAlert generations={generations} />
         <GenerationTabContent
           generations={generations}
           setGenerations={setGenerations}
         />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <EnabledEnvAlert generations={generations} />
         <TestImagesTabContent
           generations={generations}
           clusters={clusters}

@@ -20,8 +20,10 @@
     "@mui/material-nextjs": "^6.1.2",
     "eslint-plugin-unused-imports": "^4.1.4",
     "next": "14.2.14",
+    "oidc-client-ts": "^3.1.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-oidc-context": "^3.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",

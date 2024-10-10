@@ -1,4 +1,5 @@
-import { GenState, TestClustersProps, getEnabledEnvs } from '@/lib/generation';
+import { ChangeEvent, useMemo } from 'react';
+import { GenState, TestClustersProps, getEnabledElements } from '@/lib/generation';
 import config, { Cluster } from '@/lib/config';
 
 import Accordion from '@mui/material/Accordion';
@@ -14,30 +15,61 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import WarningIcon from '@mui/icons-material/Warning';
 
-function ClustersListForSite({ site, validClusters }: {
+function ClustersListForSite({ site, validClusters, clusters, setClusters }: {
   arch: string,
   site: string,
   validClusters: Cluster[],
 } & TestClustersProps) {
   const localClusters = config.clusters_per_site[site].filter(c => validClusters.indexOf(c) !== -1);
+
+  const toggleCheckbox = useMemo(() => (cluster: Cluster) => {
+    setClusters((prevClusters) => {
+      const newClusters = {
+        ...prevClusters,
+        [cluster]: !prevClusters[cluster],
+      };
+      return newClusters;
+    });
+  }, [setClusters]);
+
+  const oneSelected = localClusters.some(c => clusters[c]);
+  const oneUnselected = localClusters.some(c => !clusters[c]);
+
+  const handleSiteCheckbox = useMemo(() => (ev: ChangeEvent<HTMLInputElement>) => {
+    setClusters((prevClusters) => {
+      const newClusters = {
+        ...prevClusters,
+      };
+      localClusters.forEach(c => newClusters[c] = ev.target.checked)
+      return newClusters;
+    });
+  }, [setClusters, localClusters]);
+
   return (
     <List
       sx={{ width: '100%' }}
       subheader={
         <ListSubheader component="div">
           {site}
+          <Checkbox
+            checked={oneSelected}
+            onChange={handleSiteCheckbox}
+            indeterminate={oneSelected && oneUnselected}
+          />
         </ListSubheader>
       }
     >
       {localClusters.map(c => (
         <ListItem disablePadding key={c}>
-          <ListItemButton dense role={undefined} onClick={() => {}}>
+          <ListItemButton dense role={undefined} onClick={() => toggleCheckbox(c)}>
             <ListItemIcon>
               <Checkbox
                 edge="start"
-                checked={true}
+                checked={clusters[c]}
                 tabIndex={-1}
                 disableRipple
               />
@@ -54,17 +86,20 @@ function ClustersAccordion({ arch, generations, clusters, setClusters }: {
   arch: string,
   generations: GenState,
 } & TestClustersProps) {
-  const id = `${arch}-header`;
+
   const clustersForArch = config.clusters_per_arch[arch];
-  const enabled = getEnabledEnvs(generations).some(name => name.split('-')[1] === arch);
-  //const enabled = false;
+  const enabled = getEnabledElements(generations).some(name => name.split('-')[1] === arch);
+  const atLeastOneSelected = clustersForArch.some(c => clusters[c]);
+
   return (
     <Accordion disabled={!enabled}>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-        id={id}
-      >
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>{arch} clusters</Typography>
+        {enabled && !atLeastOneSelected && (
+          <Tooltip title="Arch enabled but no clusters selected">
+            <WarningIcon sx={{ ml: 1 }}/>
+          </Tooltip>
+        )}
       </AccordionSummary>
       {enabled && (
         <AccordionDetails>

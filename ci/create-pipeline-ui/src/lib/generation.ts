@@ -1,15 +1,20 @@
 import { Dispatch, SetStateAction } from "react";
 import { Cluster } from "./config";
 
-export type GenState = {
+import config from '@/lib/config';
+
+export interface BooleanMap {
   [name: string]: boolean;
 };
+
+export type GenState = BooleanMap;
+export type TestState = BooleanMap;
 
 export type ClusterList = Cluster[];
 
 export type TestClustersProps = {
-  clusters: ClusterList,
-  setClusters: Dispatch<SetStateAction<ClusterList>>,
+  clusters: TestState,
+  setClusters: Dispatch<SetStateAction<TestState>>,
 };
 
 export type GenStateProps = {
@@ -17,8 +22,8 @@ export type GenStateProps = {
   setGenerations: Dispatch<SetStateAction<GenState>>,
 };
 
-export function getEnabledEnvs(generations: GenState): string[] {
-  return Object.entries(generations)
+export function getEnabledElements<T extends BooleanMap>(itemsMap: T): string[] {
+  return Object.entries(itemsMap)
     .filter(([, enabled]) => enabled)
     .map(([name]) => name);
 }
@@ -33,4 +38,14 @@ export function getEnabledArchs(generations: GenState): string[] {
     .map(([name]) => name.split('-')[1])
     // This effectively makes sure we return unique values.
     .filter(isFirstOne);
+}
+
+export function getValidSelectedClusters(
+  generations: GenState, clusters: TestState,
+): ClusterList {
+  const archs = getEnabledArchs(generations);
+  const allValidClusters = archs.flatMap(a => config.clusters_per_arch[a]);
+  const allEnabledClusters = getEnabledElements(clusters);
+
+  return allEnabledClusters.filter(c => allValidClusters.indexOf(c) !== -1);
 }
