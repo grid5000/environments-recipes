@@ -73,7 +73,7 @@ def pipeline_for_config(clusters_config, os, version, arch, variant)
   generate_image_job = {
     'local' => 'ci/gitlab/generate-image.yml',
     'inputs' => {
-      'autostart' => autostart_generation?(environment),
+      'autostart' => false,
       **common_inputs,
     },
   }
@@ -85,7 +85,7 @@ def pipeline_for_config(clusters_config, os, version, arch, variant)
           'site' => site,
           'cluster' => cluster,
           'refapi' => REFAPI_BRANCH,
-          'autostart' => autostart_cluster?(cluster),
+          'autostart' => false,
           **common_inputs,
         },
       }
