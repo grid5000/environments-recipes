@@ -26,14 +26,17 @@ variables:
     description: The refrepo branch you want to use for the pipeline
     value: master
   ENVIRONMENTS:
+    value: none
     description: A regexp of environments to build
   CLUSTERS:
+    value: nova
     description: The coma separated list of clusters to test automatically
   ENABLE_UNUSED_GEN_JOBS:
     description: Should non-matching generation job be created? Leave blank to avoid generation.
   ENABLE_UNUSED_TEST_JOBS:
     description: Should non-matching test job be created? Leave blank to avoid generation.
   ENVIRONMENTS_LIST:
+    value: debian11-x64-min
     description: An explicit list of environments to build
 
 clone-refrepo:

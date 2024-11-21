@@ -26,12 +26,12 @@ raise OptionParser::InvalidArgument, "Invalid environment #{options[:env]}" unle
 
 case options[:job]
 when 'build'
-  GenEnvGenerator.new.generate(options[:env])
+  GenEnvGenerator.new.generate(options[:env], nil, nil, 'http://public.lyon.grid5000.fr/~cdevaux/g5k-postinstall.tgz')
 when 'test'
   raise OptionParser::InvalidArgument, 'You must specify a cluster' unless options[:cluster]
   raise OptionParser::InvalidArgument, 'You must specify the refapi branch' unless options[:refapi]
 
-  GenEnvTester.new.test(options[:cluster], options[:env], nil, options[:refapi])
+  GenEnvTester.new.test(options[:cluster], options[:env], nil, options[:refapi], true)
 when 'push'
   raise OptionParser::InvalidArgument, 'You must specify a site' unless options[:site]
 
