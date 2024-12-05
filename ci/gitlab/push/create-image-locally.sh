@@ -7,14 +7,16 @@ commit=""
 tag=""
 oar_arch=""
 local_user=false
+site=""
+is_std_env="no"
 
-function usage {
-  echo "Usage: $0 -e <environment_name> -c <commit> -t <tag> -a <oar_arch> [-l]"
+usage() {
+  echo "Usage: $0 -e <environment_name> -c <commit> -s <site> -t <tag> -a <oar_arch> [-l]"
   echo "Set '-l' to connect as the local user instead of ajenkins."
   exit 1
 }
 
-while getopts ":a:e:c:t:l" o; do
+while getopts ":a:e:c:t:s:l" o; do
   case "${o}" in
     a)
       oar_arch=${OPTARG}
@@ -24,6 +26,9 @@ while getopts ":a:e:c:t:l" o; do
       ;;
     c)
       commit=${OPTARG}
+      ;;
+    s)
+      site=${OPTARG}
       ;;
     t)
       tag=${OPTARG}
@@ -41,11 +46,63 @@ done
 # by scripts which know what they are doing.
 # FIXME: checking that commit matches tag could be useful, but from a gitlab
 # CI job we should have correct values.
-if [ -z "${environment_name}" ] || [ -z "${oar_arch}" ] || [ -z "${commit}" ] || [ -z "${tag}" ]; then
+if [ -z "${environment_name}" ] || [ -z "${oar_arch}" ] || [ -z "${commit}" ] || [ -z "${tag}" ] || [ -z "${site}" ]; then
   usage
 fi
 
+# Leaving this out of -x to avoid showing data on the command line
+API_USER=$GL_API_USER
+API_PASSWORD=$GL_API_PASSWORD
+
 set -x
+
+case ${environment_name} in
+  *-std)
+    is_std_env="yes"
+    ;;
+esac
+
+# 80 retries of 15s makes it a 20 min timeout.
+RETRIES=80
+SLEEP_TIME=15
+
+# Job state for std env
+job_uid="0"
+job_state="unknown"
+
+create_job() {
+  # real stuff
+  #'{"resources":"{cpuarch='x86_64'}/nodes=BEST,walltime=0:10","name":"Update environments","command":"sleep infinity","types":["deploy","allowed=maintenance","exotic","destructive"],"queue":"admin"}'
+
+  local status
+  status=$(curl -k --output job.json --write-out "%{http_code}" "https://api-ext.grid5000.fr/3.0/sites/${site}/jobs" -X POST -H "Content-Type: application/json" -d "{\"resources\":\"{cpuarch='${oar_arch}'}/nodes=1,walltime=0:10\",\"name\":\"Test resa\",\"command\":\"sleep infinity\",\"types\":[\"allowed=maintenance\"],\"queue\":\"admin\"}" -K-<<< "--user ${API_USER}:${API_PASSWORD}")
+  update_or_exit "$status" "201"
+}
+
+update_or_exit() {
+  local status=$1
+  local expected_status=$2
+  if [ "${status}" != "${expected_status}" ]; then
+    echo "Request failed with unexpected code, exiting"
+    exit 1
+  fi
+  job_uid=$(jq -r '.uid' job.json)
+  job_state=$(jq -r '.state' job.json)
+}
+
+get_job_data() {
+  local job_id=$1
+  local status
+  status=$(curl -k --output job.json --write-out "%{http_code}" "https://api-ext.grid5000.fr/3.0/sites/lyon/jobs/${job_id}" -H'Content-Type: application/json' -K-<<< "--user ${API_USER}:${API_PASSWORD}")
+  update_or_exit "$status" "200"
+}
+
+delete_job() {
+  local job_id=$1
+  # Just fire the curl, we would ignore an error anyway
+  curl -k "https://api-ext.grid5000.fr/3.0/sites/lyon/jobs/${job_id}" -X DELETE -K-<<< "--user ${API_USER}:${API_PASSWORD}"
+}
+
 
 # Create a temporary directory in which we'll work
 TMP_DIR="$(mktemp -d)"
@@ -101,15 +158,10 @@ versioned_env_name="${environment_name}-${tag}"
 rsync -av "${HOST}:${env_dir}/${environment_name}.dsc" "${versioned_env_name}.dsc"
 rsync -av "${HOST}:${env_dir}/${environment_name}.tar.zst" "${versioned_env_name}.tar.zst"
 # rsync/mv the qcow2 if needed
-case ${environment_name} in
-  *-std)
-    echo "Detected std env, not copying qcow2"
-    ;;
-  *)
-    rsync -av "${HOST}:${env_dir}/${environment_name}.qcow2" "${versioned_env_name}.qcow2"
-    mv "${versioned_env_name}.qcow2" /grid5000/virt-images
-    ;;
-esac
+if [ "${is_std_env}" == "no" ]; then
+  rsync -av "${HOST}:${env_dir}/${environment_name}.qcow2" "${versioned_env_name}.qcow2"
+  mv "${versioned_env_name}.qcow2" /grid5000/virt-images
+fi
 # FIXME: intentionally no copying log: those are empty?!
 
 # Let's fix the image url in the description file.
@@ -120,7 +172,6 @@ sed -e "s|\\(file: \\)[^$]*|\\1server:///grid5000/images/${environment_name}-${t
 # the user has set the tag according to the time it was generated?
 # It seems tricky for cases where os-min and os-big are generated in two different
 # pipelines which might be triggered at different times.
-# TODO: check/discuss this choice
 sed -e "s/version: [[:digit:]]\+/version: ${tag}/" -i "${versioned_env_name}.dsc"
 
 # Now move the files to their final destinations
@@ -138,11 +189,28 @@ if /usr/sbin/kaenv3-dev -u deploy -p "${environment_name}" --env-version "${tag}
   sudo -u deploy /usr/sbin/kaenv3-dev --yes -d "${environment_name}" -u deploy --env-version "${tag}" --env-arch "${oar_arch}"
 fi
 
+# If we are dealing with the std env, let's create a BEST destructive job on the
+# site.
+if [ "${is_std_env}" == "yes" ]; then
+  # Create a job and wait for it.
+  create_job
+  if [ "${tries}" -lt "${RETRIES}" ] && [ "${job_state}" != "running" ]; then
+    tries=$((tries + 1))
+    echo "Try ${tries}/${RETRIES}."
+    sleep ${SLEEP_TIME}
+    get_job_data "${job_uid}"
+  fi
+  # We've either timed out or a job.
+  if [ "${job_state}" != "running" ]; then
+    echo "Could not get a job, aborting"
+    exit 1
+  fi
+fi
+
 # Register the newly built environment
 sudo -u deploy /usr/bin/kaenv3 -a "/grid5000/descriptions/${versioned_env_name}.dsc"
 sudo -u deploy /usr/sbin/kaenv3-dev -a "/grid5000/descriptions/${versioned_env_name}.dsc"
 
-# if env std:
-# TODO: submit a deploy/destructive job to set the new std env
-# TODO: wait
-# TODO: release the job
+if [ "${is_std_env}" == "yes" ]; then
+  delete_job "${job_uid}"
+fi
