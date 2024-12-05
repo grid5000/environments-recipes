@@ -110,7 +110,7 @@ def gen_environments_push
     push_all = sites_for_env.map do |site|
       [
         START_SECTION % { site: site },
-        "cat ci/gitlab/push/create-image-locally.sh| ssh ajenkins@#{site} 'TMP=`mktemp -d`; cat - > $TMP/job.sh; chmod 755 -R $TMP; $TMP/job.sh -e #{environment} -a #{oar_arch} -c #{COMMIT} -t #{TAG} -s #{site}; RETVAL=$?; rm -rf $TMP; exit $RETVAL' || LOCAL_FAIL=\"#{site}\"",
+        "cat ci/gitlab/push/create-image-locally.sh| ssh ajenkins@#{site} 'TMP=`mktemp -d`; cat - > $TMP/job.sh; chmod 755 -R $TMP; $TMP/job.sh -e #{environment} -a #{oar_arch} -c #{COMMIT} -t #{TAG}; RETVAL=$?; rm -rf $TMP; exit $RETVAL' || LOCAL_FAIL=\"#{site}\"",
         END_SECTION % { site: site },
         LOCAL_FAILURE_HANDLER,
       ]

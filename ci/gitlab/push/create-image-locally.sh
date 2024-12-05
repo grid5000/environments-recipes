@@ -7,16 +7,15 @@ commit=""
 tag=""
 oar_arch=""
 local_user=false
-site=""
 is_std_env="no"
 
 usage() {
-  echo "Usage: $0 -e <environment_name> -c <commit> -s <site> -t <tag> -a <oar_arch> [-l]"
+  echo "Usage: $0 -e <environment_name> -c <commit> -t <tag> -a <oar_arch> [-l]"
   echo "Set '-l' to connect as the local user instead of ajenkins."
   exit 1
 }
 
-while getopts ":a:e:c:t:s:l" o; do
+while getopts ":a:e:c:t:l" o; do
   case "${o}" in
     a)
       oar_arch=${OPTARG}
@@ -26,9 +25,6 @@ while getopts ":a:e:c:t:s:l" o; do
       ;;
     c)
       commit=${OPTARG}
-      ;;
-    s)
-      site=${OPTARG}
       ;;
     t)
       tag=${OPTARG}
@@ -46,13 +42,9 @@ done
 # by scripts which know what they are doing.
 # FIXME: checking that commit matches tag could be useful, but from a gitlab
 # CI job we should have correct values.
-if [ -z "${environment_name}" ] || [ -z "${oar_arch}" ] || [ -z "${commit}" ] || [ -z "${tag}" ] || [ -z "${site}" ]; then
+if [ -z "${environment_name}" ] || [ -z "${oar_arch}" ] || [ -z "${commit}" ] || [ -z "${tag}" ]; then
   usage
 fi
-
-# Leaving this out of -x to avoid showing data on the command line
-API_USER=$GL_API_USER
-API_PASSWORD=$GL_API_PASSWORD
 
 set -x
 
@@ -66,44 +58,6 @@ esac
 RETRIES=80
 SLEEP_TIME=15
 
-# Job state for std env
-job_uid="0"
-job_state="unknown"
-
-create_job() {
-  # real stuff
-  #'{"resources":"{cpuarch='x86_64'}/nodes=BEST,walltime=0:10","name":"Update environments","command":"sleep infinity","types":["deploy","allowed=maintenance","exotic","destructive"],"queue":"admin"}'
-
-  local status
-  status=$(curl -k --output job.json --write-out "%{http_code}" "https://api-ext.grid5000.fr/3.0/sites/${site}/jobs" -X POST -H "Content-Type: application/json" -d "{\"resources\":\"{cpuarch='${oar_arch}'}/nodes=1,walltime=0:10\",\"name\":\"Test resa\",\"command\":\"sleep infinity\",\"types\":[\"allowed=maintenance\"],\"queue\":\"admin\"}" -K-<<< "--user ${API_USER}:${API_PASSWORD}")
-  update_or_exit "$status" "201"
-}
-
-update_or_exit() {
-  local status=$1
-  local expected_status=$2
-  if [ "${status}" != "${expected_status}" ]; then
-    echo "Request failed with unexpected code, exiting"
-    exit 1
-  fi
-  job_uid=$(jq -r '.uid' job.json)
-  job_state=$(jq -r '.state' job.json)
-}
-
-get_job_data() {
-  local job_id=$1
-  local status
-  status=$(curl -k --output job.json --write-out "%{http_code}" "https://api-ext.grid5000.fr/3.0/sites/lyon/jobs/${job_id}" -H'Content-Type: application/json' -K-<<< "--user ${API_USER}:${API_PASSWORD}")
-  update_or_exit "$status" "200"
-}
-
-delete_job() {
-  local job_id=$1
-  # Just fire the curl, we would ignore an error anyway
-  curl -k "https://api-ext.grid5000.fr/3.0/sites/lyon/jobs/${job_id}" -X DELETE -K-<<< "--user ${API_USER}:${API_PASSWORD}"
-}
-
-
 # Create a temporary directory in which we'll work
 TMP_DIR="$(mktemp -d)"
 
@@ -114,7 +68,7 @@ function remove_tmp_folder {
 # Make sure we cleanup behind us.
 trap remove_tmp_folder EXIT
 
-cd "${TMP_DIR}"
+pushd "${TMP_DIR}"
 
 # Fetch all the generated descriptions by all the pipelines for tha commit
 # At the moment they are all stored in ~ajenkins in Nancy.
@@ -189,19 +143,35 @@ if /usr/sbin/kaenv3-dev -u deploy -p "${environment_name}" --env-version "${tag}
   sudo -u deploy /usr/sbin/kaenv3-dev --yes -d "${environment_name}" -u deploy --env-version "${tag}" --env-arch "${oar_arch}"
 fi
 
+get_job_state() {
+  local job_id=$1
+  oarstat -fj "${job_id}" -J | jq -r ".[\"${job_id}\"].state"
+}
+
+# We're done with file manipulation, get back to our home
+# It's also necessary for oarsub to succeed: it tries to 'cd' into the current
+# working directory when running the script.
+popd
+
 # If we are dealing with the std env, let's create a BEST destructive job on the
 # site.
+job_uid=0
 if [ "${is_std_env}" == "yes" ]; then
   # Create a job and wait for it.
-  create_job
-  if [ "${tries}" -lt "${RETRIES}" ] && [ "${job_state}" != "running" ]; then
+  # FIXME: tested with:
+  #job_uid=$(oarsub -J -q admin -l /nodes=1,walltime=0:10 -p "cpuarch='${oar_arch}'" -n "Gitlab Standard Environment Push" -t exotic -t allowed=maintenance "sleep infinity" | jq -r '.job_id')
+  job_uid=$(oarsub -J -q admin -l /nodes=BEST,walltime=0:10 -p "cpuarch='${oar_arch}'" -n "Gitlab Standard Environment Push" -t exotic -t allowed=maintenance -t deploy -t destructive "sleep infinity" | jq -r '.job_id')
+  job_state=$(get_job_state "${job_uid}")
+  tries=0
+  while [ "${tries}" -lt "${RETRIES}" ] && [ "${job_state}" != "Running" ]; do
     tries=$((tries + 1))
     echo "Try ${tries}/${RETRIES}."
     sleep ${SLEEP_TIME}
-    get_job_data "${job_uid}"
-  fi
+    job_state=$(get_job_state "${job_uid}")
+  done
+
   # We've either timed out or a job.
-  if [ "${job_state}" != "running" ]; then
+  if [ "${job_state}" != "Running" ]; then
     echo "Could not get a job, aborting"
     exit 1
   fi
@@ -212,5 +182,5 @@ sudo -u deploy /usr/bin/kaenv3 -a "/grid5000/descriptions/${versioned_env_name}.
 sudo -u deploy /usr/sbin/kaenv3-dev -a "/grid5000/descriptions/${versioned_env_name}.dsc"
 
 if [ "${is_std_env}" == "yes" ]; then
-  delete_job "${job_uid}"
+  oardel "${job_uid}"
 fi
