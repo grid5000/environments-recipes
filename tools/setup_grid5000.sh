@@ -15,7 +15,12 @@ KERNEL=linux-image-$(uname -r)
 VERSION=$(apt-cache policy $KERNEL | grep Installed: | awk '{print $2}')
 ARCH=$(dpkg --print-architecture)
 KERNEL_SHORT=$(uname -r | sed -re "s/^(.*)-[^-]*/\1/g")
+# temporary hack to disable amdgpu repository
+rm /etc/apt/sources.list.d/repo.radeon.com-amdgpu.list
+
 apt-get update
+
+
 
 # When a kernel security update is released, the current kernel version is not available anymore on debian package repositories
 if [ -z "$(apt-cache search linux-image-$(uname -r)-dbg)" ] && [ $(apt-cache madison linux-image-$(uname -r)-dbg | grep -q "$VERSION") -eq 1 ]; then
