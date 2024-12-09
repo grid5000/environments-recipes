@@ -55,8 +55,8 @@ class env::big::configure_amd_gpu () {
       apt::source {
         'repo.radeon.com-amdgpu':
           comment      => 'Repo for AMDGPU packages',
-          location     => 'https://repo.radeon.com/amdgpu/21.40/ubuntu/',
-          release      => 'focal',
+          location     => 'https://repo.radeon.com/amdgpu/23.20/amdgpu/ubuntu/',
+          release      => 'jammy',
           repos        => 'main',
           key          => {
             'id'     => '1A693C5C',
