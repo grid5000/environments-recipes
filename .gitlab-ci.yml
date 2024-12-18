@@ -27,7 +27,7 @@ variables:
     value: master
   ENVIRONMENTS:
     description: A regexp of environments to build
-    value: debiantesting.*min
+    value: debiantesting.*
   CLUSTERS:
     description: The coma separated list of clusters to test automatically
     value: grappe,drac,pyxis
