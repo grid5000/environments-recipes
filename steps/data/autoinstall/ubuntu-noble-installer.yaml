@@ -3,6 +3,8 @@ autoinstall:
   version: 1
   keyboard:
     layout: us
+  kernel:
+    package: linux-nvidia-64k
   apt:
     geoip: false
     preserve_sources_list: true
