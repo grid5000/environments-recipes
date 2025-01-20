@@ -7,5 +7,5 @@
   - write_in:
     - $${g5k_release_file}
     - |
-      $${kameleon_recipe_name}-$${g5k_version}
+      $${g5k_distrib}$${g5k_release_number}-$${g5k_image_arch}-$${g5k_variant}-$${g5k_version}
       $${g5k_git_rev}

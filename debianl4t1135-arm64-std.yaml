@@ -106,9 +106,6 @@ setup:
       - on_checkpoint: disabled
       - exec_in: dpkg-divert --rename /usr/bin/ipmitool
       - exec_in: ln -s /bin/true /usr/bin/ipmitool
-    - fix_env_name:
-      - exec_in: |
-          sed -i -e '1s/^$${distrib}$${release_number}-/$${g5k_distrib}$${g5k_release_number}-/' /etc/grid5000/release
     - change_motd:
       - exec_in: |
           sed -i \
