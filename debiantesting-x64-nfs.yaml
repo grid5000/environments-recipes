@@ -13,7 +13,8 @@ global:
   g5k_variant: nfs
   g5k_deb_repositories: "g5k-meta-packages"
   # packages to install
-  packages: "$${packages} nfs-common autofs nslcd ruby g5k-meta-packages-$${distrib}$${g5k_release_number}-$${g5k_variant}"
+  packages: "$${packages} nfs-common autofs nslcd ruby"
+  #  packages: "$${packages} nfs-common autofs nslcd ruby g5k-meta-packages-$${distrib}$${g5k_release_number}-$${g5k_variant}"
   # Grid'5000 Kadeploy environment parameters
   g5k_postinst_script: g5k-postinstall --net debian --fstab nfs --restrict-user current --disk-aliases
 
