@@ -26,8 +26,10 @@ variables:
     description: The refrepo branch you want to use for the pipeline
     value: master
   ENVIRONMENTS:
+    value: debiantesting-x64-nfs
     description: A regexp of environments to build
   CLUSTERS:
+    value: grvingt
     description: The coma separated list of clusters to test automatically
   ENV_VERSION:
     description: Set this variable to force the generated environments versions
