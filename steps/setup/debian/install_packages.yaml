@@ -1,8 +1,14 @@
 - apt_install_recommends: true
 
 - show_env:
+  - apt-get_in: install ruby
+  - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  - exec_in: ruby -rpp -e 'pp ENV'
+  - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   - exec_in: env
+  - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   - exec_in: awk 'BEGIN{for(v in ENVIRON) print v}'
+  - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 - install_packages:
   - test:
