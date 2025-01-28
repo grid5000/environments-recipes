@@ -32,18 +32,19 @@ bootstrap:
 
 setup:
   - "@base"
-  - install_kernel6.6:
+  - install_custom_kernel6.11.10:
     - add_bookworm_sources_list:
       - write_in:
-        - /etc/apt/sources.list.d/bookworm-backports.list
+        - /etc/apt/sources.list.d/linux-image.list
         - |
-          # Bookworm backports, used to install 6.6 linux kernel.
-          deb http://deb.debian.org/debian bookworm-backports main contrib non-free
-          deb-src http://deb.debian.org/debian bookworm-backports main contrib non-free
+          # linux-image-6.11 from packages.grid5000.fr, built for memory cgroup v1 support.
+          deb http://packages.grid5000.fr/deb/linux-image/bullseye /
     - update_apt:
       - apt-get_in: update
     - install_linux_image:
-      - apt-get_in: install -t bookworm-backports linux-image-arm64
+      - apt-get_in: install linux-image-6.11.10
+    - remove_old_kernel:
+      - apt-get_in: remove -y linux-image-5.10.0
   - upgrade_util-linux:
     - place_sources_list:
       - write_in:
