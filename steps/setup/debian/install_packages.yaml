@@ -1,5 +1,9 @@
 - apt_install_recommends: true
 
+- show_env:
+  - exec_in: env
+  - exec_in: awk 'BEGIN{for(v in ENVIRON) print v}'
+
 - install_packages:
   - test:
     - exec_in: test "$${apt_install_recommends}" == "true"
