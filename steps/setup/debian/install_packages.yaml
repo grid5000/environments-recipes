@@ -5,6 +5,8 @@
   - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   - exec_in: ruby -rpp -e 'pp ENV'
   - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  - exec_in: awk 'BEGIN{for(v in ENVIRON) print v}' | sh -c 'while read -r env ; do echo $env ; unset "$env" ; done'
+  - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   - exec_in: env
   - exec_in: echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   - exec_in: awk 'BEGIN{for(v in ENVIRON) print v}'
