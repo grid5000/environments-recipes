@@ -1,6 +1,6 @@
 #==============================================================================
 #
-# DESCRIPTION: Ubuntu 20.04 arm64 nfs Grid'5000 environment
+# DESCRIPTION: Ubuntu 20.04 + L4T 35 arm64 big Grid'5000 environment
 # AUTHOR: Pierre Neyron
 # COPYRIGHT: CNRS
 # LICENSE: GPLv3
