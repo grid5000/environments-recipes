@@ -1,0 +1,113 @@
+#==============================================================================
+#
+# DESCRIPTION: Ubuntu 18.04 + L4T 32 arm64 big Grid'5000 environment
+# AUTHOR: Pierre Neyron
+# COPYRIGHT: CNRS
+# LICENSE: GPLv3
+#
+#==============================================================================
+---
+extend: ubuntu1804-arm64-nfs.yaml
+
+global:
+  g5k_distrib: $${distrib}l4t
+  # Must force 2004, because release_number is "20.04".
+  g5k_release_number: 1804$${l4t_version_major}
+  g5k_description: $${distrib} $${release_number} ($${release}) with L4T $${l4t_version} for $${arch} - $${g5k_variant}
+  # Grid'5000 environment variant
+  g5k_variant: big
+  # Setup Nvidia L4T kernel/initrd and make kadeploy not use update-grub to generate grub.cfg
+  g5k_kernel_path: "/boot/Image"
+  g5k_initrd_path: "/boot/initrd"
+  g5k_no_chroot_for_grub: true
+  # Generate only the appliance for bare-metal deployment, not for VMs.
+  appliance_formats: tar.zst
+  qemu_image_size: 30G
+
+  # L4T information
+  l4t_version_major: "32"
+  l4t_version_minor: "7"
+  l4t_version_patch: "2"
+  cti_BSP_version: "007"
+  l4t_version: r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-cti$${cti_BSP_version}
+  nvidia_BSP_url: "https://developer.download.nvidia.com/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/T186/Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
+  cti_BSP_url: "https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-V$${cti_BSP_version}.tgz"
+  workdir: "/nvidia"
+  l4t_dir: "$${workdir}/Linux_for_Tegra"
+  rootfs: "/"
+  extra_deb_packages: "nvidia-jetpack"
+  extra_pip3_packages: "jetson-stats"
+  l4t_nvp_model: 3
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - prepare_L4T:
+    - install_L4T_required_packages:
+      - apt-get_in: update
+      - apt-get_in: -q=2 remove --purge linux-image-* linux-modules-* linux-headers-*
+      - apt-get_in: install libegl1 python libcairo2 libegl1-mesa libgles2 libgtk-3-0 libwayland-egl1 libxkbcommon0 libasound2 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 device-tree-compiler libdatrie1 libfontconfig1 libharfbuzz0b libpangoft2-1.0-0 libpixman-1-0 libxrender1 libfontconfig1 libpango-1.0-0 libpangocairo-1.0-0 libnl-route-3-200 libevdev2 libinput10 libjpeg-turbo8 libunwind8 libwayland-cursor0 qemu-user-static bridge-utils python3-tk python3-matplotlib gir1.2-appindicator3-0.1
+
+    - install_nvidia_BSP:
+      - on_setup_clean:
+        - exec_in: rm -rf $${workdir}
+      - exec_in: |
+          set -e
+          mkdir -p $${l4t_dir}
+          wget --progress=dot:giga -O- $${nvidia_BSP_url} | tar -jx --strip-components=1 -C $${l4t_dir}
+    - mount_rootfs_in_BSP:
+      - on_setup_clean:
+        - exec_in: umount $${l4t_dir}/rootfs
+      - exec_in: mount --bind $${rootfs} $${l4t_dir}/rootfs
+    - install_cti_BSP:
+      - exec_in: |
+          set -e
+          wget --progress=dot:giga -O- $${cti_BSP_url} | tar -zx -C $${l4t_dir}
+          # remove buggy lines "exec $SHELL" that stop the installation process
+          cd $${l4t_dir}/CTI-L4T && sed -i -e '/^\s*exec $SHELL/d' ./install.sh && ./install.sh
+    - fix_cti_BSP_kernel_console:
+      - exec_in: sed -i.bak -e 's/console=tty0 //' $${l4t_dir}/cti-agx.conf.common
+  - apply_L4T_overlay:
+    - fix_nv_apply_debs_for_using_slash_as_rootfs:
+      - exec_in: |
+          sed -i.bak \
+            -e 's@^\(install --owner=root --group=root "${QEMU_BIN}" "${L4T_ROOTFS_DIR}/usr/bin/"\)@#\1@' \
+            -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/random" c 1 8\)@#\1@' \
+            -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/urandom" c 1 9\)@#\1@' \
+            -e 's@^\(rm -f "${L4T_ROOTFS_DIR}/dev/random"\)@#\1@' \
+            -e 's@^\(rm -f "${L4T_ROOTFS_DIR}/dev/urandom"\)@#\1@' \
+            $${l4t_dir}/nv_tegra/nv-apply-debs.sh
+    - apply_L4T:
+      - exec_in: $${l4t_dir}/apply_binaries.sh -r $${rootfs}
+    - disable_unwanted_L4T_services:
+      - exec_in: |
+          set -e
+          systemctl disable nv-l4t-bootloader-config.service
+          systemctl disable nv-l4t-usb-device-mode.service
+    - configure_nvpmodel:
+      - exec_in: |
+          set -e
+          mkdir -p /var/lib/nvpmodel
+          printf "/etc/nvpmodel.conf" > /var/lib/nvpmodel/conf_file_path
+          printf "pmode:%04d" $${l4t_nvp_model} > /var/lib/nvpmodel/status
+  - install_extra_packages:
+    - configure_apt_sources:
+      - exec_in: sed -i -e 's@#\(.\+\)<SOC>\(.\+\)$@\1t194\2@' /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+      - apt-get_in: clean
+      - apt-get_in: update
+      - apt-get_in: install $${extra_deb_packages}
+      - apt-get_in: clean
+    - install_extra_pip3_packages:
+      - apt-get_in: install python3-pip
+      - exec_in: |
+          set -e
+          if [ -n "$${extra_pip3_packages}" ]; then
+            pip3 install $${extra_pip3_packages}
+          fi
+    - clean_apt_cache:
+      - on_setup_clean:
+        - apt-get_in: clean
+export:
+  - "@base"
