@@ -106,6 +106,8 @@ setup:
           if [ -n "$${extra_pip3_packages}" ]; then
             pip3 install $${extra_pip3_packages}
           fi
+    - drop_docker_backend:
+      - exec_in: rm -rf /var/lib/docker/*
     - clean_apt_cache:
       - on_setup_clean:
         - apt-get_in: clean
