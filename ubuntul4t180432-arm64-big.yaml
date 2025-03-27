@@ -39,6 +39,15 @@ global:
   extra_pip3_packages: "jetson-stats"
   l4t_nvp_model: 3
 
+  l4t_kernel_version: "4.9"
+  cti_kernel_sources_url: "https://connecttech.com/ftp/dropbox/83725_cti-l4t-src-agx-32.6.1-v006.tgz"
+  l4t_kernel_config_file: "cti_tegra_defconfig"
+  src_dir: $${workdir}/src
+  kernel_src_dir: $${src_dir}/kernel/kernel-$${l4t_kernel_version}
+  kernel_build_dir: $${src_dir}/build
+  kernel_version_suffix: -g5k
+  kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix}"
+
 bootstrap:
   - "@base"
 
@@ -92,6 +101,69 @@ setup:
           mkdir -p /var/lib/nvpmodel
           printf "/etc/nvpmodel.conf" > /var/lib/nvpmodel/conf_file_path
           printf "pmode:%04d" $${l4t_nvp_model} > /var/lib/nvpmodel/status
+  - install_kernel_sources:
+    - download_and_extract_cti_kernel_sources:
+      - on_checkpoint: disabled
+      - exec_in: mkdir -p $${src_dir}
+      - exec_in: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${src_dir} -zxv --strip-components=1
+    # - fix_cti_kernel_sources:
+    #   # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
+    #   - exec_in: sed -i -e 's/^#include "aquantia.h"$/#include "cti_aquantia.h"/' $${src_dir}/kernel/cti/drivers/net/phy/*
+  - build_kernel:
+    - install_tools:
+      - apt-get_in: install make gcc xxd flex bison python3 bc rsync kmod libelf-dev libssl-dev
+    - prepare_kernel_config:
+      - on_checkpoint: disabled
+      - exec_in: $${kernel_make_cmd} $${l4t_kernel_config_file}
+    - enable_kernel_config_efi_stub:
+      - on_checkpoint: disabled
+      - exec_in: |
+          set -e
+          pushd $${kernel_src_dir}
+          ./scripts/config --enable EFI_STUB
+          popd
+    #- dive_in: &1
+    #  - on_checkpoint: disabled
+    #  - apt-get_in: install libncurses-dev
+    #  - exec_local: |
+    #      echo "Kernel make command: $${kernel_make_cmd}"
+    #  - breakpoint
+    - build_kernel_objects:
+      - exec_in: |
+          set -e
+          pushd $${kernel_src_dir}
+          $${kernel_make_cmd} Image
+          popd
+      - exec_in: |
+          set -e
+          pushd $${kernel_src_dir}
+          $${kernel_make_cmd} dtbs
+          popd
+      - exec_in: |
+          set -e
+          pushd $${kernel_src_dir}
+          $${kernel_make_cmd} modules
+          popd
+    # - dive_in_again: *1
+    - install_kernel_objects:
+      - exec_in: |
+          cp $${kernel_src_dir}/arch/arm64/boot/Image /boot/
+      - exec_in: |
+          cp $${kernel_src_dir}/arch/arm64/boot/dts/nvidia/* /boot/
+      - exec_in: |
+          set -e
+          KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
+          $${kernel_make_cmd} INSTALL_HDR_PATH="/usr/src/linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR" headers_install
+      - exec_in: |
+          set -e
+          KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
+          $${kernel_make_cmd} modules_install
+          ln -sfn /usr/src/linux-headers-$KERNEL_RELEASE /lib/modules/$KERNEL_RELEASE/build
+    # - dive_in_again: *1
+  - remove_kernel_sources:
+    - delete_sources:
+      - on_checkpoint: disabled
+      - exec_in: rm -rf $${src_dir}
   - install_extra_packages:
     - configure_apt_sources:
       - exec_in: sed -i -e 's@#\(.\+\)<SOC>\(.\+\)$@\1t194\2@' /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
@@ -106,10 +178,11 @@ setup:
           if [ -n "$${extra_pip3_packages}" ]; then
             pip3 install $${extra_pip3_packages}
           fi
-    - drop_docker_backend:
-      - exec_in: rm -rf /var/lib/docker/*
     - clean_apt_cache:
       - on_setup_clean:
         - apt-get_in: clean
+  - fix_docker:
+    - drop_docker_backend_sparse_files:
+      - exec_in: rm -rf /var/lib/docker/*
 export:
   - "@base"
