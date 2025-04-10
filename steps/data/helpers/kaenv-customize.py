@@ -68,6 +68,9 @@ class Environment:
                         self.desc[key1][key2] = False
                     else:
                         raise Exception("Invalid value for {}: {}".format(key, value))
+                    # Workaroung for a bug in kadeploy 3.9: options.kexec requires options.trust_previous_env to be defined as well
+                    if key2 == "kexec" and not 'trust_previous_env' in self.desc[key1]:
+                        self.desc[key1]['trust_previous_env'] = False
                 elif (key1 == 'postinstalls' and key2[-1:].isdigit() and
                       key2[:-1] in ['archive', 'compression', 'script']):
                     if self.desc[key1][int(key2[-1:])]:

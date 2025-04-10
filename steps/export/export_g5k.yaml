@@ -95,9 +95,12 @@
       EOF
       fi
       if [[ "x$${g5k_no_kexec}" == "xtrue" ]]; then
+      # Workaroung for a bug in kadeploy 3.9: option kexec requires option
+      # trust_previous_env to be defined as well.
       cat << EOF >> $${output}.dsc
       options:
         kexec: false
+        trust_previous_env: false
       EOF
       fi
 
