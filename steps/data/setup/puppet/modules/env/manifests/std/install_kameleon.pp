@@ -6,7 +6,8 @@ class env::std::install_kameleon {
         'buster', 'bullseye': {
           env::common::g5kpackages {
             'kameleon':
-              release => "${lsbdistcodename}";
+              release => "${lsbdistcodename}",
+              ensure =>  $::env::common::software_versions::kameleon;
           }
         }
         default: {
