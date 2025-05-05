@@ -42,7 +42,7 @@ class Environment:
         for key, value in kwargs.items():
             if key in ['author', 'description', 'filesystem', 'name', 'os', 'visibility', 'arch', 'alias']:
                 self.desc[key] = str(value)
-            elif key in ['destructive', 'multipart', 'visibility', 'kexec']:
+            elif key in ['destructive', 'multipart', 'visibility']:
                 if value.lower() == "true":
                     self.desc[key] = True
                 elif value.lower() == "false":
@@ -53,12 +53,24 @@ class Environment:
                 self.desc[key] = int(value)
             else:
                 try:
-                    key1, key2 = key.split('_', 1)
+                    key1, key2 = re.split(r'[\._/]', key, 1)
                 except Exception as exc:
                     raise Exception("Unknown description field '{}'".format(key))
                 if ((key1 == 'boot' and key2 in ['initrd', 'kernel', 'kernel_params']) or
                     (key1 == 'image' and key2 in ['compression', 'file', 'kind'])):
                     self.desc[key1][key2] = value
+                elif (key1 == 'options' and key2 in ['kexec', 'trust_previous_env']):
+                    if not key1 in self.desc:
+                        self.desc[key1] = {}
+                    if value.lower() == "true":
+                        self.desc[key1][key2] = True
+                    elif value.lower() == "false":
+                        self.desc[key1][key2] = False
+                    else:
+                        raise Exception("Invalid value for {}: {}".format(key, value))
+                    # Workaroung for a bug in kadeploy 3.9: options.kexec requires options.trust_previous_env to be defined as well
+                    if key2 == "kexec" and not 'trust_previous_env' in self.desc[key1]:
+                        self.desc[key1]['trust_previous_env'] = False
                 elif (key1 == 'postinstalls' and key2[-1:].isdigit() and
                       key2[:-1] in ['archive', 'compression', 'script']):
                     if self.desc[key1][int(key2[-1:])]:

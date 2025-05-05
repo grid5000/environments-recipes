@@ -14,6 +14,7 @@
 - g5k_distrib: $${distrib}
 - g5k_description: $${distrib} $${release_number} ($${release}) for $${arch} - $${g5k_variant}
 - g5k_release_number: $${release_number}
+- g5k_no_kexec: "false"
 
 # - save_as_tgz:
 #   - check_cmd_local: guestfish
@@ -91,6 +92,15 @@
       cat << EOF >> $${output}.dsc
       custom_variables:
         BOOTLOADER_NO_GRUB_FROM_DEST: '1'
+      EOF
+      fi
+      if [[ "x$${g5k_no_kexec}" == "xtrue" ]]; then
+      # Workaroung for a bug in kadeploy 3.9: option kexec requires option
+      # trust_previous_env to be defined as well.
+      cat << EOF >> $${output}.dsc
+      options:
+        kexec: false
+        trust_previous_env: false
       EOF
       fi
 
