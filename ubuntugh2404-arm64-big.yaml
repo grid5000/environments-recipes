@@ -14,6 +14,8 @@ global:
   g5k_distrib: $${distrib}gh
   g5k_description: $${distrib} $${release_number} ($${release}) for NVIDIA Grace Hopper
 
+  # Generate only the appliance for bare-metal deployment, not for VMs.
+  appliance_formats: tar.zst
   qemu_image_size: 45G
   base_autoinstall_path: $${kameleon_data_dir}/autoinstall/ubuntugh-noble-installer.yaml
 
