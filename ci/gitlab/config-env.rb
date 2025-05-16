@@ -93,23 +93,32 @@ ENV_CONFIG = {
   },
 }.freeze
 
+ADDITIONAL_ENVS = [
+  ["ubuntu", "2404", "x64", "rocm"]
+].freeze
+
 def env_name(os, version, arch, variant)
   "#{os}#{version}-#{arch}-#{variant}"
 end
 
 def map_all_envs
-  ENV_CONFIG.map do |os, versions|
-    versions.map do |version, config|
-      config['archs'].map do |arch|
-        config['variants'].map do |variant|
-          yield os, version, arch, variant
+  results = []
+  ENV_CONFIG.each do |os, versions|
+    versions.each do |version, config|
+      config['archs'].each do |arch|
+        config['variants'].each do |variant|
+          results << yield(os, version, arch, variant)
         end
       end
     end
   end
+  ADDITIONAL_ENVS.each do |os, version, arch, variant|
+    results << yield(os, version, arch, variant)
+  end
+  results
 end
 
-ALL_ENVS = map_all_envs(&method(:env_name)).flatten.freeze
+ALL_ENVS = map_all_envs(&method(:env_name)).freeze
 
 ARCH_TO_G5K_ARCH = {
   'x86_64' => 'x64',
