@@ -1,95 +1,51 @@
 ARCHS_ALL = %w[x64 arm64 ppc64].freeze
+ARCHS_X = %w[x64].freeze
 ARCHS_X_ARM = %w[x64 arm64].freeze
 ARCHS_ARM = %w[arm64].freeze
-VARIANTS_ALL = %w[min base nfs big std].freeze
-VARIANTS_ALL_BUT_STD = %w[min base nfs big].freeze
+VARIANTS_ALL = %w[min base nfs big std rocm].freeze
+VARIANTS_ALL_BUT_ROCM = %w[min base nfs big std].freeze
+VARIANTS_ALL_BUT_STD_ROCM = %w[min base nfs big].freeze
 VARIANTS_MIN_NFS = %w[min nfs].freeze
 VARIANTS_MIN_NFS_BIG = %w[min nfs big].freeze
 
+def map_variants_to_archs(variants, archs)
+  variants.map { |variant| [variant, archs] }.to_h
+end
+
 ENV_CONFIG = {
   'debian' => {
-    '10' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_ALL_BUT_STD,
-    },
-    '11' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_ALL,
-    },
-    '12' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_MIN_NFS_BIG,
-    },
-    'testing' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_MIN_NFS,
-    },
-    'l4t1135' => {
-      'archs' => ARCHS_ARM,
-      'variants' => %w[std],
-    },
-    'gh11' => {
-      'archs' => ARCHS_ARM,
-      'variants' => %w[std],
-    },
+    '10' =>  map_variants_to_archs(VARIANTS_ALL_BUT_STD_ROCM, ARCHS_ALL),
+    '11' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
+    '12' =>  map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
+    'testing' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
+    'l4t1135' =>  map_variants_to_archs(%w[std], ARCHS_ARM),
+    'gh11' => map_variants_to_archs(%w[std], ARCHS_ARM),
   },
   'ubuntu' => {
-    '2004' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_MIN_NFS,
-    },
-    '2204' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
-    },
+    '2004' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
+    '2204' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
     '2404' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
+      'min' => ARCHS_X_ARM,
+      'nfs' => ARCHS_X_ARM,
+      'rocm' => ARCHS_X,
     },
-    'l4t200435' => {
-      'archs' => ARCHS_ARM,
-      'variants' => %w[big],
-    },
-    'gh2404' => {
-      'archs' => ARCHS_ARM,
-      'variants' => %w[big],
-    }
+    'l4t200435' => map_variants_to_archs(%w[big], ARCHS_ARM),
+    'gh2404' => map_variants_to_archs(%w[big], ARCHS_ARM),
   },
   'centosstream' => {
-    '8' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
-    },
-    '9' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
-    },
+    '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
+    '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
   },
   'rocky' => {
-    '8' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
-    },
-    '9' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
-    },
+    '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
+    '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
   },
   'centos' => {
-    '7' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_MIN_NFS,
-    },
-    '8' => {
-      'archs' => ARCHS_ALL,
-      'variants' => VARIANTS_MIN_NFS,
-    },
+    '7' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
+    '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
   },
   'almalinux' => {
-    '9' => {
-      'archs' => ARCHS_X_ARM,
-      'variants' => VARIANTS_MIN_NFS,
-    },
+    '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
   },
 }.freeze
 
@@ -99,9 +55,9 @@ end
 
 def map_all_envs
   ENV_CONFIG.map do |os, versions|
-    versions.map do |version, config|
-      config['archs'].map do |arch|
-        config['variants'].map do |variant|
+    versions.map do |version, variants|
+      variants.map do |variant, archs|
+        archs.map do |arch|
           yield os, version, arch, variant
         end
       end
