@@ -22,7 +22,7 @@ global:
   g5k_no_chroot_for_grub: true
   # Generate only the appliance for bare-metal deployment, not for VMs.
   appliance_formats: tar.zst
-  qemu_image_size: 30G
+  image_size: 30G
 
   # L4T information
   l4t_version_major: "35"

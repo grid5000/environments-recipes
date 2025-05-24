@@ -12,8 +12,8 @@ global:
   # Grid'5000 environment variant
   g5k_variant: rocm
   # QEMU options
-  qemu_image_size: 80G
   qemu_memory_size: 16g
+  image_size: 80G
 
 bootstrap:
   - "@base"
