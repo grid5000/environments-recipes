@@ -18,7 +18,7 @@ global:
   # Grid'5000 Kadeploy environment parameters
   g5k_postinst_script: g5k-postinstall --net debian-bridged --net hpc --fstab nfs --restrict-user std --disk-aliases
   # QEMU options
-  qemu_image_size: 16G
+  image_size: 16G
   # Visibility override
   g5k_visibility: shared
 
