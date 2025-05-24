@@ -23,7 +23,7 @@
 - qemu_cpus: 2
 - qemu_memory_size: 1024
 - qemu_arch: $${arch}
-- qemu_image_size: 10G
+- image_size: 10G
 - qemu_pidfile: $${kameleon_cwd}/qemu.pid
 - qemu_uefi: false
 - qemu_uefi_code_path: /usr/share/AAVMF/AAVMF_CODE.fd
