@@ -6,6 +6,8 @@ checkpoint: qemu.yaml
 
 global:
   image_format: qcow2
+  image_size: 8G
+  image_disk: $${kameleon_cwd}/base_$${kameleon_recipe_name}
 
   qemu_enable_kvm: true
   qemu_cpus: "$(nproc)"
@@ -13,8 +15,6 @@ global:
   qemu_monitor_socket: "/tmp/kameleon_qemu_monitor.$${kameleon_recipe_name}.$${kameleon_short_uuid}.socket"
   qemu_checkpoint_timeout: 300
   qemu_arch: $${arch}
-  image_disk: $${kameleon_cwd}/base_$${kameleon_recipe_name}
-  qemu_image_size: 8G
   qemu_pidfile: $${kameleon_cwd}/qemu.pid
   qemu_netdev_user_options: "domainname=FROM_HOST,dnssearch=FROM_HOST"
   qemu_kernel_path:
