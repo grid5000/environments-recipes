@@ -12,7 +12,8 @@ global:
   # Grid'5000 environment variant
   g5k_variant: rocm
   # QEMU options
-  qemu_image_size: 30G
+  qemu_image_size: 80G
+  qemu_memory_size: 16g
 
 bootstrap:
   - "@base"
@@ -29,7 +30,7 @@ setup:
         - /tmp/amdgpu-install.deb
       - apt-get_in: install /tmp/amdgpu-install.deb
     - amdgpu_install_rocm:
-      - exec_in: amdgpu-install -y --usecase=dkms,rocmdev
+      - exec_in: amdgpu-install -y --usecase=dkms,rocm
 
 export:
   - "@base"
