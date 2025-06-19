@@ -55,13 +55,16 @@ global:
   ## by default (next line to change it). The archive is created by the export.
   #grid5000_environment_export_additional_postinstall_dir: "additional_postinstall"
 
-  ### Target machine/CPU architecture
-  ## If building an environment for another architecture than x86_64, you may need to
-  ## uncomment and adapt the next lines, in order for qemu to function.
-  ## Set the qemu arch name: qemu uses ppc64, not ppc64le.
+  ### Qemu customization
+  ## Target machine/CPU architecture: If building an environment for another
+  ## architecture than x86_64, you may need to uncomment and adapt the next
+  ## lines, in order for qemu to function.
+  ## Set the qemu arch name (for ppc64, qemu uses "ppc64", not "ppc64le")
   #qemu_arch: ppc64
   ## Make qemu use UEFI (required for aarch64 and ppc64).
   #qemu_uefi: true
+  ## Adapt Qemu disk image size (may be needed for bigger environments)
+  #image_size: 50G
 
   ### You can add below any other global variable definition
   ## See the variables which can be overloaded, by running:

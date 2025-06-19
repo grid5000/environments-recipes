@@ -16,7 +16,7 @@ global:
 
   # Generate only the appliance for bare-metal deployment, not for VMs.
   appliance_formats: tar.zst
-  qemu_image_size: 45G
+  image_size: 45G
   base_autoinstall_path: $${kameleon_data_dir}/autoinstall/ubuntugh-noble-installer.yaml
 
 bootstrap:
