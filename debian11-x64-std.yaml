@@ -30,6 +30,8 @@ bootstrap:
 setup:
   - "@base"
   - set_and_clear_var_log
+  # Should it be included in min and nfs installs? At least big?
+  - install_mpi3mr_module
 
 export:
   - "@base"

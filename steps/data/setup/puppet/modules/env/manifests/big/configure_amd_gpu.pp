@@ -55,14 +55,15 @@ class env::big::configure_amd_gpu () {
       # NOTE: not using env::common::g5kpackages here, since we have a common step
       # looking to install the packages.
       apt::source {
-        'g5k-packages-amdgpu':
-          comment      => 'Our repository for AMDGPU packages',
-          location => "http://packages.grid5000.fr/deb/amdgpu/bullseye",
-          release  => '/',
-          repos    => '',
-          key      => {
-            'id'      => '3C38BDEAA05D4A7BED7815E5B1F34F56797BF2D1',
-            'content' => file('env/min/apt/grid5000-archive-key.asc')
+        'repo.radeon.com-amdgpu':
+          comment      => 'Repo for AMD AMDGPU packages',
+          location     => "https://repo.radeon.com/amdgpu/${::env::common::software_versions::rocm_version}/ubuntu",
+          release      => 'focal',
+          repos        => 'main',
+          architecture => 'amd64',
+          key          => {
+            'id'     => '1A693C5C',
+            'source' => 'https://repo.radeon.com/rocm/rocm.gpg.key',
           },
           notify       => Exec['apt_update'],
           include  => { 'deb' => true, 'src' => false }
@@ -71,8 +72,8 @@ class env::big::configure_amd_gpu () {
       apt::source {
         'repo.radeon.com-rocm':
           comment      => 'Repo for AMD ROCM packages',
-          location     => "https://repo.radeon.com/rocm/apt/${::env::common::software_versions::rocm_version}/",
-          release      => 'ubuntu',
+          location     => "https://repo.radeon.com/rocm/apt/${::env::common::software_versions::rocm_version}",
+          release      => 'focal',
           repos        => 'main',
           architecture => 'amd64',
           key          => {
@@ -101,7 +102,7 @@ class env::big::configure_amd_gpu () {
       file {
         '/etc/apt/sources.list.d/repo.radeon.com-amdgpu.list':
           ensure  => present,
-          content => "deb [signed-by=/usr/share/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/23.20.00.48/ubuntu/ jammy main\n",
+          content => "deb [signed-by=/usr/share/keyrings/rocm.gpg] https://repo.radeon.com/amdgpu/${::env::common::software_versions::rocm_version}/ubuntu jammy main\n",
           require => Exec['retrieve_rocm_key'],
           notify  => Exec['apt_update'];
         '/etc/apt/sources.list.d/repo.radeon.com-rocm.list':
@@ -145,7 +146,7 @@ class env::big::configure_amd_gpu_bullseye_bookworm_common () {
 
   $amdgpu_repo_source = $::lsbdistcodename ? {
     'bookworm' => 'File[/etc/apt/sources.list.d/repo.radeon.com-amdgpu.list]',
-    default    => 'Apt::Source[g5k-packages-amdgpu]',
+    default    => 'Apt::Source[repo.radeon.com-amdgpu]',
   }
 
   package {
@@ -165,9 +166,6 @@ class env::big::configure_amd_gpu_bullseye_bookworm_common () {
       provider => shell,
       timeout  => 1800,
       require  => [$rocm_repo_source, Exec['apt_update']];
-    'add_rocm_symlink':
-      command => "/bin/ln -s /opt/rocm-*/ /opt/rocm",
-      require => Package['rocm-smi-lib'];
   }
 
   file {

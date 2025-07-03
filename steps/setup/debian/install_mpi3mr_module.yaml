@@ -1,0 +1,8 @@
+- deb_mpi3mr_install:
+  - local2in:
+    # TODO: put the deb in packages.grid5000.fr
+    - ../../mpi3mr-8.11.0.16.0-1dkms.noarch.deb
+    - /tmp/mpi3mr.deb
+  - apt-get_in: install /tmp/mpi3mr.deb
+  # This is needed as the running kernel image was purged by puppet
+  - exec_in: dkms autoinstall -k $(find /boot/vmlinuz-* | sort -V | tail -n 1 | sed 's|.*vmlinuz-||')
