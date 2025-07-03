@@ -37,7 +37,7 @@ class env::common::software_versions {
         }
         'bullseye': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
-          $rocm_version           = '4.5'
+          $rocm_version           = '6.3.3'
           $nvidia_driver          = '535.183.06'
           $nvidia_cuda            = '11.2.2_460.32.03_linux'
           $datacenter_gpu_manager = '1:3.3.3'
@@ -47,7 +47,7 @@ class env::common::software_versions {
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
-          $rocm_version           = '4.5'
+          $rocm_version           = '6.4.1'
           $nvidia_driver          = '550.54.14'
           $nvidia_cuda            = '12.2.2_535.104.05_linux'
           $datacenter_gpu_manager = '1:3.3.3'
