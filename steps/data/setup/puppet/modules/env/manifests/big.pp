@@ -48,5 +48,7 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   class { 'env::big::install_smartd': }
   # disable unattended-upgrades
   class { 'env::big::disable_unattended_upgrades': }
+  # Mpi3mr
+  class { 'env::big::install_mpi3mr': }
 
 }
