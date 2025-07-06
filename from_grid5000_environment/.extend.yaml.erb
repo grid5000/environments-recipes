@@ -61,6 +61,14 @@ global:
   ## by default (next line to change it). The archive is created by the export.
   #grid5000_environment_export_additional_postinstall_dir: "additional_postinstall"
 
+  ## Optionaly, disable kexec booting for the environment, to force reboot/grub.
+  #grid5000_environment_export_no_kexec: "true"
+
+  ## Optionaly, add some custom variables to the environment description to
+  ## configure the boot of the system.
+  ## See: https://www.grid5000.fr/w/Advanced_Kadeploy#About_the_kernel_and_bootloader,_custom_variables
+  #grid5000_environment_export_custom_variables: "BOOTLOADER_NO_GRUB_MKCONFIG_FROM_DEST=1;BOOTLOADER_SHOW_MENU=1"
+
   ### Qemu customization
   ## Target machine/CPU architecture: If building an environment for another
   ## architecture than x86_64, you may need to uncomment and adapt the next
