@@ -42,6 +42,12 @@ global:
   #grid5000_environment_export_dir: "$HOME/public/"
   #grid5000_environment_export_baseurl: "local://$HOME/public/"
 
+  ## Optionaly, set the kernel image, initrd and kernel params (command line)
+  ## if the default /vmlinuz ans /initrd.img symlinks are not ok
+  #grid5000_environment_export_boot_kernel: "/boot/vmlinuz-x.y.z"
+  #grid5000_environment_export_boot_initrd: "/boot/initrd.img-x.y.z"
+  #grid5000_environment_export_boot_kernel_params: "..."
+
   ## Optionaly, the environment postinstall script can be changed, e.g. to
   ## enable NFS homes, LDAP accounts, if not enabled in the imported env.
   #grid5000_environment_export_postinstall_script: "g5k-postinstall --net debian --fstab nfs --restrict-user current"
@@ -63,6 +69,8 @@ global:
   #qemu_arch: ppc64
   ## Make qemu use UEFI (required for aarch64 and ppc64).
   #qemu_uefi: true
+  ## Adapt Qemu memory size (may be needed depending on what's done in setup)
+  #qemu_memory_size: 64G
   ## Adapt Qemu disk image size (may be needed for bigger environments)
   #image_size: 50G
 
