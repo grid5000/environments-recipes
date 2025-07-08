@@ -100,7 +100,7 @@
         kaenv_additional_postinstall="--add-postinstall \"$${grid5000_environment_export_baseurl}/$${grid5000_environment_export_additional_postinstall_archive}:$${grid5000_environment_export_additional_postinstall_compression}:$${grid5000_environment_export_additional_postinstall_script}\""
       fi
       if [ "$${grid5000_environment_export_no_kexec}" == "true" ]; then
-        kaenv_no_kexec="--modify kexec=false"
+        kaenv_no_kexec="--modify options.kexec=false"
       fi
       if [ -n "$${grid5000_environment_export_custom_variables}" ]; then
         kaenv_add_variable=$(
