@@ -38,9 +38,9 @@ global:
   #grid5000_environment_export_description: "Customized $${grid5000_environment_import_name}"
   #grid5000_environment_export_visibility: "shared"
 
-  ## Set where to store the environment and the assiated kadeploy URL base
+  ## Set where to store the environment and the associated kadeploy URL base (use http for intersite deployment)
   #grid5000_environment_export_dir: "$HOME/public/"
-  #grid5000_environment_export_baseurl: "local://$HOME/public/"
+  #grid5000_environment_export_baseurl: "http://public.$(dnsdomainname)/~$USER/"
 
   ## Optionaly, set the kernel image, initrd and kernel params (command line)
   ## if the default /vmlinuz ans /initrd.img symlinks are not ok
