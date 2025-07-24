@@ -6,7 +6,7 @@
     - group:
       - append_out:
         - /etc/apt/sources.list
-        - deb http://deb.debian.org/debian $${out_context_debian_release}-backports main
+        - deb http://archive.debian.org/debian $${out_context_debian_release}-backports main
       - apt-get_out: update
       - apt-get_out: -t $${out_context_debian_release}-backports install $${build_packages}
     - group:
