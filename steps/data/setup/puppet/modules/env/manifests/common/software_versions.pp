@@ -5,7 +5,7 @@ class env::common::software_versions {
   $g5k_meta_packages           = '0.7.58'
   $g5k_checks                  = '0.11.26'
   $sudo_g5k                    = '1.13'
-  $ruby_net_ssh                = '1:6.1.0-2+deb11u1'
+  $ruby_net_ssh_bookworm       = '1:6.1.0-2+deb11u1'
   $libguestfs_backport_arm64   = '1:1.40.2-7~bpog5k10+1'
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
   $g5k_jupyterlab              = '0.11'
@@ -13,13 +13,16 @@ class env::common::software_versions {
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
-      'bullseye' : {
-        $singularity_package  = 'singularity-ce'
-        $singularity_version  = '4.1.2-focal'
+      'trixie' : {
+        # NOTHING (for now)
       }
       'bookworm' : {
         $singularity_package  = 'singularity-container'
         $singularity_version  = '4.1.5+ds3-1~fto12+1'
+      }
+      'bullseye' : {
+        $singularity_package  = 'singularity-ce'
+        $singularity_version  = '4.1.2-focal'
       }
     }
   }
