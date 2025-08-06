@@ -14,7 +14,7 @@ global:
   release: trixie
   release_number: 13
   # to remove, and update steps/data/helpers/netinstall_iso_finder.py when Debian stable officially released
-  installer_iso_url: https://cdimage.debian.org/cdimage/trixie_di_rc2/$${deb_arch}/iso-cd/debian-trixie-DI-rc2-$${deb_arch}-netinst.iso
+  installer_iso_url: https://cdimage.debian.org/cdimage/trixie_di_rc3/$${deb_arch}/iso-cd/debian-trixie-DI-rc3-$${deb_arch}-netinst.iso
 
 bootstrap:
   - "@base"
