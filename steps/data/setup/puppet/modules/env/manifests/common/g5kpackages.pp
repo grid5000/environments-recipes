@@ -13,7 +13,7 @@ define env::common::g5kpackages (
 ) {
   include apt
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     # apt-key is deprecated. Manage keyring files in trusted.gpg.d instead. See bug 15510.
     'bookworm', 'trixie' : {
       unless defined(Exec['retrieve_g5k_key']) {
@@ -43,7 +43,7 @@ define env::common::g5kpackages (
       }
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 

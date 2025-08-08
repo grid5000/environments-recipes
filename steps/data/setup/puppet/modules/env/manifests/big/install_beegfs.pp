@@ -1,6 +1,6 @@
 class env::big::install_beegfs {
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     "buster" : {
 
       include env::big::prepare_kernel_module_build

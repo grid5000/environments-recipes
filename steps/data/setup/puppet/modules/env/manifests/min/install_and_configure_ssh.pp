@@ -1,6 +1,6 @@
 class env::min::install_and_configure_ssh {
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian','Ubuntu': {
 
       package {

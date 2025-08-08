@@ -36,13 +36,13 @@ class env::min::kernel::setup_links {
   # Setup symlink for initrd and vmlinuz/vmlinux
   exec {
     'linux-update-symlinks-vmlinuz':
-      onlyif  => "/usr/bin/test -e /boot/vmlinuz-${kernelrelease}",
-      command => "/usr/bin/linux-update-symlinks install ${kernelrelease} /boot/vmlinuz-${kernelrelease}";
+      onlyif  => "/usr/bin/test -e /boot/vmlinuz-${facts['kernelrelease']}",
+      command => "/usr/bin/linux-update-symlinks install ${facts['kernelrelease']} /boot/vmlinuz-${facts['kernelrelease']}";
   }
   exec {
     'linux-update-symlinks-vmlinux':
-      onlyif  => "/usr/bin/test -e /boot/vmlinux-${kernelrelease}",
-      command => "/usr/bin/linux-update-symlinks install ${kernelrelease} /boot/vmlinux-${kernelrelease}";
+      onlyif  => "/usr/bin/test -e /boot/vmlinux-${facts['kernelrelease']}",
+      command => "/usr/bin/linux-update-symlinks install ${facts['kernelrelease']} /boot/vmlinux-${facts['kernelrelease']}";
   }
 
 }

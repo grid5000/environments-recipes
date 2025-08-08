@@ -1,6 +1,6 @@
 class env::base::configure_ip_over_infiniband (){
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     'trixie': {
       package {
         'rdma-core':
@@ -69,7 +69,7 @@ class env::base::configure_ip_over_infiniband (){
       }
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

@@ -17,22 +17,22 @@ class env ($given_variant){
   }
 
   ## Define the Debian architecture name
-  if $architecture == 'aarch64' {
+  if $facts[os][architecture] == 'aarch64' {
     $deb_arch = 'arm64'
     $deb_arch_long = upcase($deb_arch)
     $g5k_arch = 'arm64'
-  } elsif $architecture == 'amd64' {
-    $deb_arch = $architecture
+  } elsif $facts[os][architecture] == 'amd64' {
+    $deb_arch = $facts[os][architecture]
     $deb_arch_long = 'AMD64/EM64T'
     $g5k_arch = 'x64'
-  } elsif $architecture == 'ppc64le' {
+  } elsif $facts[os][architecture] == 'ppc64le' {
     $deb_arch = 'ppc64el'
     $deb_arch_long = 'powerpc64le'
     $g5k_arch = 'ppc64'
   } else {
-    $deb_arch = $architecture
+    $deb_arch = $facts[os][architecture]
     $deb_arch_long = upcase($deb_arch)
-    $g5k_arch = $architecture
+    $g5k_arch = $facts[os][architecture]
   }
 
   ## Call the actual recipe

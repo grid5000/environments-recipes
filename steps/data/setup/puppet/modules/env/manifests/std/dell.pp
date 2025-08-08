@@ -16,7 +16,7 @@ class env::std::dell (
 
   $_key = '42550ABD1E80D7C1BC0BAD851285491434D8786F'
 
-  case $::lsbdistcodename {
+  case $facts[os][distro][codename] {
     'buster': {
       # No official Debian support since buster
       # $_location = "https://linux.dell.com/repo/community/openmanage/910/stretch"
@@ -36,7 +36,7 @@ class env::std::dell (
       $service_status = 'systemctl status dsm_sa_datamgrd.service dsm_sa_eventmgrd.service'
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 
@@ -66,7 +66,7 @@ class env::std::dell (
       ];
   }
 
-  case $::lsbdistcodename  {
+  case $facts[os][distro][codename]  {
     # OMSA <= 9.1.0
     'buster': {
       service {
@@ -89,11 +89,11 @@ class env::std::dell (
       }
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 
-  if ($::lsbdistcodename == 'buster') or ($::lsbdistcodename == 'bullseye') {
+  if ($facts[os][distro][codename] == 'buster') or ($facts[os][distro][codename] == 'bullseye') {
     # Using enable => false doesn't seem to work, maybe because openipmi use systemd-sysv-generator
     exec {
       'disable openipmi service':
@@ -101,10 +101,10 @@ class env::std::dell (
         require => Package[$packages, 'ipmitool'];
     }
   } else {
-    fail "${::lsbdistcodename} not supported."
+    fail "${facts[os][distro][codename]} not supported."
   }
 
-  if ($::lsbdistcodename == 'bullseye') {
+  if ($facts[os][distro][codename] == 'bullseye') {
     # Fix bug 12930
     exec {
       'disable NVMe devices support':
@@ -113,7 +113,7 @@ class env::std::dell (
     }
   }
 
-  if ($::lsbdistcodename == 'buster') {
+  if ($facts[os][distro][codename] == 'buster') {
     # Fix bug 8048 and 8975
     file {
       '/etc/systemd/system/dataeng.service.d':

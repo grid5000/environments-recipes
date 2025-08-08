@@ -28,7 +28,7 @@ class env::base::configure_omnipath(){
 
   }
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     'trixie': {
       # NOTHING (for now)
     }
@@ -53,7 +53,7 @@ class env::base::configure_omnipath(){
         'libfabric1':
           ensure => $::env::common::software_versions::libfabric1,
           packages => ['libfabric1', 'libfabric-bin'],
-          release => $::lsbdistcodename;
+          release => $facts[os][distro][codename];
       }
 
       ensure_packages(['ucx-utils'], {
@@ -72,7 +72,7 @@ class env::base::configure_omnipath(){
       # NOTHING
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

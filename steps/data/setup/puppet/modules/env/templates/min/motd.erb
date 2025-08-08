@@ -1,4 +1,4 @@
-<%= @userdistribname.capitalize %>-<%= scope.lookupvar('env::g5k_arch') %>-<%= scope.lookupvar('env::variant') %>-<%= scope.lookupvar('env::version') %> (Image based on Debian <%= @lsbdistcodename.capitalize %> for <%= scope.lookupvar('env::deb_arch_long') %>)
+<%= @userdistribname.capitalize %>-<%= scope.lookupvar('env::g5k_arch') %>-<%= scope.lookupvar('env::variant') %>-<%= scope.lookupvar('env::version') %> (Image based on Debian <%= @facts['os']['distro']['codename'].capitalize %> for <%= scope.lookupvar('env::deb_arch_long') %>)
   Maintained by support-staff <support-staff@lists.grid5000.fr>
 
 <% case scope.lookupvar('env::variant')

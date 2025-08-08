@@ -5,7 +5,7 @@ class env::std::install_g5kchecks {
     include 'env::std::dell'     # dell tools are required by g5k-checks
   }
 
-  case $operatingsystem {
+  case $facts[os][name] {
 
     'Debian','Ubuntu': {
 
@@ -15,7 +15,7 @@ class env::std::install_g5kchecks {
       env::common::g5kpackages {
         'g5k-checks':
           ensure  => $::env::common::software_versions::g5k_checks,
-          release => "${::lsbdistcodename}";
+          release => "${facts[os][distro][codename]}";
       }
 
       file {
@@ -29,7 +29,7 @@ class env::std::install_g5kchecks {
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 }

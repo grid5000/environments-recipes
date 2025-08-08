@@ -12,14 +12,14 @@ class env::min ( $variant = "min", $parent_parameters = {} ) {
   $parameters = merge( $min_parameters, $parent_parameters )
 
   # Package manager
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian','Ubuntu': {
     }
     'Centos': {
       class { 'env::min::yum': }
     }
     default: {
-      fail "${operatingsystem} not suported."
+      fail "$facts[os][name] not supported."
     }
   }
   # Install cpu microcode

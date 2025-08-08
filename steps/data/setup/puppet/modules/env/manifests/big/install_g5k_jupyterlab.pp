@@ -1,5 +1,5 @@
 class env::big::install_g5k_jupyterlab {
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian': {
       include env::common::software_versions
 
@@ -9,12 +9,12 @@ class env::big::install_g5k_jupyterlab {
         env::common::g5kpackages {
           'g5k-jupyterlab':
             ensure  => "${::env::common::software_versions::g5k_jupyterlab}",
-            release => "${::lsbdistcodename}";
+            release => "${facts[os][distro][codename]}";
         }
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 }

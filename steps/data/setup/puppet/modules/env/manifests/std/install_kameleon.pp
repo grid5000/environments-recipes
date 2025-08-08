@@ -1,22 +1,22 @@
 class env::std::install_kameleon {
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian': {
-      case "${lsbdistcodename}" {
+      case "${facts[os][distro][codename]}" {
         'buster', 'bullseye': {
           env::common::g5kpackages {
             'kameleon':
-              release => "${lsbdistcodename}",
+              release => "${facts[os][distro][codename]}",
               ensure =>  $::env::common::software_versions::kameleon;
           }
         }
         default: {
-          fail "${lsbdistcodename} not supported."
+          fail "${facts[os][distro][codename]} not supported."
         }
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 }

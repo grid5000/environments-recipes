@@ -2,9 +2,9 @@
 
 class env::big::install_mpi3mr {
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian': {
-      case "${lsbdistcodename}" {
+      case "${facts[os][distro][codename]}" {
         'bullseye': {
           env::common::g5kpackages {
             'mpi3mr':
@@ -12,7 +12,7 @@ class env::big::install_mpi3mr {
           }
           exec {
             'dkms_last_kernel_update':
-            command => "/usr/sbin/dkms autoinstall -k ${installed_kernelreleases[-1]}",
+            command => "/usr/sbin/dkms autoinstall -k ${facts[installed_kernelreleases][-1]}",
             notify  => Exec['generate_initramfs'],
             refreshonly => true;
           }
@@ -21,12 +21,12 @@ class env::big::install_mpi3mr {
           # Not needed (already provided by the kernel)
         }
         default: {
-          fail "${lsbdistcodename} not supported."
+          fail "${facts[os][distro][codename]} not supported."
         }
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 }

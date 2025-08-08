@@ -2,7 +2,7 @@ class env::std::install_hwraid_apt_source {
 
   include apt
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     "buster", "bullseye" : {
       apt::source { 'hwraid.le-vert.net':
         key      => {
@@ -11,7 +11,7 @@ class env::std::install_hwraid_apt_source {
         },
         comment  => 'Repo for megacli package',
         location => 'http://hwraid.le-vert.net/debian',
-        release  => "${::lsbdistcodename}",
+        release  => "${facts[os][distro][codename]}",
         repos    => 'main',
           include  => {
             'deb' => true,
@@ -20,7 +20,7 @@ class env::std::install_hwraid_apt_source {
       }
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

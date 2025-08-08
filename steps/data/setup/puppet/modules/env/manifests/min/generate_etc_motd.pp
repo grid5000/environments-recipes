@@ -1,6 +1,6 @@
 class env::min::generate_etc_motd {
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     'trixie': {
       $userdistribname = "debian13"
     }
@@ -14,7 +14,7 @@ class env::min::generate_etc_motd {
       $userdistribname = "debian10"
     }
     default: {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 

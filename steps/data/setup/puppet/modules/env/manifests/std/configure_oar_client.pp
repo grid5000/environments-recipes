@@ -2,9 +2,9 @@ class env::std::configure_oar_client {
 
   $oar_packages = ['oar-common', 'oar-node']
 
-  if "$operatingsystem" == "Debian" {
+  if "$facts[os][name]" == "Debian" {
     # Can specify oar client version below
-    case "${::lsbdistcodename}" {
+    case "${facts[os][distro][codename]}" {
       'buster' : {
         $oar_version       = "2.5.10~g5k32-1";
         $oar_repos         = "g5k"
@@ -14,7 +14,7 @@ class env::std::configure_oar_client {
         $oar_repos         = "g5k"
       }
       default : {
-        fail "${::lsbdistcodename} not supported."
+        fail "${facts[os][distro][codename]} not supported."
       }
     }
   }
@@ -32,7 +32,7 @@ class env::std::configure_oar_client {
     }
   } elsif ($oar_repos == "g5k") {
     env::common::g5kpackages {
-      "oar/${::lsbdistcodename}":
+      "oar/${facts[os][distro][codename]}":
         source_filename => 'oar',
         packages        => ['liboar-perl', 'oar-common', 'oar-node'],
         ensure          => $oar_version

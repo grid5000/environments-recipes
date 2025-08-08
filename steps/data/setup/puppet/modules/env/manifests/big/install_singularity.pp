@@ -4,6 +4,6 @@ class env::big::install_singularity () {
         env::common::g5kpackages {
           "${::env::common::software_versions::singularity_package}":
             ensure  => "${::env::common::software_versions::singularity_version}",
-            release => "${::lsbdistcodename}";
+            release => "${facts[os][distro][codename]}";
         }
 }

@@ -3,9 +3,9 @@ class env::min::install_metapackage ( $variant ) {
   include stdlib
   include env::common::software_versions
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian': {
-      case "${::lsbdistcodename}" {
+      case "${facts[os][distro][codename]}" {
         'trixie': {
           $base = "g5k-meta-packages-debian13"
         }
@@ -19,12 +19,12 @@ class env::min::install_metapackage ( $variant ) {
           $base = "g5k-meta-packages-debian10"
         }
         default: {
-          fail "${::lsbdistcodename} not supported."
+          fail "${facts[os][distro][codename]} not supported."
         }
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 

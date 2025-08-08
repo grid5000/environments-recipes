@@ -26,7 +26,7 @@ class env::big::install_smartd {
   # bug 15290: since bookworm, smartmontools fails if there is nothing to monitor, with exit code 17.
   # only for debian12: "-q never" lets smartd continue to run, waiting to load a configuration file listing valid devices.
   # for debian13 with v7.4, "-q nodev0" should work like "nodev" with exit code 0.
-  if $::lsbdistcodename == 'bookworm' {
+  if $facts[os][distro][codename] == 'bookworm' {
     file_line { 'smartmontools_config':
       ensure  => present,
       require => Package['smartmontools'],

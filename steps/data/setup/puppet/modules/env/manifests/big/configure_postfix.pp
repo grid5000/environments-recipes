@@ -9,7 +9,7 @@ class env::big::configure_postfix () {
       before  => Exec['newaliases', 'set_root_alias'];
   }
 
-  if ($::lsbdistcodename != 'bookworm') {
+  if ($facts[os][distro][codename] != 'bookworm') {
     exec {
       # This is a damn dirty patch due to a bug in the debian package for
       # postfix. In the package, the postinst script creates a

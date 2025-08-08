@@ -1,13 +1,13 @@
 class env::std::install_sudog5k {
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian': {
       require env::commonpackages::rake
       require env::commonpackages::rubyrspec
       require env::commonpackages::rsyslog
 
       # See bug #13901
-      if $::lsbdistcodename == 'bookworm' {
+      if $facts[os][distro][codename] == 'bookworm' {
         env::common::g5kpackages {
           'ruby-net-ssh_bookworm':
           ensure => $::env::common::software_versions::ruby_net_ssh;
@@ -21,7 +21,7 @@ class env::std::install_sudog5k {
 
     }
     default: {
-      fail "${operatingsystem} not suported."
+      fail "$facts[os][name] not suported."
     }
   }
 

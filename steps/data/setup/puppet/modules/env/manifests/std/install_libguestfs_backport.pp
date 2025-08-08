@@ -1,6 +1,6 @@
 class env::std::install_libguestfs_backport {
 
-  case $lsbdistcodename {
+  case $facts[os][distro][codename] {
     'buster': {
       if $env::deb_arch == 'arm64' {
         env::common::g5kpackages {
@@ -24,7 +24,7 @@ class env::std::install_libguestfs_backport {
       # NOTHING
     }
     default: {
-      fail "${lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

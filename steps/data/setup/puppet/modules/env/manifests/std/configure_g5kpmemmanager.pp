@@ -2,9 +2,9 @@ class env::std::configure_g5kpmemmanager {
 
   require env::std::configure_g5kmanager
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian': {
-      case "${::lsbdistcodename}" {
+      case "${facts[os][distro][codename]}" {
         "buster", "bullseye" : {
           file {
             '/etc/systemd/system/g5k-pmem-manager.service':
@@ -20,12 +20,12 @@ class env::std::configure_g5kpmemmanager {
           }
         }
         default : {
-          fail "${::lsbdistcodename} not supported."
+          fail "${facts[os][distro][codename]} not supported."
         }
       }
     }
     default : {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 }

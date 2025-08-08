@@ -3,7 +3,7 @@ class env::big::configure_amd_gpu () {
   $amdgpu_source_url = "https://repo.radeon.com/amdgpu/${::env::common::software_versions::rocm_version}/ubuntu"
   $rocm_source_url = "https://repo.radeon.com/rocm/apt/${::env::common::software_versions::rocm_version}/"
 
-  case $::lsbdistcodename {
+  case $facts[os][distro][codename] {
 
     'buster' : {
       apt::source {
@@ -117,7 +117,7 @@ class env::big::configure_amd_gpu () {
     }
 
     default: {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 
@@ -142,12 +142,12 @@ class env::big::configure_amd_gpu () {
 
 class env::big::configure_amd_gpu_bullseye_bookworm_common () {
 
-  $rocm_repo_source = $::lsbdistcodename ? {
+  $rocm_repo_source = $facts[os][distro][codename] ? {
     'bookworm' => 'File[/etc/apt/sources.list.d/repo.radeon.com-rocm.list]',
     default    => 'Apt::Source[repo.radeon.com-rocm]',
   }
 
-  $amdgpu_repo_source = $::lsbdistcodename ? {
+  $amdgpu_repo_source = $facts[os][distro][codename] ? {
     'bookworm' => 'File[/etc/apt/sources.list.d/repo.radeon.com-amdgpu.list]',
     default    => 'Apt::Source[repo.radeon.com-amdgpu]',
   }

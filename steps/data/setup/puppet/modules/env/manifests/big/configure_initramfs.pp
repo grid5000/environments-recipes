@@ -1,6 +1,6 @@
 class env::big::configure_initramfs () {
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     "buster" : {
       file {
         '/etc/initramfs-tools/conf.d/resume':
@@ -15,7 +15,7 @@ class env::big::configure_initramfs () {
       # NOTHING
     }
     default: {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

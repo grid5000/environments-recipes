@@ -1,6 +1,6 @@
 class env::big::configure_nvidia_gpu::prometheus () {
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian','Ubuntu': {
 
       env::common::g5kpackages {
@@ -55,7 +55,7 @@ class env::big::configure_nvidia_gpu::prometheus () {
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 

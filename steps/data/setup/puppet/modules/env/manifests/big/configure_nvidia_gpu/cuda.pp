@@ -27,7 +27,7 @@ class env::big::configure_nvidia_gpu::cuda () {
 
   # not install cuda for ppc64el bookworm
   # see https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=15183
-  unless ("$env::deb_arch" == 'ppc64el' and "$lsbdistcodename" == 'bookworm') {
+  unless ("$env::deb_arch" == 'ppc64el' and "$facts[os][distro][codename]" == 'bookworm') {
     exec{
       'retrieve_nvidia_cuda':
         command   => "/usr/bin/wget -q $driver_source -O /tmp/NVIDIA-Linux_cuda.run && chmod u+x /tmp/NVIDIA-Linux_cuda.run",
@@ -92,7 +92,7 @@ class env::big::configure_nvidia_gpu::cuda () {
   # cf. bug #12877, #12861 and #13260
   # Using hwloc bullseye-backports packages
   # cf. bug #13571 and #14313
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     "bookworm" : {
       case "$env::deb_arch" {
         "ppc64el": {
@@ -165,7 +165,7 @@ class env::big::configure_nvidia_gpu::cuda () {
       }
     }
     default: {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

@@ -15,7 +15,7 @@ class env::big::install_openmpi () {
     require => Class['apt::update']
   })
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     "buster" : {
       # The 'verbs' OFI provider is broken in OpenMPI 3.1.3. We disable it.
       # See https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=10918
@@ -38,7 +38,7 @@ class env::big::install_openmpi () {
       }
     }
     default: {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 }

@@ -1,6 +1,6 @@
 class env::nfs::install_autofs_requirements(){
 
-  case "${::lsbdistcodename}" {
+  case "${facts[os][distro][codename]}" {
     "buster": {
       package {
         'autofs':
@@ -13,11 +13,11 @@ class env::nfs::install_autofs_requirements(){
           # see bug 13638
           ensure => '5.1.2-4',
           packages => ['autofs'],
-          release => $::lsbdistcodename;
+          release => $facts[os][distro][codename];
       }
     }
     default : {
-      fail "${::lsbdistcodename} not supported."
+      fail "${facts[os][distro][codename]} not supported."
     }
   }
 

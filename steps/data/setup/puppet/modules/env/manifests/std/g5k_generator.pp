@@ -1,6 +1,6 @@
 class env::std::g5k_generator {
 
-  case $operatingsystem {
+  case $facts[os][name] {
     'Debian','Ubuntu': {
 
       #smbios-utils package for binary tool smbios-sys-info-lite
@@ -20,7 +20,7 @@ class env::std::g5k_generator {
       }
     }
     default: {
-      fail "${operatingsystem} not supported."
+      fail "$facts[os][name] not supported."
     }
   }
 }

@@ -1,7 +1,7 @@
 class env::xen::configure_xen () {
 
-  if "$operatingsystem" == "Debian" {
-    case "${::lsbdistcodename}" {
+  if "$facts[os][name]" == "Debian" {
+    case "${facts[os][distro][codename]}" {
       'buster' : {
         $hypervisor = "/boot/xen-4.11-${env::deb_arch}.gz"
         $xen_packages = [ 'xen-utils', 'debootstrap', 'xen-tools', 'sysfsutils', "xen-system-${env::deb_arch}" ]
@@ -12,7 +12,7 @@ class env::xen::configure_xen () {
         $xen_packages = [ 'xen-utils', 'debootstrap', 'xen-tools', 'sysfsutils', "xen-system-${env::deb_arch}" ]
       }
       default: {
-        fail "${::lsbdistcodename} not supported."
+        fail "${facts[os][distro][codename]} not supported."
       }
     }
 
@@ -43,7 +43,7 @@ class env::xen::configure_xen () {
         before   => Exec['create_example_domU'];
       '/etc/xen-tools/xen-tools.conf: change distribution':
         path     => '/etc/xen-tools/xen-tools.conf',
-        line     => "dist = ${::lsbdistcodename}",
+        line     => "dist = ${facts[os][distro][codename]}",
         match    => '^ *dist *=',
         require  => File['/etc/xen-tools/xen-tools.conf.puppet-bak'],
         before   => Exec['create_example_domU'];
