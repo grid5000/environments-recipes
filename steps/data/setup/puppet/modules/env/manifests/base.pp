@@ -25,7 +25,8 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   # Specific tuning
   class { 'env::base::tcp_tuning_for_10gbe': }
   # Cpufreq. Not available on ppc64
-  if $env::deb_arch != 'ppc64el' {
+  # FIXME cpufreq not available in trixie (bug #17453)
+  if ($env::deb_arch != 'ppc64el') or ($facts[os][distro][codename] != 'trixie') {
     class { 'env::base::enable_cpufreq_with_performance_governor': }
   }
   #IbOverIP
@@ -37,7 +38,10 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   #Add ca2019.grid5000.fr certificate
   class { 'env::base::add_ca_grid5000': }
   #Dhclient conf
-  class { 'env::base::configure_dhclient': }
+  # FIXME not using dhclient by default in trixie (bug #17449)
+  if ($facts[os][distro][codename] != 'trixie') {
+    class { 'env::base::configure_dhclient': }
+  }
   # Disable ndctl monitor service
   class { 'env::base::disable_ndctl_monitor': }
   # Enable userns for Nix

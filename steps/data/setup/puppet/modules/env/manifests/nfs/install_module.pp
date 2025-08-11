@@ -1,8 +1,12 @@
 class env::nfs::install_module () {
 
   case "${facts[os][distro][codename]}" {
-    "buster": {
-      # NOTHING
+    # FIXME need custom package (with module-stats-wrapper rebuild) for trixie (bug #17450)
+    "trixie": {
+      package {
+        'lmod':
+          ensure => installed;
+      }
     }
     "bullseye", "bookworm" : {
       # Install lmod from g5kpackages (custom version that includes module-stats-wrapper)
@@ -12,6 +16,9 @@ class env::nfs::install_module () {
           release => "${facts[os][distro][codename]}",
           ensure => $::env::common::software_versions::lmod;
       }
+    }
+    "buster": {
+      # NOTHING
     }
     default : {
       fail "${facts[os][distro][codename]} not supported."

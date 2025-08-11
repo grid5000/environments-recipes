@@ -14,9 +14,12 @@ class env::nfs ( $variant = "nfs", $parent_parameters = {} ){
   # Openiscsi (storage5k)
   class { 'env::nfs::configure_iscsi': }
   # ntp (required by nfs)
-  class {
-    'env::nfs::configure_ntp':
-      drift_file => $parameters['ntp_drift_file']
+  # FIXME ntp/ntpdate packages no more available in trixie (bug #17454)
+  if ($facts[os][distro][codename] != 'trixie') {
+    class {
+      'env::nfs::configure_ntp':
+        drift_file => $parameters['ntp_drift_file']
+    }
   }
   # ldap
   class { 'env::nfs::configure_ldap': }
