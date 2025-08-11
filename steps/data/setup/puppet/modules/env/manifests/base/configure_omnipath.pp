@@ -7,7 +7,10 @@ class env::base::configure_omnipath(){
 
   if $env::deb_arch == 'amd64' {
 
-    ensure_packages([$opapackages, $rdmapackages], {
+    stdlib::ensure_packages($opapackages, {
+      ensure => present
+    })
+    stdlib::ensure_packages($rdmapackages, {
       ensure => present
     })
 
@@ -22,7 +25,7 @@ class env::base::configure_omnipath(){
   } else {
 
     # opapackages are only available on amd64
-    ensure_packages($rdmapackages, {
+    stdlib::ensure_packages($rdmapackages, {
       ensure => present
     })
 
@@ -33,7 +36,7 @@ class env::base::configure_omnipath(){
       # NOTHING (for now)
     }
     'bookworm': {
-      ensure_packages(['ucx-utils'], {
+      stdlib::ensure_packages(['ucx-utils'], {
         ensure => present
       })
 
@@ -56,7 +59,7 @@ class env::base::configure_omnipath(){
           release => $facts[os][distro][codename];
       }
 
-      ensure_packages(['ucx-utils'], {
+      stdlib::ensure_packages(['ucx-utils'], {
         ensure => present
       })
 

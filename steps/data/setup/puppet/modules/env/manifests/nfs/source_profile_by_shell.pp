@@ -1,6 +1,6 @@
 class env::nfs::source_profile_by_shell {
 
-      ensure_packages(['zsh','tcsh'], {ensure => installed})
+      stdlib::ensure_packages(['zsh','tcsh'], {ensure => installed})
 
       file {
         '/etc/csh/cshrc.d':

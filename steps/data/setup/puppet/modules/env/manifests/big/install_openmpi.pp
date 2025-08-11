@@ -4,13 +4,13 @@ class env::big::install_openmpi () {
   $openmpi_opa_packages = [ 'libpsm2-dev', 'libopamgt-dev' ]
 
   if $env::deb_arch == 'amd64' {
-    ensure_packages($openmpi_opa_packages, {
+    stdlib::ensure_packages($openmpi_opa_packages, {
       ensure => present,
       require => Class['apt::update']
     })
   }
 
-  ensure_packages($openmpi_packages, {
+  stdlib::ensure_packages($openmpi_packages, {
     ensure => present,
     require => Class['apt::update']
   })

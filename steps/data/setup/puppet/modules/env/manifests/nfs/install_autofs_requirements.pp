@@ -1,7 +1,7 @@
 class env::nfs::install_autofs_requirements(){
 
   case "${facts[os][distro][codename]}" {
-    "buster": {
+    "buster", "trixie": {
       package {
         'autofs':
           ensure => installed;
