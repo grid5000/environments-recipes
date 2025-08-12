@@ -2,10 +2,10 @@ class env::min::kernel::setup_links {
   # Ensure the kernel symlink will be installed in /
   file_line {
     '/etc/kernel-img.conf: update kernel symlink behavior to link in /':
-      path     => '/etc/kernel-img.conf',
-      line     => "link_in_boot = no",
-      match    => '^link_in_boot =',
-      before   => [
+      path   => '/etc/kernel-img.conf',
+      line   => 'link_in_boot = no',
+      match  => '^link_in_boot =',
+      before => [
         Exec['linux-update-symlinks-vmlinuz'],
         Exec['linux-update-symlinks-vmlinux'],
         ];
@@ -14,23 +14,23 @@ class env::min::kernel::setup_links {
   # Ensure symlinks to /boot are removed
   file {
     '/boot/vmlinuz':
-      path     => '/boot/vmlinuz',
-      ensure   => absent;
+      ensure => absent,
+      path   => '/boot/vmlinuz';
     '/boot/vmlinuz.old':
-      path     => '/boot/vmlinuz.old',
-      ensure   => absent;
+      ensure => absent,
+      path   => '/boot/vmlinuz.old';
     '/boot/vmlinux':
-      path     => '/boot/vmlinux',
-      ensure   => absent;
+      ensure => absent,
+      path   => '/boot/vmlinux';
     '/boot/vmlinux.old':
-      path     => '/boot/vmlinux.old',
-      ensure   => absent;
+      ensure => absent,
+      path   => '/boot/vmlinux.old';
     '/boot/initrd.img':
-      path     => '/boot/initrd.img',
-      ensure   => absent;
+      ensure => absent,
+      path   => '/boot/initrd.img';
     '/boot/initrd.img.old':
-      path     => '/boot/initrd.img.old',
-      ensure   => absent;
+      ensure => absent,
+      path   => '/boot/initrd.img.old';
   }
 
   # Setup symlink for initrd and vmlinuz/vmlinux

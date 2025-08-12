@@ -1,6 +1,6 @@
 class env::base::configure_ip_over_infiniband (){
 
-  case "${facts[os][distro][codename]}" {
+  case $facts[os][distro][codename] {
     'trixie': {
       package {
         'rdma-core':
@@ -49,11 +49,11 @@ class env::base::configure_ip_over_infiniband (){
           source  => 'puppet:///modules/env/base/infiniband/openib.conf',
           require => File['/etc/infiniband'];
         '/etc/init.d/openibd':
-          ensure  => file,
-          owner   => root,
-          group   => root,
-          mode    => '0755',
-          source  => 'puppet:///modules/env/base/infiniband/openibd';
+          ensure => file,
+          owner  => root,
+          group  => root,
+          mode   => '0755',
+          source => 'puppet:///modules/env/base/infiniband/openibd';
         '/etc/systemd/system/openibd.service':
           ensure => file,
           owner  => root,

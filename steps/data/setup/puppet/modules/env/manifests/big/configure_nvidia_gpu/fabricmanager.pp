@@ -13,30 +13,30 @@ class env::big::configure_nvidia_gpu::fabricmanager () {
 
 exec{
   'retrieve_fabricmanager':
-    command   => "/usr/bin/wget $fabric_source -O $fabric_tar_file",
-    timeout   => 300, # 5 min
-    creates   => "$fabric_tar_file";
+    command => "/usr/bin/wget ${fabric_source} -O ${fabric_tar_file}",
+    timeout => 300, # 5 min
+    creates => $fabric_tar_file;
   'extract_fabricmanager':
-    command => "/usr/bin/tar -xzf $fabric_tar_file -C /tmp/",
+    command => "/usr/bin/tar -xzf ${fabric_tar_file} -C /tmp/",
     timeout => 120, # 2 min
-    creates => "$fabric_folder";
+    creates => $fabric_folder;
   'rewrite_paths':
-    command => "/usr/bin/sed -i \'s/\${PWD}/\\/tmp\\/fabricmanager/g\' $fabric_folder/fm_run_package_installer.sh",
+    command => "/usr/bin/sed -i \'s/\${PWD}/\\/tmp\\/fabricmanager/g\' ${fabric_folder}/fm_run_package_installer.sh",
     timeout => 60; # 1 min
   'install_fabricmanager':
-    command     => "$fabric_folder/fm_run_package_installer.sh",
+    command     => "${fabric_folder}/fm_run_package_installer.sh",
     timeout     => 300, # 5 min
     user        => root,
-    environment => ["HOME=/root", "USER=root"];
+    environment => ['HOME=/root', 'USER=root'];
   }
 
 file {
   '/etc/systemd/system/nvidia-fabricmanager.service':
-    ensure    => file,
-    owner     => root,
-    group     => root,
-    mode      => '0644',
-    source    => 'puppet:///modules/env/big/nvidia/nvidia-fabricmanager.service';
+    ensure => file,
+    owner  => root,
+    group  => root,
+    mode   => '0644',
+    source => 'puppet:///modules/env/big/nvidia/nvidia-fabricmanager.service';
   '/etc/systemd/system/multi-user.target.wants/nvidia-fabricmanager.service':
     ensure => absent;
   }

@@ -4,8 +4,8 @@ class env::std::install_megacli {
 
   package {
     'megacli':
-      ensure => installed,
-      require  => [Apt::Source['hwraid.le-vert.net'], Exec['apt_update']]
+      ensure  => installed,
+      require => [Apt::Source['hwraid.le-vert.net'], Exec['apt_update']]
   }
 
 }

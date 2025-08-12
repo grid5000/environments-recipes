@@ -11,8 +11,8 @@ class env::big::prepare_kernel_module_build {
 
   exec {
     'prepare_kernel_module_build':
-      command   => "/usr/bin/m-a prepare -i -l ${facts[installed_kernelreleases][-1]}",
-      user      => root,
-      require   => Package['module-assistant'];
+      command => "/usr/bin/m-a prepare -i -l ${facts[installed_kernelreleases][-1]}",
+      user    => root,
+      require => Package['module-assistant'];
   }
 }

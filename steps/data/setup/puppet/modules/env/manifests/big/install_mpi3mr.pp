@@ -4,7 +4,7 @@ class env::big::install_mpi3mr {
 
   case $facts[os][name] {
     'Debian': {
-      case "${facts[os][distro][codename]}" {
+      case $facts[os][distro][codename] {
         'bullseye': {
           env::common::g5kpackages {
             'mpi3mr':
@@ -12,12 +12,12 @@ class env::big::install_mpi3mr {
           }
           exec {
             'dkms_last_kernel_update':
-            command => "/usr/sbin/dkms autoinstall -k ${facts[installed_kernelreleases][-1]}",
-            notify  => Exec['generate_initramfs'],
+            command     => "/usr/sbin/dkms autoinstall -k ${facts[installed_kernelreleases][-1]}",
+            notify      => Exec['generate_initramfs'],
             refreshonly => true;
           }
         }
-        "bookworm" : {
+        'bookworm' : {
           # Not needed (already provided by the kernel)
         }
         default: {
@@ -26,7 +26,7 @@ class env::big::install_mpi3mr {
       }
     }
     default: {
-      fail "$facts[os][name] not supported."
+      fail "${facts[os][name]} not supported."
     }
   }
 }

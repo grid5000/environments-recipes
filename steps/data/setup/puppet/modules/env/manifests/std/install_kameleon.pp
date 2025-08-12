@@ -2,12 +2,12 @@ class env::std::install_kameleon {
 
   case $facts[os][name] {
     'Debian': {
-      case "${facts[os][distro][codename]}" {
+      case $facts[os][distro][codename] {
         'buster', 'bullseye': {
           env::common::g5kpackages {
             'kameleon':
-              release => "${facts[os][distro][codename]}",
-              ensure =>  $::env::common::software_versions::kameleon;
+              ensure  =>  $::env::common::software_versions::kameleon,
+              release => $facts[os][distro][codename];
           }
         }
         default: {
@@ -16,7 +16,7 @@ class env::std::install_kameleon {
       }
     }
     default: {
-      fail "$facts[os][name] not supported."
+      fail "${facts[os][name]} not supported."
     }
   }
 }

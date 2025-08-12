@@ -8,13 +8,13 @@ class env::big::install_g5k_jupyterlab {
         # See https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=14311
         env::common::g5kpackages {
           'g5k-jupyterlab':
-            ensure  => "${::env::common::software_versions::g5k_jupyterlab}",
-            release => "${facts[os][distro][codename]}";
+            ensure  => $::env::common::software_versions::g5k_jupyterlab,
+            release => $facts[os][distro][codename];
         }
       }
     }
     default: {
-      fail "$facts[os][name] not supported."
+      fail "${facts[os][name]} not supported."
     }
   }
 }

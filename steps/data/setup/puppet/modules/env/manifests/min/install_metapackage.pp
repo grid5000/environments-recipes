@@ -5,18 +5,18 @@ class env::min::install_metapackage ( $variant ) {
 
   case $facts[os][name] {
     'Debian': {
-      case "${facts[os][distro][codename]}" {
+      case $facts[os][distro][codename] {
         'trixie': {
-          $base = "g5k-meta-packages-debian13"
+          $base = 'g5k-meta-packages-debian13'
         }
         'bookworm': {
-          $base = "g5k-meta-packages-debian12"
+          $base = 'g5k-meta-packages-debian12'
         }
         'bullseye': {
-          $base = "g5k-meta-packages-debian11"
+          $base = 'g5k-meta-packages-debian11'
         }
         'buster': {
-          $base = "g5k-meta-packages-debian10"
+          $base = 'g5k-meta-packages-debian10'
         }
         default: {
           fail "${facts[os][distro][codename]} not supported."
@@ -24,24 +24,24 @@ class env::min::install_metapackage ( $variant ) {
       }
     }
     default: {
-      fail "$facts[os][name] not supported."
+      fail "${facts[os][name]} not supported."
     }
   }
 
   $g5kmetapackages = "${base}-${variant}"
 
-  $pinned = join(['min', 'base', 'nfs','big'].map |$env| { "${base}-${env}" }," ")
+  $pinned = join(['min', 'base', 'nfs','big'].map |$env| { "${base}-${env}" },' ')
 
   env::common::apt_pinning {
     'g5k-meta-packages':
       packages => $pinned,
-      version => $::env::common::software_versions::g5k_meta_packages
+      version  => $::env::common::software_versions::g5k_meta_packages
   }
 
   env::common::g5kpackages {
     'g5k-meta-packages':
-      packages => $g5kmetapackages,
       ensure   => $::env::common::software_versions::g5k_meta_packages,
+      packages => $g5kmetapackages,
       require  => Env::Common::Apt_pinning['g5k-meta-packages'];
   }
 

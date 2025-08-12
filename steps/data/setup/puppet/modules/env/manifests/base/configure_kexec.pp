@@ -1,11 +1,11 @@
 class env::base::configure_kexec {
 
   file {
-    "/etc/default/kexec":
-      mode    => '0755',
-      owner   => root,
-      group   => root,
-      source  => "puppet:///modules/env/base/kexec/kexec";
+    '/etc/default/kexec':
+      mode   => '0755',
+      owner  => root,
+      group  => root,
+      source => 'puppet:///modules/env/base/kexec/kexec';
   }
 
   package {

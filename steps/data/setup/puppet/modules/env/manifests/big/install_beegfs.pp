@@ -1,7 +1,7 @@
 class env::big::install_beegfs {
 
-  case "${facts[os][distro][codename]}" {
-    "buster" : {
+  case $facts[os][distro][codename] {
+    'buster' : {
 
       include env::big::prepare_kernel_module_build
 
@@ -11,18 +11,18 @@ class env::big::install_beegfs {
           repos        => 'non-free',
           architecture => 'amd64',
           key          => {
-              id       => '055D000F1A9A092763B1F0DD14E8E08064497785',
-              source   => 'https://www.beegfs.io/release/beegfs_7/gpg/DEB-GPG-KEY-beegfs',
+              id     => '055D000F1A9A092763B1F0DD14E8E08064497785',
+              source => 'https://www.beegfs.io/release/beegfs_7/gpg/DEB-GPG-KEY-beegfs',
           },
       }
       -> package { # client
           [ 'beegfs-utils', 'beegfs-helperd', 'beegfs-client', 'libbeegfs-ib' ]:
-          require => Class['apt::update'],
-          ensure => installed;
+          ensure  => installed,
+          require => Class['apt::update'];
       }
       -> service { [ 'beegfs-helperd', 'beegfs-client'] :
         provider => systemd,
-        enable => false,
+        enable   => false,
       }
 
       file { '/etc/beegfs/beegfs-client-autobuild.conf':
@@ -31,9 +31,9 @@ class env::big::install_beegfs {
       }
       -> exec {
       '/etc/init.d/beegfs-client rebuild':
-          timeout => 1200,
+          timeout     => 1200,
           refreshonly => true,
-          require => Exec['prepare_kernel_module_build']
+          require     => Exec['prepare_kernel_module_build']
       }
     }
 

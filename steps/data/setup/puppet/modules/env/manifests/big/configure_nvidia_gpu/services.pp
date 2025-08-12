@@ -6,10 +6,10 @@ class env::big::configure_nvidia_gpu::services () {
   # this service.
   file{
     '/etc/systemd/system/nvidia-smi.service':
-      ensure    => file,
-      owner     => root,
-      group     => root,
-      mode      => '0644',
-      source    => 'puppet:///modules/env/big/nvidia/nvidia-smi.service';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/big/nvidia/nvidia-smi.service';
   }
 }

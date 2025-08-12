@@ -6,7 +6,7 @@ class env::base::increase_ssh_maxstartups (){
       changes => [
         'set /files/etc/ssh/sshd_config/MaxStartups 500'
       ],
-      require  => Package['ssh server'];
+      require => Package['ssh server'];
   }
 
   Augeas['sshd_config_base'] ~> Service['ssh']

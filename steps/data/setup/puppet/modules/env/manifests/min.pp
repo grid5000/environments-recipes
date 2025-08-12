@@ -1,6 +1,6 @@
 # This file contains the 'min' class used to configure an environment with minimal modification to be executed in grid'5000.
 
-class env::min ( $variant = "min", $parent_parameters = {} ) {
+class env::min ( $variant = 'min', $parent_parameters = {} ) {
 
   stage { 'last':
     require => Stage['main'],
@@ -19,7 +19,7 @@ class env::min ( $variant = "min", $parent_parameters = {} ) {
       class { 'env::min::yum': }
     }
     default: {
-      fail "$facts[os][name] not supported."
+      fail "${facts[os][name]} not supported."
     }
   }
   # Install cpu microcode

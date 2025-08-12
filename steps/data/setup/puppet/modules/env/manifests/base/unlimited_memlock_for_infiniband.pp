@@ -7,11 +7,11 @@ class env::base::unlimited_memlock_for_infiniband (){
 
   file {
     '/etc/security/limits.d/grid5000.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/base/tuning/limits-grid5000.conf';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/base/tuning/limits-grid5000.conf';
   }
 }
 

@@ -1,17 +1,17 @@
 class env::min::generate_etc_motd {
 
-  case "${facts[os][distro][codename]}" {
+  case $facts[os][distro][codename] {
     'trixie': {
-      $userdistribname = "debian13"
+      $userdistribname = 'debian13'
     }
     'bookworm': {
-      $userdistribname = "debian12"
+      $userdistribname = 'debian12'
     }
     'bullseye': {
-      $userdistribname = "debian11"
+      $userdistribname = 'debian11'
     }
     'buster': {
-      $userdistribname = "debian10"
+      $userdistribname = 'debian10'
     }
     default: {
       fail "${facts[os][distro][codename]} not supported."

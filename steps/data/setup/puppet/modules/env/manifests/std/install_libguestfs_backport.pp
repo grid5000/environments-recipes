@@ -5,15 +5,15 @@ class env::std::install_libguestfs_backport {
       if $env::deb_arch == 'arm64' {
         env::common::g5kpackages {
           'libguestfs-backport':
-            packages => 'libguestfs-tools',
-            ensure  => $::env::common::software_versions::libguestfs_backport_arm64;
+            ensure   => $::env::common::software_versions::libguestfs_backport_arm64,
+            packages => 'libguestfs-tools';
         }
       }
       elsif $env::deb_arch == 'ppc64el' {
         env::common::g5kpackages {
           'libguestfs-backport':
-            packages => 'libguestfs-tools',
-            ensure  => $::env::common::software_versions::libguestfs_backport_ppc64el;
+            ensure   => $::env::common::software_versions::libguestfs_backport_ppc64el,
+            packages => 'libguestfs-tools';
         }
       }
       else {

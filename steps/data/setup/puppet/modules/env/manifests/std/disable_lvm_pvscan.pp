@@ -6,11 +6,11 @@ class env::std::disable_lvm_pvscan {
   }
 
   file {
-    "/etc/lvm/lvm.conf":
+    '/etc/lvm/lvm.conf':
       mode    => '0644',
       owner   => root,
       group   => root,
-      source  => "puppet:///modules/env/std/lvm/lvm.conf",
+      source  => 'puppet:///modules/env/std/lvm/lvm.conf',
       require => Package['lvm2'],
       notify  => Exec['generate_initramfs'];
 

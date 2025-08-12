@@ -15,8 +15,8 @@ class env::big::install_openmpi () {
     require => Class['apt::update']
   })
 
-  case "${facts[os][distro][codename]}" {
-    "buster" : {
+  case $facts[os][distro][codename] {
+    'buster' : {
       # The 'verbs' OFI provider is broken in OpenMPI 3.1.3. We disable it.
       # See https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=10918
       # and https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=941996
@@ -24,12 +24,12 @@ class env::big::install_openmpi () {
       # OpenMPI 4.x is not affected, so this can be removed after buster.
       # This does not affect OpenMPI when loaded using 'module'
       file_line { 'disable_verbs_ofi_provider':
-        path => '/etc/openmpi/openmpi-mca-params.conf',
-        line => 'mtl_ofi_provider_exclude = shm,sockets,tcp,udp,rstream,verbs',
+        path    => '/etc/openmpi/openmpi-mca-params.conf',
+        line    => 'mtl_ofi_provider_exclude = shm,sockets,tcp,udp,rstream,verbs',
         require => Package['openmpi-bin'];
       }
     }
-    "bullseye", "bookworm" : {
+    'bullseye', 'bookworm' : {
       # Debian11|12 disable many providers by default. We restore UCX and Fabric,
       # while keeping openib disabled to avoid useless warnings
       file { '/etc/openmpi/openmpi-mca-params.conf':

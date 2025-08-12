@@ -43,6 +43,6 @@ class env ($given_variant){
     'nfs' :  { include env::nfs }
     'big' :  { include env::big }
     'std' :  { include env::std }
-    default: { notify {"variant $variant is not implemented":}}
+    default: { notify {"variant ${variant} is not implemented":}}
   }
 }

@@ -7,8 +7,8 @@ class env::big::configure_nvidia_gpu::fabricmanager_deb () {
   $nvfabric_major = $nvfabric_vars[0]
   $nvfabric_version = $nvfabric_vars[1]
   Package{ 'nvidia-fabricmanager':
-    name => "nvidia-fabricmanager-$nvfabric_major",
-    ensure => $nvfabric_version,
+    ensure  => $nvfabric_version,
+    name    => "nvidia-fabricmanager-${nvfabric_major}",
     require => Env::Common::G5kpackages['nvidia-dcgm-exporter'];
   }
 }

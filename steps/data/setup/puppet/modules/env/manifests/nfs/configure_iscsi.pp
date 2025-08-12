@@ -9,15 +9,15 @@ class env::nfs::configure_iscsi (){
 
   file {
     '/etc/udev/rules.d/55-openiscsi.rules':
-      owner   => root,
-      group   => root,
-      mode    => '0644',
-      source  => 'puppet:///modules/env/nfs/openiscsi/55-openiscsi.rules';
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/openiscsi/55-openiscsi.rules';
     '/etc/udev/scripts':
-      ensure  => "directory",
-      owner   => root,
-      group   => root,
-      mode    => '0755';
+      ensure => 'directory',
+      owner  => root,
+      group  => root,
+      mode   => '0755';
     '/etc/udev/scripts/iscsidev.sh':
       ensure  => present,
       owner   => root,

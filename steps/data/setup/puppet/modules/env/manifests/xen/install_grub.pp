@@ -7,7 +7,7 @@ class env::xen::install_grub () {
 
   exec {
     'update-grub':
-      command     => "/usr/sbin/update-grub2",
+      command     => '/usr/sbin/update-grub2',
       refreshonly => true,
       require     => Package['grub2'];
   }

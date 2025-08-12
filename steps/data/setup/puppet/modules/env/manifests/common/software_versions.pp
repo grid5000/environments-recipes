@@ -11,7 +11,7 @@ class env::common::software_versions {
   $g5k_jupyterlab              = '0.11'
   $kameleon                    = '2.11.0.1'
 
-  if "$env::deb_arch" == 'amd64' {
+  if $env::deb_arch == 'amd64' {
     case $facts[os][distro][codename] {
       'trixie' : {
         # NOTHING (for now)
@@ -27,7 +27,7 @@ class env::common::software_versions {
     }
   }
 
-  case "${env::deb_arch}" {
+  case $env::deb_arch {
     'amd64': {
       $nvidia_driver_arch         = 'x86_64'
       case $facts[os][distro][codename] {

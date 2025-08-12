@@ -11,73 +11,73 @@ class env::nfs::configure_ldap () {
 
   file {
     '/etc/ldap/ldap.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/ldap.conf';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/ldap.conf';
     '/etc/ldap/certificates':
-      ensure   => directory,
-      owner    => root,
-      group    => root,
-      mode     => '0755';
+      ensure => directory,
+      owner  => root,
+      group  => root,
+      mode   => '0755';
     '/etc/ldap/certificates/ca2019.grid5000.fr.cert':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/ca2019.grid5000.fr.cert',
-      require  => File['/etc/ldap/certificates'];
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      source  => 'puppet:///modules/env/nfs/ldap/ca2019.grid5000.fr.cert',
+      require => File['/etc/ldap/certificates'];
     '/etc/nsswitch.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/nsswitch.conf';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/nsswitch.conf';
     '/etc/libnss-ldap.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/libnss-ldap.conf';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/libnss-ldap.conf';
     '/etc/pam_ldap.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/libnss-ldap.conf';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/libnss-ldap.conf';
     '/etc/pam.d/common-account':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      content   => template('env/nfs/ldap/common-account.erb');
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      content => template('env/nfs/ldap/common-account.erb');
     '/etc/pam.d/common-auth':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/common-auth';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/common-auth';
     '/etc/pam.d/common-password':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/common-password';
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/common-password';
     '/etc/nscd.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/nscd.conf',
-      notify   => Service['nscd'];
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/nscd.conf',
+      notify => Service['nscd'];
     '/etc/nslcd.conf':
-      ensure   => file,
-      owner    => root,
-      group    => root,
-      mode     => '0644',
-      source   => 'puppet:///modules/env/nfs/ldap/nslcd.conf',
-      notify   => Service['nslcd'];
+      ensure => file,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      source => 'puppet:///modules/env/nfs/ldap/nslcd.conf',
+      notify => Service['nslcd'];
   }
 
   service {

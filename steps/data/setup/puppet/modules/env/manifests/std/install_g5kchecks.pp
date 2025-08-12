@@ -15,21 +15,21 @@ class env::std::install_g5kchecks {
       env::common::g5kpackages {
         'g5k-checks':
           ensure  => $::env::common::software_versions::g5k_checks,
-          release => "${facts[os][distro][codename]}";
+          release => $facts[os][distro][codename];
       }
 
       file {
         '/etc/g5k-checks.conf':
-          ensure   => present,
-          owner    => root,
-          group    => root,
-          mode     => '0644',
-          source   => "puppet:///modules/env/std/g5kchecks/g5k-checks.conf",
-          require  => Package["g5k-checks"];
+          ensure  => present,
+          owner   => root,
+          group   => root,
+          mode    => '0644',
+          source  => 'puppet:///modules/env/std/g5kchecks/g5k-checks.conf',
+          require => Package['g5k-checks'];
       }
     }
     default: {
-      fail "$facts[os][name] not supported."
+      fail "${facts[os][name]} not supported."
     }
   }
 }

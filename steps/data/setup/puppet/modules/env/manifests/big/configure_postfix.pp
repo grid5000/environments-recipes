@@ -26,7 +26,7 @@ class env::big::configure_postfix () {
       # See https://salsa.debian.org/postfix-team/postfix-dev/-/commit/a1d904dc162dfb810fc5b44b0f3efc45b07c12f8
       exec {
         'fix_resolv_conf':
-          command  => "/bin/true";
+          command  => '/bin/true';
       }
   }
   exec {

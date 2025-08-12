@@ -33,7 +33,7 @@ class env::big::configure_amd_gpu () {
 
       exec {
         'add_rocm_symlink':
-          command => "/bin/ln -s /opt/rocm-*/ /opt/rocm",
+          command => '/bin/ln -s /opt/rocm-*/ /opt/rocm',
           require => Package['rocm-smi-lib'];
       }
 
@@ -69,7 +69,7 @@ class env::big::configure_amd_gpu () {
             'source' => 'https://repo.radeon.com/rocm/rocm.gpg.key',
           },
           notify       => Exec['apt_update'],
-          include  => { 'deb' => true, 'src' => false }
+          include      => { 'deb' => true, 'src' => false }
       }
 
       apt::source {
@@ -98,19 +98,19 @@ class env::big::configure_amd_gpu () {
       unless defined(Exec['retrieve_rocm_key']) {
         exec {
         'retrieve_rocm_key':
-          command     => "/usr/bin/wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /usr/share/keyrings/rocm.gpg > /dev/null";
+          command     => '/usr/bin/wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /usr/share/keyrings/rocm.gpg > /dev/null';
         }
       }
 
       file {
         '/etc/apt/sources.list.d/repo.radeon.com-amdgpu.list':
           ensure  => present,
-          content => "deb [signed-by=/usr/share/keyrings/rocm.gpg] $amdgpu_source_url jammy main\n",
+          content => "deb [signed-by=/usr/share/keyrings/rocm.gpg] ${amdgpu_source_url} jammy main\n",
           require => Exec['retrieve_rocm_key'],
           notify  => Exec['apt_update'];
         '/etc/apt/sources.list.d/repo.radeon.com-rocm.list':
           ensure  => present,
-          content => "deb [signed-by=/usr/share/keyrings/rocm.gpg] $rocm_source_url jammy main\n",
+          content => "deb [signed-by=/usr/share/keyrings/rocm.gpg] ${rocm_source_url} jammy main\n",
           require => Exec['retrieve_rocm_key'],
           notify  => Exec['apt_update'];
       }
@@ -124,18 +124,18 @@ class env::big::configure_amd_gpu () {
   file {
     '/etc/profile.d/rocm.sh':
       ensure  => present,
-      owner => root,
-      group => root,
-      mode  => '0644',
+      owner   => root,
+      group   => root,
+      mode    => '0644',
       content => 'export PATH=$PATH:/opt/rocm/bin';
   }
 
   file {
     '/etc/ld.so.conf.d/rocm.conf':
-      ensure  => present,
-      owner => root,
-      group => root,
-      mode  => '0644',
+      ensure => present,
+      owner  => root,
+      group  => root,
+      mode   => '0644',
       source => 'puppet:///modules/env/big/amd_gpu/rocm.conf';
   }
 }

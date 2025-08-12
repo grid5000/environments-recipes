@@ -21,7 +21,7 @@ class env::std::install_sudog5k {
 
     }
     default: {
-      fail "$facts[os][name] not suported."
+      fail "${facts[os][name]} not suported."
     }
   }
 

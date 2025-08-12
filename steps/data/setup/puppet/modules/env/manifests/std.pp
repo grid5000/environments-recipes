@@ -1,9 +1,9 @@
 # This file contains the 'std' class used to configure the standard environment to be executed in grid'5000.
 
-class env::std ( $variant = "big", $parent_parameters = {} ){
+class env::std ( $variant = 'big', $parent_parameters = {} ){
 
   if $env::target_g5k {
-    $root_pwd = lookup("env::std::misc::rootpwd")
+    $root_pwd = lookup('env::std::misc::rootpwd')
   }
   else {
     $root_pwd = '$1$qzZwnZXQ$Ak1xs7Oma6HUHw/xDJ8q91' # grid5000
@@ -21,7 +21,7 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
   # Include big class
   class {
     'env::big':
-      variant => $variant,
+      variant           => $variant,
       parent_parameters => $parameters;
   }
   # OAR

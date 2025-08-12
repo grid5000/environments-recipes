@@ -3,10 +3,10 @@ class env::min::configure_network_and_install_drivers {
   # Network configuration
   file {
     '/etc/hosts':
-        owner  => "root",
-        group  => "root",
+        owner  => 'root',
+        group  => 'root',
         mode   => '0644',
-        source => "puppet:///modules/env/min/network/hosts";
+        source => 'puppet:///modules/env/min/network/hosts';
   }
 
   case $facts['os']['distro']['codename'] {
@@ -15,19 +15,19 @@ class env::min::configure_network_and_install_drivers {
     'trixie': {
       file {
         '/etc/dhcpcd.exit-hook':
-          owner  => "root",
-          group  => "root",
+          owner  => 'root',
+          group  => 'root',
           mode   => '0644',
-          source => "puppet:///modules/env/min/network/g5k-update-host-name";
+          source => 'puppet:///modules/env/min/network/g5k-update-host-name';
       }
     }
     default: {
       file {
         '/etc/dhcp/dhclient-exit-hooks.d/g5k-update-host-name':
-          owner  => "root",
-          group  => "root",
+          owner  => 'root',
+          group  => 'root',
           mode   => '0644',
-          source => "puppet:///modules/env/min/network/g5k-update-host-name";
+          source => 'puppet:///modules/env/min/network/g5k-update-host-name';
       }
     }
   }

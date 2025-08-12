@@ -5,8 +5,8 @@ class env::std::dell::params {
 
   $packages_names = [
     'srvadmin-base',
-    "srvadmin-idracadm7",
-    "srvadmin-idracadm8",
+    'srvadmin-idracadm7',
+    'srvadmin-idracadm8',
     'srvadmin-storageservices',
     'srvadmin-omcommon',
     'libncurses5',

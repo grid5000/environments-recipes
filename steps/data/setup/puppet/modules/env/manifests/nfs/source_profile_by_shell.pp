@@ -4,11 +4,11 @@ class env::nfs::source_profile_by_shell {
 
       file {
         '/etc/csh/cshrc.d':
+          ensure  => 'directory',
           require => Package['tcsh'],
-          ensure => 'directory',
-          owner  => root,
-          group  => root,
-          mode   => '0755';
+          owner   => root,
+          group   => root,
+          mode    => '0755';
         default:
           ensure => file,
           owner  => 'root',
@@ -32,9 +32,9 @@ class env::nfs::source_profile_by_shell {
       }
 
       file_line { 'source /etc/zsh/zshenv.g5k file':
+          ensure  => present,
           require => Package['zsh'],
-          ensure => present,
-          path   => '/etc/zsh/zshenv',
-          line   => '. /etc/zsh/zshenv.g5k'
+          path    => '/etc/zsh/zshenv',
+          line    => '. /etc/zsh/zshenv.g5k'
       }
     }

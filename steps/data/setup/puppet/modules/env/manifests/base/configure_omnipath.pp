@@ -31,7 +31,7 @@ class env::base::configure_omnipath(){
 
   }
 
-  case "${facts[os][distro][codename]}" {
+  case $facts[os][distro][codename] {
     'trixie': {
       # NOTHING (for now)
     }
@@ -54,9 +54,9 @@ class env::base::configure_omnipath(){
       # See Bug #13260
       env::common::g5kpackages {
         'libfabric1':
-          ensure => $::env::common::software_versions::libfabric1,
+          ensure   => $::env::common::software_versions::libfabric1,
           packages => ['libfabric1', 'libfabric-bin'],
-          release => $facts[os][distro][codename];
+          release  => $facts[os][distro][codename];
       }
 
       stdlib::ensure_packages(['ucx-utils'], {

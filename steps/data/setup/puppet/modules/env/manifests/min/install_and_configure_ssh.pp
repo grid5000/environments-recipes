@@ -5,14 +5,14 @@ class env::min::install_and_configure_ssh {
 
       package {
         'ssh server':
-          name => 'openssh-server',
-          ensure => present;
+          ensure => present,
+          name   => 'openssh-server';
       }
 
       service {
         'ssh':
-          name   => 'ssh',
-          ensure => running;
+          ensure => running,
+          name   => 'ssh';
       }
 
     }
@@ -21,14 +21,14 @@ class env::min::install_and_configure_ssh {
 
       package {
         'ssh server':
-          name => 'sshd',
-          ensure => present;
+          ensure => present,
+          name   => 'sshd';
       }
 
       service {
         'ssh':
-          name => 'sshd',
-          ensure => running;
+          ensure => running,
+          name   => 'sshd';
       }
 
     }
@@ -36,8 +36,8 @@ class env::min::install_and_configure_ssh {
 
   package {
     'ssh client':
-      name => 'openssh-client',
-      ensure => present;
+      ensure => present,
+      name   => 'openssh-client';
   }
 
   augeas {
@@ -48,7 +48,7 @@ class env::min::install_and_configure_ssh {
         'set /files/etc/ssh/sshd_config/PermitUserEnvironment yes',
         'set /files/etc/ssh/sshd_config/MaxStartups 500'
       ],
-      require  => Package['ssh server'];
+      require => Package['ssh server'];
   }
   # Todo: 'check that key files are overwritten by postinstall'
 

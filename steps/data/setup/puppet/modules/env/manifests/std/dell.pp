@@ -20,18 +20,18 @@ class env::std::dell (
     'buster': {
       # No official Debian support since buster
       # $_location = "https://linux.dell.com/repo/community/openmanage/910/stretch"
-      $_location = "http://packages.grid5000.fr/deb/openmanage/910/stretch"
-      $_release = "stretch"
-      $_repos = "main"
+      $_location = 'http://packages.grid5000.fr/deb/openmanage/910/stretch'
+      $_release = 'stretch'
+      $_repos = 'main'
       $_packages_names = $packages_names
       $service_status = 'service dataeng status'
     }
     'bullseye': {
       # Ubuntu 20.04 packages
       # $_location = "https://linux.dell.com/repo/community/openmanage/950/focal"
-      $_location = "http://packages.grid5000.fr/deb/openmanage/950/focal"
-      $_release = "focal"
-      $_repos = "main"
+      $_location = 'http://packages.grid5000.fr/deb/openmanage/950/focal'
+      $_release = 'focal'
+      $_repos = 'main'
       $_packages_names = $packages_names - 'libssl1.0.0'
       $service_status = 'systemctl status dsm_sa_datamgrd.service dsm_sa_eventmgrd.service'
     }
@@ -54,7 +54,7 @@ class env::std::dell (
         'deb' => true,
         'src' => false
       },
-      notify  => Exec['apt_update'];
+      notify   => Exec['apt_update'];
   }
 
   package {
@@ -97,7 +97,7 @@ class env::std::dell (
     # Using enable => false doesn't seem to work, maybe because openipmi use systemd-sysv-generator
     exec {
       'disable openipmi service':
-        command => "/lib/systemd/systemd-sysv-install disable openipmi",
+        command => '/lib/systemd/systemd-sysv-install disable openipmi',
         require => Package[$packages, 'ipmitool'];
     }
   } else {

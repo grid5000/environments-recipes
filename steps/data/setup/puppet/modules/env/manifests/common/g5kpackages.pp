@@ -13,13 +13,13 @@ define env::common::g5kpackages (
 ) {
   include apt
 
-  case "${facts[os][distro][codename]}" {
+  case $facts[os][distro][codename] {
     # apt-key is deprecated. Manage keyring files in trusted.gpg.d instead. See bug 15510.
     'bookworm', 'trixie' : {
       unless defined(Exec['retrieve_g5k_key']) {
         exec {
         'retrieve_g5k_key':
-          command => "/usr/bin/wget http://packages.grid5000.fr/grid5000-archive-key.gpg -O /usr/share/keyrings/grid5000-archive-key.gpg";
+          command => '/usr/bin/wget http://packages.grid5000.fr/grid5000-archive-key.gpg -O /usr/share/keyrings/grid5000-archive-key.gpg';
         }
       }
       file { "/etc/apt/sources.list.d/${source_filename}.list":
