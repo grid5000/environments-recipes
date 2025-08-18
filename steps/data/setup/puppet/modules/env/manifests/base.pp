@@ -26,7 +26,7 @@ class env::base ( $variant = 'base', $parent_parameters = {} ){
   class { 'env::base::tcp_tuning_for_10gbe': }
   # Cpufreq. Not available on ppc64
   # FIXME cpufreq not available in trixie (bug #17453)
-  if ($env::deb_arch != 'ppc64el') or ($facts[os][distro][codename] != 'trixie') {
+  if ($env::deb_arch != 'ppc64el' and $facts[os][distro][codename] != 'trixie') {
     class { 'env::base::enable_cpufreq_with_performance_governor': }
   }
   #IbOverIP

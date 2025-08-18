@@ -4,7 +4,7 @@ class env::nfs ( $variant = 'nfs', $parent_parameters = {} ){
   $nfs_parameters = {
     ntp_drift_file => false
   }
-  $parameters = merge( $nfs_parameters, $parent_parameters )
+  $parameters = stdlib::merge( $nfs_parameters, $parent_parameters )
   # Include base class
   class {
     'env::base':
