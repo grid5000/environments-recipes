@@ -17,6 +17,7 @@ ENV_CONFIG = {
     '10' =>  map_variants_to_archs(VARIANTS_ALL_BUT_STD_ROCM, ARCHS_ALL),
     '11' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
     '12' =>  map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
+    '13' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
     'testing' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
     'l4t1135' =>  map_variants_to_archs(%w[std], ARCHS_ARM),
     'gh11' => map_variants_to_archs(%w[std], ARCHS_ARM),
