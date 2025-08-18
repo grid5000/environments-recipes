@@ -10,9 +10,7 @@ extend: from_scratch/debian-trixie.yaml
 
 global:
   # Export format to generate
-  # FIXME re-add qcow2 generation for buil testing
-  #appliance_formats: qcow2 tar.zst
-  appliance_formats: tar.zst
+  appliance_formats: qcow2 tar.zst
   # Output base filename
   output: "$${kameleon_cwd}/$${kameleon_recipe_name}"
   # Grid'5000 environment variant
