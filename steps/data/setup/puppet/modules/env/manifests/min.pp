@@ -9,7 +9,7 @@ class env::min ( $variant = 'min', $parent_parameters = {} ) {
   $min_parameters = {
     misc_root_pwd => '$1$qzZwnZXQ$Ak1xs7Oma6HUHw/xDJ8q91',
   }
-  $parameters = merge( $min_parameters, $parent_parameters )
+  $parameters = stdlib::merge( $min_parameters, $parent_parameters )
 
   # Package manager
   case $facts[os][name] {

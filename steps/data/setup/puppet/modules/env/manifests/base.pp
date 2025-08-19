@@ -6,7 +6,7 @@ class env::base ( $variant = 'base', $parent_parameters = {} ){
     misc_keep_tmp => true,
   }
 
-  $parameters = merge ( $base_parameters, $parent_parameters )
+  $parameters = stdlib::merge( $base_parameters, $parent_parameters )
   # Include min class
   class {
     'env::min':

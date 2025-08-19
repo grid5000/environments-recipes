@@ -16,7 +16,7 @@ class env::std ( $variant = 'big', $parent_parameters = {} ){
     mic_enable     => true,
   }
 
-  $parameters = merge( $std_parameters, $parent_parameters )
+  $parameters = stdlib::merge( $std_parameters, $parent_parameters )
 
   # Include big class
   class {

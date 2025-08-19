@@ -3,7 +3,7 @@
 class env::xen ( $parent_parameters = {} ) {
 
   $xen_parameters = {}
-  $parameters = merge( $xen_parameters, $parent_parameters )
+  $parameters = stdlib::merge( $xen_parameters, $parent_parameters )
 
   # Include base
   class{ 'env::base': }

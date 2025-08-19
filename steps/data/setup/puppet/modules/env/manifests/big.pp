@@ -4,7 +4,7 @@ class env::big ( $variant = 'big', $parent_parameters = {} ){
   $big_parameters = {
     mic_enable => false
   }
-  $parameters = merge( $big_parameters, $parent_parameters )
+  $parameters = stdlib::merge( $big_parameters, $parent_parameters )
 
   # Include nfs class
   class {
