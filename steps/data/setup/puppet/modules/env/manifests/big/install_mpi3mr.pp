@@ -5,6 +5,9 @@ class env::big::install_mpi3mr {
   case $operatingsystem {
     'Debian': {
       case "${lsbdistcodename}" {
+        "buster": {
+          # Not relevant
+        }
         'bullseye': {
           env::common::g5kpackages {
             'mpi3mr':
