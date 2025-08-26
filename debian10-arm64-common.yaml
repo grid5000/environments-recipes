@@ -42,6 +42,7 @@ setup:
   - "@base"
   - configure_system
   - configure_apt
+  - upgrade_system
   - install_packages
   - setup_orchestrator
   - run_orchestrator
