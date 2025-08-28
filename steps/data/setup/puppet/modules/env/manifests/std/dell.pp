@@ -35,6 +35,9 @@ class env::std::dell (
       $_packages_names = $packages_names - 'libssl1.0.0'
       $service_status = 'systemctl status dsm_sa_datamgrd.service dsm_sa_eventmgrd.service'
     }
+    'trixie': {
+      # FIXME : do not add for Trixie
+    }
     default : {
       fail "${::lsbdistcodename} not supported."
     }
