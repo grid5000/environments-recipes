@@ -6,10 +6,15 @@ class env::std::install_sudog5k {
       require env::commonpackages::rubyrspec
       require env::commonpackages::rsyslog
 
-      env::common::g5kpackages {
-        # See bug #13901
-        'ruby-net-ssh':
+      # See bug #13901
+      if $::lsbdistcodename == 'bookworm' {
+        env::common::g5kpackages {
+          'ruby-net-ssh_bookworm':
           ensure => $::env::common::software_versions::ruby_net_ssh;
+        }
+      }
+
+      env::common::g5kpackages {
         'sudo-g5k':
           ensure => $::env::common::software_versions::sudo_g5k;
       }

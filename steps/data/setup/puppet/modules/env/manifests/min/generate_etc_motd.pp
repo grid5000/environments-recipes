@@ -1,6 +1,9 @@
 class env::min::generate_etc_motd {
 
   case "${::lsbdistcodename}" {
+    'trixie': {
+      $userdistribname = "debian13"
+    }
     'bookworm': {
       $userdistribname = "debian12"
     }
