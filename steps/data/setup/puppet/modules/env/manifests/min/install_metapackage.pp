@@ -6,6 +6,9 @@ class env::min::install_metapackage ( $variant ) {
   case $operatingsystem {
     'Debian': {
       case "${::lsbdistcodename}" {
+        'trixie': {
+          $base = "g5k-meta-packages-debian13"
+        }
         'bookworm': {
           $base = "g5k-meta-packages-debian12"
         }
