@@ -24,9 +24,15 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   class { 'env::base::increase_ssh_maxstartups': }
   # Specific tuning
   class { 'env::base::tcp_tuning_for_10gbe': }
-  # Cpufreq. Not available on ppc64
-  if $env::deb_arch != 'ppc64el' {
-    class { 'env::base::enable_cpufreq_with_performance_governor': }
+  # cpufreq no more available in trixie : using linux-cpupower (bug #17453)
+  if $::lsbdistcodename == 'trixie' {
+    class { 'env::base::enable_cpupower_with_performance_governor': }
+    }
+  else {
+    # Cpufreq. Not available on ppc64
+    if $env::deb_arch != 'ppc64el' {
+      class { 'env::base::enable_cpufreq_with_performance_governor': }
+    }
   }
   #IbOverIP
   class { 'env::base::configure_ip_over_infiniband': }
@@ -36,8 +42,11 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   class { 'env::base::configure_omnipath': }
   #Add ca2019.grid5000.fr certificate
   class { 'env::base::add_ca_grid5000': }
-  #Dhclient conf
-  class { 'env::base::configure_dhclient': }
+  # Now using dhcpcd in trixie (bug #17449)
+  if $::lsbdistcodename != 'trixie' {
+    #Dhclient conf
+    class { 'env::base::configure_dhclient': }
+  }
   # Disable ndctl monitor service
   class { 'env::base::disable_ndctl_monitor': }
   # Enable userns for Nix

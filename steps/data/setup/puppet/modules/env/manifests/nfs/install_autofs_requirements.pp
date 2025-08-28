@@ -1,7 +1,7 @@
 class env::nfs::install_autofs_requirements(){
 
   case "${::lsbdistcodename}" {
-    "buster": {
+    'buster', 'trixie': {
       package {
         'autofs':
           ensure => installed;

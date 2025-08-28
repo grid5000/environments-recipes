@@ -6,27 +6,58 @@
 - script_name: puppet_install.sh
 - script_path: /tmp
 - puppetlabs-augeas_core_version: "1.3.0"
+- puppetlabs-stdlib_version: "5.2.0"
 
 - get_standalone_puppet_script:
-  - exec_in: apt-get install -y wget lsb-release puppet gnupg apt-transport-https
+  - exec_in: apt-get install -y wget lsb-release gnupg apt-transport-https
+  # We force Puppet 6 bullseye usage under Debian 13 Trixie (Bug #17452)
+  - test:
+    - exec_in: test "$${release}" == "trixie"
+    - group:
+      # puppet 6 agent
+      - exec_in: printf "deb [trusted=yes] http://apt.puppetlabs.com bullseye puppet6" > /etc/apt/sources.list.d/puppet6.list
+      - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ 6.28.0-1bullseye\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
+      - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy puppet-agent
+      # puppet 6 server (with openjdk-11-jre-headless from unstable/sid dependancies)
+      - exec_in: sed -i 's/debian trixie main/debian sid main/g' /etc/apt/sources.list
+      - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy openjdk-11-jre-headless
+      - exec_in: sed -i 's/debian sid main/debian trixie main/g' /etc/apt/sources.list
+      - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy net-tools
+      - exec_in: wget -nv https://apt.puppetlabs.com/pool/buster/puppet6/p/puppetserver/puppetserver_6.9.2-1buster_all.deb
+      - exec_in: dpkg -i puppetserver_6.9.2-1buster_all.deb
+      - exec_in: printf export\ PATH="\$PATH:/opt/puppetlabs/bin" > /root/.profile
+      - exec_in: source /root/.profile
+  - test:
+    - exec_in: test "$${release}" != "trixie"
+    - exec_in: apt-get install -y puppet
   # We also install stdlib module that contains some useful functions
   # We force the version of puppetlabs-stdlib and puppetlabs-apt so that we use a version that works on our old version of puppet
-  - exec_in: apt-get install -y ca-certificates ; puppet module install puppetlabs-stdlib --version 5.2.0
+  - exec_in: apt-get install -y ca-certificates ; puppet module install puppetlabs-stdlib --version $${puppetlabs-stdlib_version}
   - exec_in: puppet module install puppetlabs-apt --version $${puppetlabs_apt_version}
   # Install the Puppet module for augeas_core since augeas is no longer included in the Debian Puppet package from Debian12
   - test:
-    - exec_in: test "$${release}" == "bookworm"
+    - exec_in: test "$${release}" == "bookworm" -o "$${release}" == "trixie"
     - exec_in: puppet module install puppetlabs-augeas_core --version $${puppetlabs-augeas_core_version}
   - on_setup_clean:
+    - test:
+      - exec_in: test "$${release}" == "trixie"
+      - exec_in: source /root/.profile
     # module apt must be uninstalled BEFORE stdlib for dependency reasons
     - exec_in: puppet module uninstall puppetlabs-apt
     - exec_in: puppet module uninstall puppetlabs-stdlib
     - test:
-      - exec_in: test "$${release}" == "bookworm"
+      - exec_in: test "$${release}" == "bookworm" -o "$${release}" == "trixie"
       - exec_in: puppet module uninstall puppetlabs-augeas_core
+    - test:
+      - exec_in: test "$${release}" == "trixie"
+      - group:
+        - exec_in: rm puppetserver_6.9.2-1buster_all.deb
+        - exec_in: apt-mark auto puppetserver puppet-agent
     # We tagged packet as "automatically installed" to auto-remove them at the end of the orchestration step
     - exec_in: apt-mark auto puppet lsb-release
     - exec_in: apt-get --yes autoremove --purge | tee /tmp/temp_purge
     # This is a bit of cleanup that SHOULD NOT OCCURS. But puppet is messy, and let this behind itself. So we clean it for him
-    - exec_in: grep -q "Removing puppet" /tmp/temp_purge && (rm -rf /etc/puppet && rc=$? || rc=$?)
+    - test:
+      - exec_in: test "$${release}" != "trixie"
+      - exec_in: grep -q "Removing puppet" /tmp/temp_purge && (rm -rf /etc/puppet && rc=$? || rc=$?)
     - exec_in: apt-get autoremove -y
