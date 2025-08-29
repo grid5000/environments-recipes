@@ -30,6 +30,13 @@ bootstrap:
 setup:
   - "@base"
   - set_and_clear_var_log
+  - install_custom_g5kchecks:
+    - get_package:
+      - exec_in: wget 'https://api.grid5000.fr/sid/sites/louvain/public/pjacquot/g5k-checks_0.11.26_amd64.deb'
+    - install_package:
+      - exec_in: dpkg -i g5k-checks_0.11.26_amd64.deb
+    - clean:
+      - exec_in: rm g5k-checks_0.11.26_amd64.deb
 
 export:
   - "@base"
