@@ -56,13 +56,18 @@
       - exec_in: test "$${release}" == "trixie"
       - exec_in: source /root/.profile
     # module apt must be uninstalled BEFORE stdlib for dependency reasons
-    - exec_in: puppet module uninstall puppetlabs-apt
-    - exec_in: puppet module uninstall puppetlabs-stdlib
+    # not uninstalled on trixie (except min variant) as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
     - test:
-      - exec_in: test "$${release}" == "bookworm" -o "$${release}" == "trixie"
+      - exec_in: test "$${release}" != "trixie" -a "$${g5k_variant}" != "min" -a "$${g5k_variant}" != "big" -a "$${g5k_variant}" != "std"
+      - group:
+        - exec_in: puppet module uninstall puppetlabs-apt
+        - exec_in: puppet module uninstall puppetlabs-stdlib
+    - test:
+      - exec_in: test "$${release}" == "bookworm"
       - exec_in: puppet module uninstall puppetlabs-augeas_core
     - test:
-      - exec_in: test "$${release}" == "trixie"
+      # purge only on trixie min variant as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
+      - exec_in: test "$${release}" == "trixie" -a "$${g5k_variant}" == "min"
       - group:
         - exec_in: rm puppetserver_$${puppetserver_6_version}_all.deb
         - exec_in: apt-mark auto puppetserver puppet-agent
