@@ -52,5 +52,8 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   if $env::deb_arch == 'amd64' {
     class { 'env::big::install_mpi3mr': }
   }
-
+  # Remote XFCE desktop
+  if $env::deb_arch == 'amd64' {
+    class { 'env::big::install_remote_desktop': }
+  }
 }

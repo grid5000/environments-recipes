@@ -16,10 +16,16 @@ class env::common::software_versions {
       'bullseye' : {
         $singularity_package  = 'singularity-ce'
         $singularity_version  = '4.1.2-focal'
+        $xfce4                = '4.16'
+        $websockify           = '0.9.0+dfsg1-3'
+        $turbovnc             = '3.2-20250506'
       }
       'bookworm' : {
         $singularity_package  = 'singularity-container'
         $singularity_version  = '4.1.5+ds3-1~fto12+1'
+        $xfce4                = '4.18'
+        $websockify           = '0.10.0+dfsg1-4+b1'
+        $turbovnc             = '3.2.90-20251007'
       }
     }
   }
