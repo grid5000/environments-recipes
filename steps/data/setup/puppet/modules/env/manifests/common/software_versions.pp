@@ -10,6 +10,9 @@ class env::common::software_versions {
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
   $g5k_jupyterlab              = '0.11'
   $kameleon                    = '2.11.0.1'
+  $xfce4                       = '4.16'
+  $websockify                  = '0.9.0+dfsg1-3'
+  $turbovnc                    = '3.2-20250506'
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
