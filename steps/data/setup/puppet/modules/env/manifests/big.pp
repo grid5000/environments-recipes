@@ -16,13 +16,16 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   class { 'env::big::configure_postfix': }
   # kvm
   class { 'env::big::configure_kvm': }
-  # nvidia
-  if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' {
-    class { 'env::big::configure_nvidia_gpu': }
-  }
-  # amdgpu
-  if $env::deb_arch == 'amd64' {
-    class { 'env::big::configure_amd_gpu': }
+  # no GPU stack for now for Debian trixie (bugs #15653 and #14466)
+  if $::lsbdistcodename != 'trixie' {
+    # nvidia
+    if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' {
+      class { 'env::big::configure_nvidia_gpu': }
+    }
+    # amdgpu
+    if $env::deb_arch == 'amd64' {
+      class { 'env::big::configure_amd_gpu': }
+    }
   }
   # beegfs install
   if $env::deb_arch == 'amd64' {
