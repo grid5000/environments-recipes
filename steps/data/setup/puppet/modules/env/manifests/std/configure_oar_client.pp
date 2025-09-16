@@ -243,18 +243,6 @@ class env::std::configure_oar_client {
         group    => oar,
         mode     => '0644',
         content  => $key_values['oarnodesetting_ssh_key_pub'];
-      "/var/lib/oar/.ssh/id_rsa":
-        ensure   => file,
-        owner    => oar,
-        group    => oar,
-        mode     => '0600',
-        content  => $key_values['id_rsa'];
-      "/var/lib/oar/.ssh/id_rsa.pub":
-        ensure   => file,
-        owner    => oar,
-        group    => oar,
-        mode     => '0644',
-        content  => $key_values['id_rsa_pub'];
     }
   }
 }
