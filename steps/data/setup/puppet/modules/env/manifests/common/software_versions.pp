@@ -8,13 +8,16 @@ class env::common::software_versions {
   $ruby_net_ssh_bookworm       = '1:6.1.0-2+deb11u1'
   $libguestfs_backport_arm64   = '1:1.40.2-7~bpog5k10+1'
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
-  $g5k_jupyterlab              = '0.11'
+  # g5k-jupyterlab_0.12 available for tests only for debian 13 trixie (bug #17228)
+  $g5k_jupyterlab              = '0.12'
   $kameleon                    = '2.11.0.1'
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
       'trixie' : {
-        # NOTHING (for now)
+        # Source: https://packages.debian.org/sid/amd64/singularity-container/download
+        $singularity_package  = 'singularity-container'
+        $singularity_version  = '4.1.5+ds4-1+b1'
       }
       'bookworm' : {
         $singularity_package  = 'singularity-container'
@@ -32,7 +35,7 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'x86_64'
         case $lsbdistcodename {
         'trixie' : {
-          # NOTHING (for now)
+          # FIXME no GPU stack for now for Debian trixie (bugs #15653 and #14466)
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
