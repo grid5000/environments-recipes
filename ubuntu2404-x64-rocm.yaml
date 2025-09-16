@@ -31,6 +31,9 @@ setup:
       - apt-get_in: install /tmp/amdgpu-install.deb
     - amdgpu_install_rocm:
       - exec_in: amdgpu-install -y --usecase=dkms,rocm
+    # Grant GPU access to all users
+    - amdgpu_udev_rules:
+      - exec_in: printf "KERNEL==\"kfd\", MODE=\"0666\"\n SUBSYSTEM==\"drm\", KERNEL==\"renderD*\", MODE=\"0666\"" > /etc/udev/rules.d/70-amdgpu.rules
 
 export:
   - "@base"
