@@ -6,7 +6,7 @@ class env::base::configure_ip_over_infiniband (){
         'rdma-core':
           ensure =>  installed;
       }
-      # NOTHING more (for now)
+      # FIXME Nothing more (for now ?)
     }
     'bullseye', 'bookworm': {
       package {
