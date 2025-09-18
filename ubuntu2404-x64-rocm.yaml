@@ -26,7 +26,7 @@ setup:
       - apt-get_in: install python3-setuptools python3-wheel
     - amdgpu_install:
       - download_file_in:
-        - https://repo.radeon.com/amdgpu-install/6.4/ubuntu/noble/amdgpu-install_6.4.60400-1_all.deb
+        - https://repo.radeon.com/amdgpu-install/7.0.1/ubuntu/noble/amdgpu-install_7.0.1.70001-1_all.deb
         - /tmp/amdgpu-install.deb
       - apt-get_in: install /tmp/amdgpu-install.deb
     - amdgpu_install_rocm:
