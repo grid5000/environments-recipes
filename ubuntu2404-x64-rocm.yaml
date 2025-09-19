@@ -14,6 +14,11 @@ global:
   # QEMU options
   qemu_memory_size: 16g
   image_size: 80G
+  rocm_version: 7.0.1
+  amdgpu_install_version: 70001-1
+  amdgpu_install_url: https://repo.radeon.com/amdgpu-install/$${rocm_version}/ubuntu/noble/amdgpu-install_$${rocm_version}.$${amdgpu_install_version}_all.deb
+  amdgpu_insecure_instinct_udev_rules_version: 30.10.1.0-2212064.24.04
+  amdgpu_insecure_instinct_udev_rules_url: https://repo.radeon.com/amdgpu/$${rocm_version}/ubuntu/pool/main/a/amdgpu-insecure-instinct-udev-rules/amdgpu-insecure-instinct-udev-rules_$${amdgpu_insecure_instinct_udev_rules_version}_all.deb
 
 bootstrap:
   - "@base"
@@ -26,7 +31,7 @@ setup:
       - apt-get_in: install python3-setuptools python3-wheel
     - amdgpu_install:
       - download_file_in:
-        - https://repo.radeon.com/amdgpu-install/7.0.1/ubuntu/noble/amdgpu-install_7.0.1.70001-1_all.deb
+        - $${amdgpu_install_url}
         - /tmp/amdgpu-install.deb
       - apt-get_in: install /tmp/amdgpu-install.deb
     - amdgpu_install_rocm:
@@ -34,7 +39,7 @@ setup:
     # Grant GPU access to all users (https://rocm.docs.amd.com/projects/install-on-linux/en/docs-7.0.1/install/prerequisites.html#using-udev-rules)
     - amdgpu_udev_rules:
       - download_file_in:
-        - https://repo.radeon.com/amdgpu/30.10.1/ubuntu/pool/main/a/amdgpu-insecure-instinct-udev-rules/amdgpu-insecure-instinct-udev-rules_30.10.1.0-2212064.24.04_all.deb
+        - $${amdgpu_insecure_instinct_udev_rules_url}
         - /tmp/amdgpu-insecure-instinct-udev-rules.deb
       - apt-get_in: install /tmp/amdgpu-insecure-instinct-udev-rules.deb
 export:
