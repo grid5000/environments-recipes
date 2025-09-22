@@ -41,7 +41,7 @@
       - exec_in: wget -nv http://ftp.de.debian.org/debian/pool/main/o/openjdk-11/openjdk-11-jre-headless_$${openjdk-11_jre_headless}_$${deb_arch}.deb
       - exec_in: dpkg -i openjdk-11-jre-headless_$${openjdk-11_jre_headless}_$${deb_arch}.deb
       # to avoid having new default java installed by g5k-meta-packages-debian13-big
-      - exec_in: update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
+      - exec_in: update-alternatives --set java /usr/lib/jvm/java-11-openjdk-$${deb_arch}/bin/java
       - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy net-tools
       - exec_in: wget -nv https://apt.puppetlabs.com/pool/buster/puppet6/p/puppetserver/puppetserver_$${puppetserver_6_version}_all.deb
       - exec_in: dpkg -i puppetserver_$${puppetserver_6_version}_all.deb
