@@ -14,7 +14,6 @@ end
 
 ENV_CONFIG = {
   'debian' => {
-    '10' =>  map_variants_to_archs(VARIANTS_ALL_BUT_STD_ROCM, ARCHS_ALL),
     '11' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
     '12' =>  map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
     '13' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
@@ -40,10 +39,6 @@ ENV_CONFIG = {
   'rocky' => {
     '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
     '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
-  },
-  'centos' => {
-    '7' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
-    '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
   },
   'almalinux' => {
     '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
