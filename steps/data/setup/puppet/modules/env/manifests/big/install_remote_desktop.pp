@@ -9,6 +9,10 @@ class env::big::install_remote_desktop() {
       source  => 'puppet:///modules/env/big/turbovnc/TurboVNC.gpg';
     '/etc/apt/sources.list.d/TurboVNC.list':
       source => 'https://raw.githubusercontent.com/TurboVNC/repo/main/TurboVNC.list';
+    '/etc/apt/trusted.gpg.d/VirtualGL.gpg':
+      source  => 'puppet:///modules/env/big/virtualgl/VirtualGL.gpg';
+    '/etc/apt/sources.list.d/VirtualGL.list':
+      source => 'https://raw.githubusercontent.com/VirtualGL/repo/main/VirtualGL.list';
   }
 
   package {
@@ -19,5 +23,8 @@ class env::big::install_remote_desktop() {
     'turbovnc':
       ensure  => "${::env::common::software_versions::turbovnc}",
       require => [File['/etc/apt/sources.list.d/TurboVNC.list'], Class['apt::update']];
+    'virtualgl':
+      ensure  => "${::env::common::software_versions::virtualgl}",
+      require => [File['/etc/apt/sources.list.d/VirtualGL.list'], Class['apt::update']];
   }
 }
