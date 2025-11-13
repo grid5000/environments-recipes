@@ -19,6 +19,7 @@ class env::common::software_versions {
         $xfce4                = '4.16'
         $websockify           = '0.9.0+dfsg1-3'
         $turbovnc             = '3.2-20250506'
+        $virtualgl            = '3.1.3-20250409'
       }
       'bookworm' : {
         $singularity_package  = 'singularity-container'
@@ -26,6 +27,7 @@ class env::common::software_versions {
         $xfce4                = '4.18'
         $websockify           = '0.10.0+dfsg1-4+b1'
         $turbovnc             = '3.2.90-20251007'
+        $virtualgl            = '3.1.4-20251007'
       }
     }
   }
