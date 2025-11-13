@@ -13,6 +13,7 @@ class env::common::software_versions {
   $xfce4                       = '4.16'
   $websockify                  = '0.9.0+dfsg1-3'
   $turbovnc                    = '3.2-20250506'
+  $virtualgl                   = '3.1.3-20250409'
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
