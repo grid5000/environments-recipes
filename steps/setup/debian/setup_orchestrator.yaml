@@ -10,7 +10,7 @@
 - puppet-agent_6_amd64_version: "6.28.0-1bullseye"
 - puppet-agent_6_arm64_version: "6.28.0-1focal"
 - puppetserver_6_version: "6.20.0-1buster"
-- openjdk-11_jre_headless: "11.0.29~4ea-2"
+- openjdk-11_jre_headless: "11.0.29+7-1"
 
 - get_standalone_puppet_script:
   - exec_in: apt-get install -y wget lsb-release gnupg apt-transport-https
