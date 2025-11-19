@@ -36,6 +36,7 @@ class env::common::software_versions {
         case $lsbdistcodename {
         'trixie' : {
           # FIXME no GPU stack for now for Debian trixie (bugs #15653 and #14466)
+          $nvidia_driver          = '575.64.05'
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
@@ -76,7 +77,8 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'ppc64le'
       case $lsbdistcodename {
         'trixie' : {
-          # NOTHING (for now)
+          # FIXME keep old NVidia driver only (for now ?)
+          $nvidia_driver          = '418.197.02'
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
