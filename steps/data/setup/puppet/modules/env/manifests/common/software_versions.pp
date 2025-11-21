@@ -33,7 +33,7 @@ class env::common::software_versions {
   case "${env::deb_arch}" {
     'amd64': {
       $nvidia_driver_arch         = 'x86_64'
-        case $lsbdistcodename {
+      case $lsbdistcodename {
         'trixie' : {
           # FIXME no GPU stack for now for Debian trixie (bugs #15653 and #14466)
           $nvidia_driver          = '575.64.05'
@@ -64,6 +64,18 @@ class env::common::software_versions {
           $nvidia_cuda            = '10.1.243_418.87.00_linux'
           $datacenter_gpu_manager = '1:1.7.2'
           $dcgm_exporter          = '2.0.0-rc.11'
+        }
+        default : {
+          fail "${::lsbdistcodename} not supported."
+        }
+      }
+    }
+    'arm64': {
+      $nvidia_driver_arch         = 'aarch64'
+      case $lsbdistcodename {
+        'trixie' : {
+          # FIXME no GPU stack for now for Debian trixie (bugs #15653 and #14466)
+          $nvidia_driver          = '580.105.08'
         }
         default : {
           fail "${::lsbdistcodename} not supported."
