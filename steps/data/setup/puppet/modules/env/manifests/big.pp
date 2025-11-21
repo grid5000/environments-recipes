@@ -17,7 +17,7 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   # kvm
   class { 'env::big::configure_kvm': }
   # nvidia
-  if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' {
+  if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' or $env::deb_arch == 'arm64' {
     class { 'env::big::configure_nvidia_gpu': }
   }
   # no GPU stack for now for Debian 13 Trixie (bugs #15653 and #14466)
