@@ -107,16 +107,16 @@ if __name__ == '__main__':
         if (args.distrib.lower() == "debian"):
             if args.mirror == None:
                 args.mirror = "https://cdimage.debian.org/"
-            if not re.match("^\d+$",args.version):
+            if not re.match(r"^\d+$",args.version):
                 raise Exception("please give the Debian release number (e.g. 8 for Jessie)")
             if args.version == '13':
-                url_regex = re.compile("^"+args.mirror+"cdimage/release/(?:"+args.version+"\.\d+\.\d+/(?:"+args.arch+"/(?:iso-cd/(?:debian-"+args.version+"\.\d+\.\d+-"+args.arch+"-netinst\.iso)?)?)?)?$")
+                url_regex = re.compile(r"^"+args.mirror+r"cdimage/release/(?:"+args.version+r"\.\d+\.\d+/(?:"+args.arch+r"/(?:iso-cd/(?:debian-"+args.version+r"\.\d+\.\d+-"+args.arch+r"-netinst\.iso)?)?)?)?$")
             else:
-                url_regex = re.compile("^"+args.mirror+"cdimage/archive/(?:"+args.version+"\.\d+\.\d+/(?:"+args.arch+"/(?:iso-cd/(?:debian-"+args.version+"\.\d+\.\d+-"+args.arch+"-netinst\.iso)?)?)?)?$")
-            target_regex = re.compile("^.*-netinst\.iso$")
-            [visited,found] = url_find(set([args.mirror+"cdimage/"+v+"/" for v in ["release","archive"]]), set(), set())
+                url_regex = re.compile(r"^"+args.mirror+r"cdimage/archive/(?:"+args.version+r"\.\d+\.\d+/(?:"+args.arch+r"/(?:iso-cd/(?:debian-"+args.version+r"\.\d+\.\d+-"+args.arch+r"-netinst\.iso)?)?)?)?$")
+            target_regex = re.compile(r"^.*-netinst\.iso$")
+            [visited,found] = url_find(set([args.mirror+r"cdimage/"+v+r"/" for v in ["release","archive"]]), set(), set())
         elif (args.distrib.lower() == "ubuntu"):
-            if not re.match("^\w+$",args.version):
+            if not re.match(r"^\w+$",args.version):
                 raise Exception("please give the Ubuntu release name")
             if (args.version.lower() == "jammy" or args.version.lower() == "noble"):
               if (args.arch == "amd64"):
@@ -126,68 +126,68 @@ if __name__ == '__main__':
               servers = set([args.mirror])
               # regexp to also use beta releases (useful to prepare for an upcoming release)
               # url_regex = re.compile("^"+args.mirror+args.version+"(?:/release|/beta)?/(?:ubuntu-\d+\.\d+(?:\.\d+)?(?:-beta)?-live-server-"+args.arch+"\.iso)?$")
-              url_regex = re.compile("^"+args.mirror+args.version+"(?:/release)?/(?:ubuntu-\d+\.\d+(?:\.\d+)?-live-server-"+args.arch+"\.iso)?$")
-              target_regex = re.compile("^.*/ubuntu-.*-live-server-\w+\.iso$")
+              url_regex = re.compile(r"^"+args.mirror+args.version+r"(?:/release)?/(?:ubuntu-\d+\.\d+(?:\.\d+)?-live-server-"+args.arch+r"\.iso)?$")
+              target_regex = re.compile(r"^.*/ubuntu-.*-live-server-\w+\.iso$")
             else:
               if args.mirror == None:
-                args.mirror = "http://(?:archive|old-releases).ubuntu.com/"
+                args.mirror = r"http://(?:archive|old-releases).ubuntu.com/"
                 servers = set(["http://"+s+".ubuntu.com/ubuntu/" for s in ["old-releases","archive"]])
               else:
                 servers = set([args.mirror])
-              url_regex = re.compile("^"+args.mirror+"ubuntu/dists/(?:"+args.version+"(?:-updates)?/(?:main/(?:installer-"+args.arch+"/(?:current/(?:(?:legacy-)?images/(?:netboot/(?:mini\.iso)?)?)?)?)?)?)?$")
-              target_regex = re.compile("^.*/mini\.iso$")
+              url_regex = re.compile(r"^"+args.mirror+r"ubuntu/dists/(?:"+args.version+r"(?:-updates)?/(?:main/(?:installer-"+args.arch+r"/(?:current/(?:(?:legacy-)?images/(?:netboot/(?:mini\.iso)?)?)?)?)?)?)?$")
+              target_regex = re.compile(r"^.*/mini\.iso$")
             [visited,found] = url_find(servers, set(), set())
         elif (args.distrib.lower() == "centos"):
             if args.mirror == None:
                 args.mirror = "https://vault.centos.org/"
-            if not re.match("^\d+$",args.version):
+            if not re.match(r"^\d+$",args.version):
                 raise Exception("please give the CentOS release number (e.g. 7 for CentOS-7)")
             if args.version == '6':
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"(?:\.\d+)?/(?:isos/(?:"+args.arch+"/(?:CentOS-"+args.version+"(?:\.\d+)?-"+args.arch+"-netinstall\.iso)?)?)?)?$")
-                target_regex = re.compile("^.*CentOS-\d+(?:\.\d+)?-\w+-netinstall\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"(?:\.\d+)?/(?:isos/(?:"+args.arch+r"/(?:CentOS-"+args.version+r"(?:\.\d+)?-"+args.arch+r"-netinstall\.iso)?)?)?)?$")
+                target_regex = re.compile(r"^.*CentOS-\d+(?:\.\d+)?-\w+-netinstall\.iso$")
             elif args.version == '7':
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"(?:\.\d+)*/(?:isos/(?:"+args.arch+"/(?:CentOS-"+args.version+"-"+args.arch+"-NetInstall-\d+\.iso)?)?)?)?$")
-                target_regex = re.compile("^.*CentOS-\d+-\w+-NetInstall-\d+\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"(?:\.\d+)*/(?:isos/(?:"+args.arch+r"/(?:CentOS-"+args.version+r"-"+args.arch+r"-NetInstall-\d+\.iso)?)?)?)?$")
+                target_regex = re.compile(r"^.*CentOS-\d+-\w+-NetInstall-\d+\.iso$")
             else:
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"(?:\.\d+)*/(?:isos/(?:"+args.arch+"/(?:CentOS-"+args.version+"\.\d+\.\d+-"+args.arch+"-boot\.iso)?)?)?)?$")
-                target_regex = re.compile("^.*CentOS-\d+\.\d+\.\d+-\w+-boot\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"(?:\.\d+)*/(?:isos/(?:"+args.arch+r"/(?:CentOS-"+args.version+r"\.\d+\.\d+-"+args.arch+r"-boot\.iso)?)?)?)?$")
+                target_regex = re.compile(r"^.*CentOS-\d+\.\d+\.\d+-\w+-boot\.iso$")
             [visited,found] = url_find(set([args.mirror]), set(), set())
         elif (args.distrib.lower() == "centos-stream"):
-            if not re.match("^\d+$",args.version):
+            if not re.match(r"^\d+$",args.version):
                 raise Exception("please give the CentOS Stream release number (e.g. 8)")
             if args.version == '8':
                 if args.mirror == None:
                     args.mirror = "https://vault.centos.org/"
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"-stream/(?:isos/(?:"+args.arch+"/(?:CentOS-Stream-"+args.version+"-\d+\.\d-"+args.arch+"-boot\.iso)?)?)?)?$")
-                target_regex = re.compile("^.*CentOS-Stream-\d+-\d+\.\d+-\w+-boot\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"-stream/(?:isos/(?:"+args.arch+r"/(?:CentOS-Stream-"+args.version+r"-\d+\.\d-"+args.arch+r"-boot\.iso)?)?)?)?$")
+                target_regex = re.compile(r"^.*CentOS-Stream-\d+-\d+\.\d+-\w+-boot\.iso$")
             else:
                 if args.mirror == None:
                     args.mirror = "http://mirror.stream.centos.org/"
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"-stream/(?:BaseOS/(?:"+args.arch+"/(?:iso/(?:CentOS-Stream-"+args.version+"-latest-"+args.arch+"-boot\.iso)?)?)?)?)?$")
-                target_regex = re.compile("^.*CentOS-Stream-\d+-latest-\w+-boot\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"-stream/(?:BaseOS/(?:"+args.arch+r"/(?:iso/(?:CentOS-Stream-"+args.version+r"-latest-"+args.arch+r"-boot\.iso)?)?)?)?)?$")
+                target_regex = re.compile(r"^.*CentOS-Stream-\d+-latest-\w+-boot\.iso$")
 
             [visited,found] = url_find(set([args.mirror]), set(), set())
         elif (args.distrib.lower() == "rocky"):
             if args.mirror == None:
                 args.mirror = "https://mirror.in2p3.fr/linux/rocky/"
-            if not re.match("^\d+$",args.version):
+            if not re.match(r"^\d+$",args.version):
                 raise Exception("please give the Rocky Linux release number (e.g. 8 for Rocky Linux 8, or 9)")
             if args.version not in ['8', '9']:
                 raise Exception("Unsupported version %s of Rocky Linux." % args.version)
             else:
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"/(?:isos/(?:"+args.arch+"/(?:Rocky-"+args.version+"\.\d+-"+args.arch+"-boot\.iso)?)?)?)?$")
-                target_regex = re.compile("^.*Rocky-\d+\.\d+-\w+-boot\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"/(?:isos/(?:"+args.arch+r"/(?:Rocky-"+args.version+r"\.\d+-"+args.arch+r"-boot\.iso)?)?)?)?$")
+                target_regex = re.compile(r"^.*Rocky-\d+\.\d+-\w+-boot\.iso$")
             [visited,found] = url_find(set([args.mirror]), set(), set())
         elif (args.distrib.lower() == "almalinux"):
             if args.mirror == None:
                 args.mirror = "https://mirror.in2p3.fr/linux/almalinux/"
-            if not re.match("^\d+$",args.version):
+            if not re.match(r"^\d+$",args.version):
                 raise Exception("please give the Alma Linux release number (e.g. 9 for Alma Linux 9)")
             if args.version not in ['9']:
                 raise Exception("Unsupported version %s of Alma Linux." % args.version)
             else:
-                url_regex = re.compile("^"+args.mirror+"(?:"+args.version+"/(?:isos/(?:"+args.arch+"/(?:AlmaLinux-"+args.version+"\.\d+-"+args.arch+"-boot\.iso)?)?)?)?$")
-                target_regex = re.compile("^.*AlmaLinux-\d+\.\d+-\w+-boot\.iso$")
+                url_regex = re.compile(r"^"+args.mirror+r"(?:"+args.version+r"/(?:isos/(?:"+args.arch+r"/(?:AlmaLinux-"+args.version+r"\.\d+-"+args.arch+r"-boot\.iso)?)?)?)?$")
+                target_regex = re.compile(r"^.*AlmaLinux-\d+\.\d+-\w+-boot\.iso$")
             [visited,found] = url_find(set([args.mirror]), set(), set())
         else:
             raise Exception("this distribution is not supported")
@@ -201,7 +201,7 @@ if __name__ == '__main__':
             logger.info(url)
         if len(found) > 0:
             if (args.distrib.lower() == "debian"):
-                print(sorted(found,key=lambda x:key_normalize(re.sub(r".*/debian-(\d+).(\d+).(\d+)-"+args.arch+"-netinst\.iso$",r"\1.\2.\3",x)),reverse=True)[0])
+                print(sorted(found,key=lambda x:key_normalize(re.sub(r".*/debian-(\d+).(\d+).(\d+)-"+args.arch+r"-netinst\.iso$",r"\1.\2.\3",x)),reverse=True)[0])
             else:
                 print(sorted(found, reverse=True)[0])
         else:
