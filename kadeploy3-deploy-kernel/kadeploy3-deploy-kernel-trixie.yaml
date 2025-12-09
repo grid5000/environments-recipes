@@ -15,6 +15,7 @@ global:
   use_backports: no
   security_release: $${release}-security
   net_packages: ifupdown ntpsec-ntpdate isc-dhcp-client openssh-client openssh-server taktuk netcat-traditional
+  system_packages: dash systemd systemd-sysv haveged gnupg jq
 bootstrap:
   - "@base"
 
