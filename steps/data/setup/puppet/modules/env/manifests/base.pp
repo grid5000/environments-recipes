@@ -42,9 +42,12 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   class { 'env::base::configure_omnipath': }
   #Add ca2019.grid5000.fr certificate
   class { 'env::base::add_ca_grid5000': }
-  # Now using dhcpcd in trixie (bug #17449)
-  if $::lsbdistcodename != 'trixie' {
-    #Dhclient conf
+  if $::lsbdistcodename == 'trixie' {
+    # Using dhcpcd since trixie (bug #17449)
+    class { 'env::base::configure_dhcpcd': }
+    }
+  else {
+    # Dhclient conf
     class { 'env::base::configure_dhclient': }
   }
   # Disable ndctl monitor service

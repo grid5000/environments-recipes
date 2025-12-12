@@ -67,6 +67,7 @@
     - test:
       - exec_in: test "$${release}" == "trixie"
       - exec_in: source /root/.profile
+      - exec_in: rm /var/lib/dhcpcd/duid
     # module apt must be uninstalled BEFORE stdlib for dependency reasons
     # not uninstalled on trixie (except min variant) as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
     - test:
