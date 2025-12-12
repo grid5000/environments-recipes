@@ -36,7 +36,7 @@ class env::std::dell (
       $service_status = 'systemctl status dsm_sa_datamgrd.service dsm_sa_eventmgrd.service'
     }
     'trixie': {
-      # FIXME : do not add for Trixie
+      # No more added since Trixie (Bug #15193)
     }
     default : {
       fail "${::lsbdistcodename} not supported."
