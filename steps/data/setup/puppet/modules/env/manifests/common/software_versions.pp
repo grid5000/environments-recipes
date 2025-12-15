@@ -36,7 +36,7 @@ class env::common::software_versions {
       case $lsbdistcodename {
         'trixie' : {
           # FIXME no GPU stack for now for Debian trixie (bugs #15653 and #14466)
-          $nvidia_driver          = '580.105.08'
+          $nvidia_driver          = '580.119.02'
           # custom package (with module-stats-wrapper rebuild) for trixie (bug #17450)
           $lmod                   = '8.7.60-1+g5k1.0.0'
         }
@@ -77,7 +77,7 @@ class env::common::software_versions {
       case $lsbdistcodename {
         'trixie' : {
           # FIXME no GPU stack for now for Debian trixie (bugs #15653 and #14466)
-          $nvidia_driver          = '580.105.08'
+          $nvidia_driver          = '580.119.02'
         }
         default : {
           fail "${::lsbdistcodename} not supported."
