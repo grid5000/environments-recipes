@@ -68,6 +68,11 @@ setup:
     - prebuild_flash_image:
       - exec_out: |
           set -e
+          # Force the creation of the loop devices
+          # (if the loop module is yet to be loaded by the flash script, loop devices won't be created in the out container)
+          for d in {0..7}; do
+            [ -e /dev/loop$d ] || mknod /dev/loop$d b 7 $d
+          done
           cd $${l4t_dir}
           ./flash.sh --no-flash cti/xavier/rogue/base mmcblk0p1
 export:
