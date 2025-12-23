@@ -24,7 +24,7 @@ global:
   l4t_version_major: "35"
   l4t_version_minor: "4"
   l4t_version_patch: "1"
-  cti_BSP_version: "001"
+  cti_BSP_version: "004"
   l4t_version: r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-cti$${cti_BSP_version}
   nvidia_BSP_url: "https://developer.download.nvidia.com/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
   nvidia_sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r$${l4t_version_major}_release_v$${l4t_version_minor}.$${l4t_version_patch}/release/tegra_linux_sample-root-filesystem_r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
