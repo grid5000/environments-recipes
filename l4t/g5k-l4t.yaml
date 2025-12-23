@@ -40,7 +40,8 @@ global:
   l4t_version_major: "35"
   l4t_version_minor: "4"
   l4t_version_patch: "1"
-  cti_BSP_version: "001"
+  cti_BSP_version: "004"
+  cti_BSP_sources_magic: "87665"
   l4t_kernel_version: "5.10"
   debian_version: bullseye
   debian_kernel_package: linux-image-arm64
@@ -54,7 +55,7 @@ global:
   cross_compilation_toolchain_url: "https://developer.nvidia.com/embedded/jetson-linux/bootlin-toolchain-gcc-93"
   cross_compilation_toolchain_dir: "$${workdir}/toolchain"
   cti_BSP_url: "https://connecttech.com/ftp/Drivers/CTI-L4T-AGX-$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-V$${cti_BSP_version}.tgz"
-  cti_kernel_sources_url: "https://www.usesintegrated.com/files/xavier/r35.4.1/53120_cti-l4t-src-agx-35.4.1-v001.tar"
+  cti_kernel_sources_url: "http://www.connecttech.com/ftp/dropbox/$${cti_BSP_sources_magic}_cti-l4t-src-agx-$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-v$${cti_BSP_version}.tgz"
   l4t_kernel_config_file: "cti_tegra_defconfig"
   src_dir: $${workdir}/src
   kernel_src_dir: $${src_dir}/kernel/kernel-$${l4t_kernel_version}
@@ -108,10 +109,7 @@ setup:
     - download_and_extract_cti_kernel_sources:
       - on_checkpoint: disabled
       - exec_out: mkdir -p $${src_dir}
-      - exec_out: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${src_dir} -xv
-    - fix_cti_kernel_sources:
-      # TO REMOVE ONCE FIXED IN THE NEXT CTI BSP VERSION
-      - exec_out: sed -i -e 's/^#include "aquantia.h"$/#include "cti_aquantia.h"/' $${src_dir}/kernel/cti/drivers/net/phy/*
+      - exec_out: wget -O- -q "$${cti_kernel_sources_url}" | tar -C $${src_dir} --strip-components=2 -zxv
     - download_and_extract_debian_kernel_config:
       - exec_out: |
           set -e
