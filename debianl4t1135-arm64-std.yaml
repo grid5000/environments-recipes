@@ -34,7 +34,7 @@ global:
   l4t_version_major: "35"
   l4t_version_minor: "4"
   l4t_version_patch: "1"
-  cti_BSP_version: "001"
+  cti_BSP_version: "004"
   l4t_version: r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-cti$${cti_BSP_version}
   # g5k-l4t package version
   g5k_l4t_version: $${l4t_version}-$${release}
