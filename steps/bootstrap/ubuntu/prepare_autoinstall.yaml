@@ -9,6 +9,7 @@
       - check_cmd_local: xorriso
       - check_cmd_local: fdisk
       - exec_local: |
+          set -e
           ISO_WORKING_DIR="iso-temp"
           echo "Extract iso using 7zip"
           mkdir -p "${ISO_WORKING_DIR}"
