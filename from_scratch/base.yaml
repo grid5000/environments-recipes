@@ -59,7 +59,7 @@ global:
   qemu_cpus: 8
   qemu_memory_size: 16G
   qemu_arch: $${arch}
-  qemu_image_size: 17G
+  image_size: 17G
   qemu_pidfile: $${kameleon_cwd}/qemu.pid
   qemu_kernel_path: $${kameleon_cwd}/qemu_kernel
   qemu_initrd_path: $${kameleon_cwd}/qemu_initrd
