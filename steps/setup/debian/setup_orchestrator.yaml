@@ -14,27 +14,25 @@
 
 - get_standalone_puppet_script:
   - exec_in: apt-get install -y wget lsb-release gnupg apt-transport-https
-  # We force Puppet 6 usage under Debian 13 Trixie (Bug #17452)
-  - test:
-      - exec_in: test "$${release}" == "trixie" -a "$${arch}" == "x86_64"
-      # puppet 6 agent
-      - group:
-        - exec_in: apt-get install -y curl
-        - exec_in: curl -fsSL https://apt.puppetlabs.com/DEB-GPG-KEY-future | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/puppet.gpg > /dev/null
-        - exec_in: printf "deb [signed-by=/etc/apt/trusted.gpg.d/puppet.gpg] http://apt.puppetlabs.com bullseye puppet6" > /etc/apt/sources.list.d/puppet6.list
-        - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ $${puppet-agent_6_amd64_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
-        - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy puppet-agent
-  - test:
-      - exec_in: test "$${release}" == "trixie" -a "$${arch}" == "aarch64"
-      # puppet 6 agent
-      - group:
-        - exec_in: wget -nv https://apt.puppetlabs.com/pool/focal/puppet6/p/puppet-agent/puppet-agent_$${puppet-agent_6_arm64_version}_arm64.deb
-        - exec_in: dpkg -i puppet-agent_$${puppet-agent_6_arm64_version}_arm64.deb
-        - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ $${puppet-agent_6_arm64_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
   - test:
     - exec_in: test "$${release}" == "trixie"
-    # puppet 6 server
     - group:
+      # Force Puppet 6 agent usage under Debian 13 Trixie (Bug #17452)
+      - test:
+        - exec_in: test "$${arch}" == "x86_64"
+        - group:
+          - exec_in: apt-get install -y curl
+          - exec_in: curl -fsSL https://apt.puppetlabs.com/DEB-GPG-KEY-future | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/puppet.gpg > /dev/null
+          - exec_in: printf "deb [signed-by=/etc/apt/trusted.gpg.d/puppet.gpg] http://apt.puppetlabs.com bullseye puppet6" > /etc/apt/sources.list.d/puppet6.list
+          - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ $${puppet-agent_6_amd64_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
+          - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy puppet-agent
+      - test:
+        - exec_in: test "$${arch}" == "aarch64"
+        - group:
+          - exec_in: wget -nv https://apt.puppetlabs.com/pool/focal/puppet6/p/puppet-agent/puppet-agent_$${puppet-agent_6_arm64_version}_arm64.deb
+          - exec_in: dpkg -i puppet-agent_$${puppet-agent_6_arm64_version}_arm64.deb
+          - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ $${puppet-agent_6_arm64_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
+      # Use Puppet 6 server
       # openjdk-11-jre-headless dependancies from trixie repository
       - exec_in: DEBIAN_FRONTEND=noninteractive apt-get install -qy libgraphite2-3 libharfbuzz0b libfontconfig1 ca-certificates-java java-common liblcms2-2 libjpeg62-turbo libnss3 libpcsclite1
       # openjdk-11-jre-headless from unstable repository

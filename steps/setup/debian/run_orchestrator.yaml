@@ -45,8 +45,6 @@
         ret=$?
         echo $ret
         if [ $ret -eq 2 -o $ret -eq 0 ] ; then true ; else false ; fi # Set exit code to 0
-  - test:
-    - exec_in: test "$${release}" != "trixie"
     - exec_in: |
         set +e
         if [ -z "$${g5k_variant}" ]; then
