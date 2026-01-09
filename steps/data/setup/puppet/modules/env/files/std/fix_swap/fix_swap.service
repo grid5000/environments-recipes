@@ -1,0 +1,9 @@
+[Install]
+WantedBy=swap.target
+
+[Unit]
+Description=Force swapon fix page size
+
+[Service]
+Type=oneshot
+ExecStart=swapon -f -a
