@@ -1,13 +1,9 @@
+[Install]
+WantedBy=swap.target
+
 [Unit]
-Description=Fix swap partition on aarch64 architecture
+Description=Force swapon fix page size
 
 [Service]
-User=root
-PrivateTmp=false
-Type=forking
-TimeoutStartSec=120
-
-ExecStart=/usr/sbin/swapon -a --fixpgsz
-
-[Install]
-WantedBy=multi-user.target
+Type=oneshot
+ExecStart=swapon -f -a
