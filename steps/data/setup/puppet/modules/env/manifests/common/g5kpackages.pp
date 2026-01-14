@@ -13,25 +13,13 @@ define env::common::g5kpackages (
 ) {
   include apt
 
-  if $::lsbdistcodename != 'bookworm' {
-    apt::source { $source_filename:
-      key      => {
-        'id'      => '3C38BDEAA05D4A7BED7815E5B1F34F56797BF2D1',
-        'content' => file('env/min/apt/grid5000-archive-key.asc')
-      },
-      comment  => "Grid5000 repository for ${name}",
-      location => "http://packages.grid5000.fr/deb/${name}/${release}",
-      release  => '/',
-      repos    => '',
-      include  => { 'deb' => true, 'src' => false }
-    }
-  } else {
-    # Debian12: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead. See bug 15510.
-    if $::lsbdistcodename == 'bookworm' {
+  case "${::lsbdistcodename}" {
+    # apt-key is deprecated. Manage keyring files in trusted.gpg.d instead. See bug 15510.
+    'bookworm', 'trixie' : {
       unless defined(Exec['retrieve_g5k_key']) {
         exec {
         'retrieve_g5k_key':
-          command     => "/usr/bin/wget http://packages.grid5000.fr/grid5000-archive-key.gpg -O /usr/share/keyrings/grid5000-archive-key.gpg";
+          command => "/usr/bin/wget http://packages.grid5000.fr/grid5000-archive-key.gpg -O /usr/share/keyrings/grid5000-archive-key.gpg";
         }
       }
       file { "/etc/apt/sources.list.d/${source_filename}.list":
@@ -40,6 +28,22 @@ define env::common::g5kpackages (
         notify  => Class['apt::update'],
         require => Exec['retrieve_g5k_key'],
       }
+    }
+    'buster', 'bullseye' : {
+      apt::source { $source_filename:
+        key      => {
+          'id'      => '3C38BDEAA05D4A7BED7815E5B1F34F56797BF2D1',
+          'content' => file('env/min/apt/grid5000-archive-key.asc')
+        },
+        comment  => "Grid5000 repository for ${name}",
+        location => "http://packages.grid5000.fr/deb/${name}/${release}",
+        release  => '/',
+        repos    => '',
+        include  => { 'deb' => true, 'src' => false }
+      }
+    }
+    default : {
+      fail "${::lsbdistcodename} not supported."
     }
   }
 
