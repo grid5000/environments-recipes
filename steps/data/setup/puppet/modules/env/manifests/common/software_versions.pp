@@ -29,7 +29,8 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'x86_64'
       case $lsbdistcodename {
         'trixie' : {
-          # Nothing for now
+          # custom package (with module-stats-wrapper rebuild) for trixie (bug #17450)
+          $lmod                   = '8.7.60-1+g5k1.0.0'
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
