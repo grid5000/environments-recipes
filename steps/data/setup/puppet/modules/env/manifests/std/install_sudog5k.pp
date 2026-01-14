@@ -9,8 +9,8 @@ class env::std::install_sudog5k {
       # See bug #13901
       if $::lsbdistcodename == 'bookworm' {
         env::common::g5kpackages {
-          'ruby-net-ssh_bookworm':
-          ensure => $::env::common::software_versions::ruby_net_ssh;
+          'ruby-net-ssh':
+          ensure => $::env::common::software_versions::ruby_net_ssh_bookworm;
         }
       }
 
