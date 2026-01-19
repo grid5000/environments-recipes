@@ -1,0 +1,13 @@
+- configure_source_list:
+   - write_in:
+     - /etc/apt/sources.list.d/bookworm.list
+     - |
+       deb http://deb.debian.org/debian bookworm main
+ 
+- update_repositories:
+   - apt-get_in: update
+   - apt-get_in: install -t bookworm -y ca-certificates
+ 
+- remove_bookworm_source:
+  - exec_in: rm /etc/apt/sources.list.d/bookworm.list
+  - apt-get_in: update
