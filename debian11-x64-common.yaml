@@ -48,6 +48,7 @@ setup:
   - configure_system
   - configure_apt
   - install_packages
+  - install_ca_bookworm
   - setup_orchestrator
   - run_orchestrator
 

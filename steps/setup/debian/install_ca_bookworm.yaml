@@ -1,0 +1,6 @@
+- configure_source_list:
+   - exec_in: cd /tmp/
+   - exec_in: wget http://deb.debian.org/debian/pool/main/c/ca-certificates/ca-certificates_20230311+deb12u1_all.deb
+
+- update_repositories:
+   - exec_in: dpkg -i ca-certificates_20230311+deb12u1_all.deb
