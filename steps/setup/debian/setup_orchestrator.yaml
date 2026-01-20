@@ -6,27 +6,92 @@
 - script_name: puppet_install.sh
 - script_path: /tmp
 - puppetlabs-augeas_core_version: "1.3.0"
+- puppetlabs-stdlib_version: "5.2.0"
+
+## Puppet 6 for Debian 13 Trixie
+- puppet-agent_6_amd64_version: "6.28.0-1bullseye"
+- puppet-agent_6_arm64_version: "6.28.0-1focal"
+# Puppet server 6 and openjdk-11-jre-headless dependancy deb packages are internal
+- internal_uri: "http://packages.grid5000.fr/deb/"
+- puppetserver_6_dir: "puppetserver6-debian13"
+- puppetserver_6_version: "6.20.0-1buster"
+- openjdk-11_jre_headless: "11.0.30~6ea-2"
 
 - get_standalone_puppet_script:
-  - exec_in: apt-get install -y wget lsb-release puppet gnupg apt-transport-https
+  - exec_in: apt-get install -y wget lsb-release gnupg apt-transport-https
+  - test:
+    - exec_in: test "$${release}" == "trixie"
+    - group:
+      # Force Puppet 6 agent usage under Debian 13 Trixie (Bug #17452)
+      - test:
+        - exec_in: test "$${arch}" == "x86_64"
+        - group:
+          - exec_in: apt-get install -y curl
+          - exec_in: curl -fsSL https://apt.puppetlabs.com/DEB-GPG-KEY-future | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/puppet.gpg > /dev/null
+          - exec_in: printf "deb [signed-by=/etc/apt/trusted.gpg.d/puppet.gpg] http://apt.puppetlabs.com bullseye puppet6" > /etc/apt/sources.list.d/puppet6.list
+          - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ $${puppet-agent_6_amd64_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
+          - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy puppet-agent
+      - test:
+        - exec_in: test "$${arch}" == "aarch64"
+        - group:
+          - exec_in: wget -nv https://apt.puppetlabs.com/pool/focal/puppet6/p/puppet-agent/puppet-agent_$${puppet-agent_6_arm64_version}_arm64.deb
+          - exec_in: dpkg -i puppet-agent_$${puppet-agent_6_arm64_version}_arm64.deb
+          - exec_in: printf Package:\ puppet-agent\\nPin:\ version\ $${puppet-agent_6_arm64_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppet-agent.pref
+      # Use Puppet 6 server
+      # openjdk-11-jre-headless dependancies from trixie repository
+      - exec_in: DEBIAN_FRONTEND=noninteractive apt-get install -qy libgraphite2-3 libharfbuzz0b libfontconfig1 ca-certificates-java java-common liblcms2-2 libjpeg62-turbo libnss3 libpcsclite1
+      # openjdk-11-jre-headless from unstable repository
+      - exec_in: wget -nv $${internal_uri}/$${puppetserver_6_dir}/openjdk-11-jre-headless_$${openjdk-11_jre_headless}_$${deb_arch}.deb
+      - exec_in: dpkg -i openjdk-11-jre-headless_$${openjdk-11_jre_headless}_$${deb_arch}.deb
+      # to avoid having new default java installed by g5k-meta-packages-debian13-big
+      - exec_in: update-alternatives --set java /usr/lib/jvm/java-11-openjdk-$${deb_arch}/bin/java
+      - exec_in: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -qy net-tools
+      - exec_in: wget -nv $${internal_uri}/$${puppetserver_6_dir}/puppetserver_$${puppetserver_6_version}_all.deb
+      - exec_in: dpkg -i puppetserver_$${puppetserver_6_version}_all.deb
+      - exec_in: printf Package:\ puppetserver\\nPin:\ version\ $${puppetserver_6_version}\\nPin-Priority:\ 1001\\n > /etc/apt/preferences.d/puppetserver.pref
+      - exec_in: printf export\ PATH="\$PATH:/opt/puppetlabs/bin" > /root/.profile
+      - exec_in: source /root/.profile
+  - test:
+    # fix `chown: invalid group: 'root:polkitd` at g5k-meta-packages-debian13-big install in big and std variants
+    - exec_in: test "$${release}" == "trixie" -a "$${g5k_variant}" != "min" -a "$${g5k_variant}" != "nfs"
+    - exec_in: apt-get install -y polkitd
+  - test:
+    - exec_in: test "$${release}" != "trixie"
+    - exec_in: apt-get install -y puppet
   # We also install stdlib module that contains some useful functions
   # We force the version of puppetlabs-stdlib and puppetlabs-apt so that we use a version that works on our old version of puppet
-  - exec_in: apt-get install -y ca-certificates ; puppet module install puppetlabs-stdlib --version 5.2.0
+  - exec_in: apt-get install -y ca-certificates ; puppet module install puppetlabs-stdlib --version $${puppetlabs-stdlib_version}
   - exec_in: puppet module install puppetlabs-apt --version $${puppetlabs_apt_version}
   # Install the Puppet module for augeas_core since augeas is no longer included in the Debian Puppet package from Debian12
   - test:
-    - exec_in: test "$${release}" == "bookworm"
+    - exec_in: test "$${release}" == "bookworm" -o "$${release}" == "trixie"
     - exec_in: puppet module install puppetlabs-augeas_core --version $${puppetlabs-augeas_core_version}
   - on_setup_clean:
+    - test:
+      - exec_in: test "$${release}" == "trixie"
+      - exec_in: source /root/.profile
+      - exec_in: rm /var/lib/dhcpcd/duid
     # module apt must be uninstalled BEFORE stdlib for dependency reasons
-    - exec_in: puppet module uninstall puppetlabs-apt
-    - exec_in: puppet module uninstall puppetlabs-stdlib
+    # not uninstalled on trixie (except min variant) as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
+    - test:
+      - exec_in: test "$${release}" != "trixie" -a "$${g5k_variant}" != "min" -a "$${g5k_variant}" != "big" -a "$${g5k_variant}" != "std"
+      - group:
+        - exec_in: puppet module uninstall puppetlabs-apt
+        - exec_in: puppet module uninstall puppetlabs-stdlib
     - test:
       - exec_in: test "$${release}" == "bookworm"
       - exec_in: puppet module uninstall puppetlabs-augeas_core
+    - test:
+      # purge only on trixie min variant as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
+      - exec_in: test "$${release}" == "trixie" -a "$${g5k_variant}" == "min"
+      - group:
+        - exec_in: rm puppetserver_$${puppetserver_6_version}_all.deb
+        - exec_in: apt-mark auto puppetserver puppet-agent
     # We tagged packet as "automatically installed" to auto-remove them at the end of the orchestration step
     - exec_in: apt-mark auto puppet lsb-release
     - exec_in: apt-get --yes autoremove --purge | tee /tmp/temp_purge
     # This is a bit of cleanup that SHOULD NOT OCCURS. But puppet is messy, and let this behind itself. So we clean it for him
-    - exec_in: grep -q "Removing puppet" /tmp/temp_purge && (rm -rf /etc/puppet && rc=$? || rc=$?)
+    - test:
+      - exec_in: test "$${release}" != "trixie"
+      - exec_in: grep -q "Removing puppet" /tmp/temp_purge && (rm -rf /etc/puppet && rc=$? || rc=$?)
     - exec_in: apt-get autoremove -y

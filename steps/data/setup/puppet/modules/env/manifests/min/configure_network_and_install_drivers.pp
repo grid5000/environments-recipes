@@ -7,11 +7,29 @@ class env::min::configure_network_and_install_drivers {
         group  => "root",
         mode   => '0644',
         source => "puppet:///modules/env/min/network/hosts";
-    '/etc/dhcp/dhclient-exit-hooks.d/g5k-update-host-name':
-        owner  => "root",
-        group  => "root",
-        mode   => '0644',
-        source => "puppet:///modules/env/min/network/g5k-update-host-name";
+  }
+
+  case "${::lsbdistcodename}" {
+    # Since Debian 13 trixie, isc-dhcp-client is replaced by dhcpcd (Bug #17449}
+    # same hook is applied with different file path
+    'trixie': {
+      file {
+        '/etc/dhcpcd.exit-hook':
+          owner  => 'root',
+          group  => 'root',
+          mode   => '0644',
+          source => 'puppet:///modules/env/min/network/g5k-update-host-name';
+      }
+    }
+    default: {
+      file {
+        '/etc/dhcp/dhclient-exit-hooks.d/g5k-update-host-name':
+            owner  => "root",
+            group  => "root",
+            mode   => '0644',
+            source => "puppet:///modules/env/min/network/g5k-update-host-name";
+      }
+    }
   }
 
   # Network driver for many dell server, arm pyxis cluster (qlogic), servan cluster ice (misc-nonfree)

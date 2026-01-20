@@ -1,18 +1,36 @@
 class env::nfs::configure_ntp ( $drift_file = false ) {
 
-  $ntp = [ 'ntp', 'ntpdate' ]
-  package {
-    'ntpdate':
-      ensure    => installed;
-    'ntp':
-      ensure    => installed,
-      require   => Package['openntpd'];
-    'openntpd':
-      ensure    => absent;
-  } # Here we forced ntp package to be 'ntp' and not 'openntp' because ntp is listed as dependencie by g5kchecks and conflict openntp.
+  case "${::lsbdistcodename}" {
+    "trixie": {
+      $ntp_conf_file  = '/etc/ntpsec/ntp.conf'
+      $ntp_drift_file = '/var/lib/ntp/ntp.drift'
+
+      package {
+        'ntpsec-ntpdate':
+          ensure => installed;
+        'ntpsec':
+          ensure => installed,
+      }
+    }
+    default: {
+      $ntp = [ 'ntp', 'ntpdate' ]
+      $ntp_conf_file  = '/etc/ntp.conf'
+      $ntp_drift_file = '/var/lib/ntpsec/ntp.drift'
+
+      package {
+        'ntpdate':
+          ensure => installed;
+        'ntp':
+          ensure  => installed,
+          require => Package['openntpd'];
+        'openntpd':
+          ensure  => absent;
+      } # Here we forced ntp package to be 'ntp' and not 'openntp' because ntp is listed as dependencie by g5kchecks and conflict openntp.
+    }
+  }
 
   file {
-    '/etc/ntp.conf':
+    $ntp_conf_file:
       ensure    => file,
       owner     => root,
       group     => root,
@@ -23,7 +41,7 @@ class env::nfs::configure_ntp ( $drift_file = false ) {
 
   if $drift_file {
     file {
-      '/var/lib/ntp/ntp.drift':
+      $ntp_drift_file:
         ensure    => file,
         owner     => ntp,
         group     => ntp,

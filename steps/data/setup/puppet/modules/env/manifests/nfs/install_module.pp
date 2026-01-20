@@ -1,10 +1,7 @@
 class env::nfs::install_module () {
 
   case "${::lsbdistcodename}" {
-    "buster": {
-      # NOTHING
-    }
-    "bullseye", "bookworm" : {
+    "bullseye", "bookworm", "trixie" : {
       # Install lmod from g5kpackages (custom version that includes module-stats-wrapper)
       # Otherwise, for debian 10, lmod is installed with g5k-meta-packages
       env::common::g5kpackages {
@@ -12,6 +9,9 @@ class env::nfs::install_module () {
           release => "${::lsbdistcodename}",
           ensure => $::env::common::software_versions::lmod;
       }
+    }
+    "buster": {
+      # NOTHING
     }
     default : {
       fail "${::lsbdistcodename} not supported."
