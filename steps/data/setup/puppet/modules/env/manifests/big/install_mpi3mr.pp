@@ -5,8 +5,8 @@ class env::big::install_mpi3mr {
   case $operatingsystem {
     'Debian': {
       case "${lsbdistcodename}" {
-        "buster": {
-          # Not relevant
+        "bookworm", "trixie" : {
+          # Not needed (already provided by the kernel)
         }
         'bullseye': {
           env::common::g5kpackages {
@@ -20,8 +20,8 @@ class env::big::install_mpi3mr {
             refreshonly => true;
           }
         }
-        "bookworm" : {
-          # Not needed (already provided by the kernel)
+        "buster": {
+          # Not relevant
         }
         default: {
           fail "${lsbdistcodename} not supported."

@@ -1,6 +1,9 @@
 class env::big::configure_initramfs () {
 
   case "${::lsbdistcodename}" {
+    "bullseye", "bookworm", "trixie" : {
+      # Nothing
+    }
     "buster" : {
       file {
         '/etc/initramfs-tools/conf.d/resume':
@@ -10,9 +13,6 @@ class env::big::configure_initramfs () {
           mode      => '0644',
           content   => 'RESUME=none',
       }
-    }
-    "bullseye", "bookworm" : {
-      # NOTHING
     }
     default: {
       fail "${::lsbdistcodename} not supported."
