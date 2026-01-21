@@ -5,21 +5,27 @@ class env::common::software_versions {
   $g5k_meta_packages           = '0.7.59'
   $g5k_checks                  = '0.11.28'
   $sudo_g5k                    = '1.13'
-  $ruby_net_ssh                = '1:6.1.0-2+deb11u1'
+  $ruby_net_ssh_bookworm       = '1:6.1.0-2+deb11u1'
   $libguestfs_backport_arm64   = '1:1.40.2-7~bpog5k10+1'
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
-  $g5k_jupyterlab              = '0.11'
+  # g5k-jupyterlab_0.12 available for tests only for debian 13 trixie (bug #17228)
+  $g5k_jupyterlab              = '0.12'
   $kameleon                    = '2.11.0.1'
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
-      'bullseye' : {
-        $singularity_package  = 'singularity-ce'
-        $singularity_version  = '4.1.2-focal'
+      'trixie' : {
+        # Source: https://packages.debian.org/sid/amd64/singularity-container/download
+        $singularity_package  = 'singularity-container'
+        $singularity_version  = '4.1.5+ds4-1+b1'
       }
       'bookworm' : {
         $singularity_package  = 'singularity-container'
         $singularity_version  = '4.1.5+ds3-1~fto12+1'
+      }
+      'bullseye' : {
+        $singularity_package  = 'singularity-ce'
+        $singularity_version  = '4.1.2-focal'
       }
     }
   }
@@ -29,7 +35,7 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'x86_64'
       case $lsbdistcodename {
         'trixie' : {
-          # custom package (with module-stats-wrapper rebuild) for trixie (bug #17450)
+          $nvidia_driver          = '580.119.02'
           $lmod                   = '8.7.60-1+g5k1.0.0'
         }
         'bookworm': {
@@ -58,6 +64,17 @@ class env::common::software_versions {
           $nvidia_cuda            = '10.1.243_418.87.00_linux'
           $datacenter_gpu_manager = '1:1.7.2'
           $dcgm_exporter          = '2.0.0-rc.11'
+        }
+        default : {
+          fail "${::lsbdistcodename} not supported."
+        }
+      }
+    }
+    'arm64': {
+      $nvidia_driver_arch         = 'aarch64'
+      case $lsbdistcodename {
+        'trixie' : {
+          $nvidia_driver          = '580.119.02'
         }
         default : {
           fail "${::lsbdistcodename} not supported."
