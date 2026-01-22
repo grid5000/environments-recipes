@@ -46,7 +46,7 @@ def clusters_per_arch
 end
 
 def autostart_cluster?(cluster)
-  CLUSTERS.empty? || CLUSTERS.include?(cluster)
+  CLUSTERS.include?(cluster)
 end
 
 def emit_cluster?(cluster)
