@@ -3,7 +3,7 @@ class env::nfs::configure_ntp ( $drift_file = false ) {
   case "${::lsbdistcodename}" {
     "trixie": {
       $ntp_conf_file  = '/etc/ntpsec/ntp.conf'
-      $ntp_drift_file = '/var/lib/ntp/ntp.drift'
+      $ntp_drift_file = '/var/lib/ntpsec/ntp.drift'
 
       package {
         'ntpsec-ntpdate':
@@ -15,7 +15,7 @@ class env::nfs::configure_ntp ( $drift_file = false ) {
     default: {
       $ntp = [ 'ntp', 'ntpdate' ]
       $ntp_conf_file  = '/etc/ntp.conf'
-      $ntp_drift_file = '/var/lib/ntpsec/ntp.drift'
+      $ntp_drift_file = '/var/lib/ntp/ntp.drift'
 
       package {
         'ntpdate':
