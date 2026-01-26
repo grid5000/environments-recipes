@@ -40,7 +40,10 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
     # megacli (RAID controler)
     class { 'env::std::install_megacli': }
     # g5k systemd generator
-    class { 'env::std::g5k_generator': }
+    # smbios-utils no more available in trixie (Bug #17937)
+    if "$lsbdistcodename" != 'trixie' {
+      class { 'env::std::g5k_generator': }
+    }
     # g5k-disk-manager-backend
     class { 'env::std::configure_g5kdiskmanagerbackend': }
     # g5k-pmem-manager

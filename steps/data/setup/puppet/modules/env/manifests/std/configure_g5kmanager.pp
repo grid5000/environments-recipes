@@ -2,7 +2,7 @@ class env::std::configure_g5kmanager {
   case $operatingsystem {
     'Debian': {
       case "${::lsbdistcodename}" {
-        "buster", "bullseye" : {
+        "buster", "bullseye", "trixie" : {
           file {
             '/usr/local/libexec/':
               ensure   => directory,
