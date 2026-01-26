@@ -1,8 +1,8 @@
 class env::std::install_g5kchecks {
 
   include 'env::std::ipmitool' # ipmitool is required by g5k-checks
-  if $env::deb_arch == 'amd64' {
-    include 'env::std::dell'     # dell tools are required by g5k-checks
+  if $env::deb_arch == 'amd64' and "$lsbdistcodename" != 'trixie' {
+    include 'env::std::dell'     # dell tools are required by g5k-checks, but no more added since Trixie (Bugs #17938 and #15193)
   }
 
   case $operatingsystem {
