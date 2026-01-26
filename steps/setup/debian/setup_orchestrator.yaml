@@ -12,7 +12,7 @@
 - puppet-agent_6_amd64_version: "6.28.0-1bullseye"
 - puppet-agent_6_arm64_version: "6.28.0-1focal"
 # Puppet server 6 and openjdk-11-jre-headless dependancy deb packages are internal
-- internal_uri: "http://packages.grid5000.fr/deb/"
+- internal_uri: "http://packages.grid5000.fr/deb"
 - puppetserver_6_dir: "puppetserver6-debian13"
 - puppetserver_6_version: "6.20.0-1buster"
 - openjdk-11_jre_headless: "11.0.30~6ea-2"

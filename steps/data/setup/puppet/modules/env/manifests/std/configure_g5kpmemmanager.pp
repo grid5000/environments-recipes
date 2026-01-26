@@ -5,6 +5,9 @@ class env::std::configure_g5kpmemmanager {
   case $operatingsystem {
     'Debian': {
       case "${::lsbdistcodename}" {
+        "trixie" : {
+          # ipmctl for PMEM support no more available in trixie (Bug #16566)
+        }
         "buster", "bullseye" : {
           file {
             '/etc/systemd/system/g5k-pmem-manager.service':

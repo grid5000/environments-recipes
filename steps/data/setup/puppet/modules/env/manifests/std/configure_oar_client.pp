@@ -5,11 +5,17 @@ class env::std::configure_oar_client {
   if "$operatingsystem" == "Debian" {
     # Can specify oar client version below
     case "${::lsbdistcodename}" {
-      'buster' : {
+      'trixie' : {
+        # FIXME bug #17935
+        # Debian stable repository
+        $oar_version       = "2.6.1-1";
+        $oar_repos         = "default"
+      }
+      'bullseye' : {
         $oar_version       = "2.5.10~g5k32-1";
         $oar_repos         = "g5k"
       }
-      'bullseye' : {
+      'buster' : {
         $oar_version       = "2.5.10~g5k32-1";
         $oar_repos         = "g5k"
       }
