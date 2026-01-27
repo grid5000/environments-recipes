@@ -35,7 +35,7 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'x86_64'
       case $lsbdistcodename {
         'trixie' : {
-          $nvidia_driver          = '580.119.02'
+          $nvidia_driver          = '580.126.09'
           $lmod                   = '8.7.60-1+g5k1.0.0'
         }
         'bookworm': {
@@ -74,7 +74,7 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'aarch64'
       case $lsbdistcodename {
         'trixie' : {
-          $nvidia_driver          = '580.119.02'
+          $nvidia_driver          = '580.126.09'
         }
         default : {
           fail "${::lsbdistcodename} not supported."
