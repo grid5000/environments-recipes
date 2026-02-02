@@ -37,6 +37,8 @@ global:
   timezone: Europe/Paris
   # puppet
   puppetlabs_apt_version: 6.3.0
+  # Nvidia module licence
+  nvidia_module: proprietary
 
 bootstrap:
   - "@base"
