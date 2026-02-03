@@ -9,7 +9,7 @@
 extend: ./debian11-x64-common.yaml
 
 global:
-  g5k_distrib: $${distrib}nvopen
+  g5k_distrib: nvopen$${distrib}
   g5k_description: $${distrib} $${release_number} ($${release}) with nvidia open kernel modules for $${arch} - $${g5k_variant}
 
   # Grid'5000 environment variant

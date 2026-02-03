@@ -15,7 +15,7 @@ end
 ENV_CONFIG = {
   'debian' => {
     '11' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
-    '11nvopen' => map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_X),
+    'nvopen11' => map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_X),
     '12' =>  map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
     '13' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
     'testing' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
