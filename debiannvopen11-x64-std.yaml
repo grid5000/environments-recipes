@@ -33,6 +33,15 @@ bootstrap:
 
 setup:
   - "@base"
+  - last_tweaks:
+    - fix_env_name:
+      - exec_in: |
+          sed -i -e '1s/^$${distrib}$${release_number}-/$${g5k_distrib}$${release_number}-/' /etc/grid5000/release
+    - change_motd:
+      - exec_in: |
+          sed -i \
+              -e 's/^Debian$${release_number}-/Debiannvopen$${release_number}-/' \
+              /etc/motd
   - set_and_clear_var_log
 
 export:
