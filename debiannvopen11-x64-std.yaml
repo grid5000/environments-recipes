@@ -11,6 +11,8 @@ extend: ./debian11-x64-common.yaml
 global:
   # Grid'5000 environment variant
   g5k_variant: std
+  g5k_distrib: $${distrib}nvopen
+  g5k_description: $${distrib} $${release_number} ($${release}) with nvidia open kernel modules for $${arch} - $${g5k_variant}
 
   # Generate only the appliance for bare-metal deployment, not for VMs.
   appliance_formats: tar.zst
@@ -31,6 +33,15 @@ bootstrap:
 
 setup:
   - "@base"
+  - last_tweaks:
+    - fix_env_name:
+      - exec_in: |
+          sed -i -e '1s/^$${distrib}$${release_number}-/$${g5k_distrib}$${release_number}-/' /etc/grid5000/release
+    - change_motd:
+      - exec_in: |
+          sed -i \
+              -e 's/^Debian$${release_number}-/Debiannvopen$${release_number}-/' \
+              /etc/motd
   - set_and_clear_var_log
 
 export:
