@@ -52,6 +52,7 @@
         else
           VARIANT=$${g5k_variant}
         fi
+        export FACTER_nvidiamodule=$${nvidia_module}
         puppet apply --detailed-exitcodes -d --modulepath=$${puppet_build_path}/modules:$${modules_path} $${puppet_build_path}/manifests/$VARIANT.pp | tee /tmp/puppet_exec.log
         ret=$?
         echo $ret

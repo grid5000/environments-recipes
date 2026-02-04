@@ -36,6 +36,8 @@ global:
   # puppet
   puppetlabs_apt_version: 6.3.0
   puppetlabs-augeas_core_version: 1.3.0
+  # Nvidia module licence
+  nvidia_module: open
 
 bootstrap:
   - "@base"

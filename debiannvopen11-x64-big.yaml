@@ -9,12 +9,17 @@
 extend: ./debian11-x64-common.yaml
 
 global:
+  g5k_distrib: nvopen$${distrib}
+  g5k_description: $${distrib} $${release_number} ($${release}) with nvidia open kernel modules for $${arch} - $${g5k_variant}
+
   # Grid'5000 environment variant
   g5k_variant: big
   # Grid'5000 Kadeploy environment parameters
   g5k_postinst_script: g5k-postinstall --net debian --net hpc --fstab nfs --fstab ondemand --restrict-user current --disk-aliases
   # QEMU options
   image_size: 28G
+  # nvidia module licence
+  nvidia_module: open
 
 bootstrap:
   - "@base"

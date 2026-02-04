@@ -23,6 +23,8 @@ global:
   image_size: 28G
   # Visibility override
   g5k_visibility: shared
+  # nvidia module licence
+  nvidia_module: open
 
 bootstrap:
   - "@base"

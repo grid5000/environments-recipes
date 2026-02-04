@@ -48,13 +48,13 @@ class env::big::configure_nvidia_gpu::drivers () {
   } else {
     $nvidia_installer = "$nvidia_runfile"
   }
-
+  $driver_license = $facts['nvidiamodule']
   # not install nvidia_driver for ppc64el bookworm
   # see https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=15183
   unless ("$env::deb_arch" == 'ppc64el' and "$lsbdistcodename" == 'bookworm') {
     exec{
       'install_nvidia_driver':
-        command   => "/tmp/$nvidia_installer -qa --no-cc-version-check --ui=none --dkms -k ${installed_kernelreleases[-1]}",
+        command   => "/tmp/$nvidia_installer -qa --no-cc-version-check --ui=none --dkms -k ${installed_kernelreleases[-1]} --kernel-module-type=${driver_license}",
         timeout   => 1200, # 20 min,
         user      => root,
         # The nvidia installer tries to load the nvidia-drm module at the end, but it fails because
