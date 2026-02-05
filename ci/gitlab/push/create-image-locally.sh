@@ -119,9 +119,16 @@ rsync -av "${HOST}:${env_dir}/${environment_name}.dsc" "${versioned_env_name}.ds
 rsync -av "${HOST}:${env_dir}/${environment_name}.tar.zst" "${versioned_env_name}.tar.zst"
 # rsync/mv the qcow2 if needed
 if [ "${is_std_env}" == "no" ]; then
-  rsync -av "${HOST}:${env_dir}/${environment_name}.qcow2" "${versioned_env_name}.qcow2"
-  mv "${versioned_env_name}.qcow2" /grid5000/virt-images
-  ln -sf "/grid5000/virt-images/${versioned_env_name}.qcow2" "/grid5000/virt-images/${environment_name}.qcow2"
+  qcow2_file="${env_dir}/${environment_name}.qcow2"
+  # Test existence of the qcow2 file on the remote before trying to fetch it
+  if ssh "${HOST}" test -f "'${qcow2_file}'"; then
+    echo "Found qcow2 file for ${environment_name}, syncing it."
+    rsync -av "${HOST}:${qcow2_file}" "${versioned_env_name}.qcow2"
+    mv "${versioned_env_name}.qcow2" /grid5000/virt-images
+    ln -sf "/grid5000/virt-images/${versioned_env_name}.qcow2" "/grid5000/virt-images/${environment_name}.qcow2"
+  else
+    echo "No qcow2 file found for ${environment_name}, skipping."
+  fi
 fi
 # FIXME: intentionally no copying log: those are empty?!
 
