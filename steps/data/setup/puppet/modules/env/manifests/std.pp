@@ -27,7 +27,10 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
   # OAR
   class { 'env::std::configure_oar_client': }
   # g5kchecks (+ ipmitool)
-  class { 'env::std::install_g5kchecks': }
+  # for now, no g5k-checks packages available for debian 13 trixie (bug #17988)
+  if "$lsbdistcodename" != 'trixie' {
+    class { 'env::std::install_g5kchecks': }
+  }
   # g5kcode
   class { 'env::std::add_g5kcode_to_path': }
   # g5k-subnets
