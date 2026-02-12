@@ -20,11 +20,12 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' or $env::deb_arch == 'arm64' {
     class { 'env::big::configure_nvidia_gpu': }
   }
-  # no GPU stack for now for Debian 13 Trixie (bugs #15653 and #14466)
-  if $::lsbdistcodename != 'trixie' {
-    # amdgpu
-    if $env::deb_arch == 'amd64' {
-      class { 'env::big::configure_amd_gpu': }
+  if $env::deb_arch == 'amd64' {
+    class { 'env::big::configure_amd_gpu': }
+    # no GPU stack for now for Debian 13 Trixie (bugs #15653 and #14466)
+    if $::lsbdistcodename != 'trixie' {
+      # install rocm
+      class { 'env::big::configure_rocm': }
     }
   }
   # beegfs install
