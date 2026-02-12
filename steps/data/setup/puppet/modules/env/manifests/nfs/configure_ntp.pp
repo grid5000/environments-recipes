@@ -4,6 +4,7 @@ class env::nfs::configure_ntp ( $drift_file = false ) {
     "trixie": {
       $ntp_conf_file  = '/etc/ntpsec/ntp.conf'
       $ntp_drift_file = '/var/lib/ntpsec/ntp.drift'
+      $ntp_user = 'ntpsec'
 
       package {
         'ntpsec-ntpdate':
@@ -16,6 +17,7 @@ class env::nfs::configure_ntp ( $drift_file = false ) {
       $ntp = [ 'ntp', 'ntpdate' ]
       $ntp_conf_file  = '/etc/ntp.conf'
       $ntp_drift_file = '/var/lib/ntp/ntp.drift'
+      $ntp_user = 'ntp'
 
       package {
         'ntpdate':
@@ -43,8 +45,8 @@ class env::nfs::configure_ntp ( $drift_file = false ) {
     file {
       $ntp_drift_file:
         ensure    => file,
-        owner     => ntp,
-        group     => ntp,
+        owner     => $ntp_user,
+        group     => $ntp_user,
         mode      => '0644',
         content   => "",
         require   => Package[$ntp];
