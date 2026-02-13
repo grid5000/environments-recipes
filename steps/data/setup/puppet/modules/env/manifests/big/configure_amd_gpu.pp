@@ -1,6 +1,6 @@
 class env::big::configure_amd_gpu () {
 
-  $amdgpu_source_url = "https://repo.radeon.com/amdgpu/${::env::common::software_versions::rocm_version}/ubuntu"
+  $amdgpu_source_url = "https://repo.radeon.com/amdgpu/${::env::common::software_versions::amdgpu_version}/ubuntu"
 
   $amdgpu_releases = {
     'buster'   => 'ubuntu',

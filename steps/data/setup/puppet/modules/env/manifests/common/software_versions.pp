@@ -37,9 +37,11 @@ class env::common::software_versions {
         'trixie' : {
           $nvidia_driver          = '580.126.09'
           $lmod                   = '8.7.60-1+g5k1.0.0'
+          $amdgpu_version         = '30.30'
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
+          $amdgpu_version         = '6.4.1'
           $rocm_version           = '6.4.1'
           $nvidia_driver          = '550.54.14'
           $nvidia_cuda            = '12.2.2_535.104.05_linux'
@@ -50,6 +52,7 @@ class env::common::software_versions {
         }
         'bullseye': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
+          $amdgpu_version         = '6.3.3'
           $rocm_version           = '6.3.3'
           $nvidia_driver          = '580.95.05'
           $nvidia_cuda            = '13.0.2_580.95.05_linux'
@@ -59,6 +62,7 @@ class env::common::software_versions {
           $libfabric1             = '1.11.0-2+g5k1'
         }
         'buster': {
+          $amdgpu_version         = '4.3.1'
           $rocm_version           = '4.3.1'
           $nvidia_driver          = '460.91.03'
           $nvidia_cuda            = '10.1.243_418.87.00_linux'
