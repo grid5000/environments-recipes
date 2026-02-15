@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Convert a disk image to many others formats with guestfish."""
 from __future__ import division, unicode_literals
