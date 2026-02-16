@@ -4,7 +4,11 @@ class env::std::install_kameleon {
     'Debian': {
       case "${lsbdistcodename}" {
         'trixie': {
-          # no Kameleon packages for now (Bug #17936)
+          package {
+            'kameleon':
+              install_options => ['-t', "${lsbdistcodename}-backports", "--no-install-recommends"],
+              ensure   => installed;
+          }
         }
         'buster', 'bullseye': {
           env::common::g5kpackages {
