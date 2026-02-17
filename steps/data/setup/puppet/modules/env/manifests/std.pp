@@ -25,7 +25,9 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
       parent_parameters => $parameters;
   }
   # OAR
-  class { 'env::std::configure_oar_client': }
+  if "$lsbdistcodename" != 'trixie' {
+    class { 'env::std::configure_oar_client': }
+  }
   # g5kchecks (+ ipmitool)
   # for now, no g5k-checks packages available for debian 13 trixie (bug #17988)
   if "$lsbdistcodename" != 'trixie' {
