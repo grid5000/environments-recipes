@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Simple HTTP server"""
 from __future__ import unicode_literals
 import atexit
