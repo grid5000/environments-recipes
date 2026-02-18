@@ -1,14 +1,7 @@
 class env::base::configure_ip_over_infiniband (){
 
   case "${::lsbdistcodename}" {
-    'trixie': {
-      package {
-        'rdma-core':
-          ensure =>  installed;
-      }
-      # FIXME Nothing more (for now ?)
-    }
-    'bullseye', 'bookworm': {
+    'bullseye', 'bookworm', 'trixie': {
       package {
         'rdma-core':
           ensure =>  installed;
