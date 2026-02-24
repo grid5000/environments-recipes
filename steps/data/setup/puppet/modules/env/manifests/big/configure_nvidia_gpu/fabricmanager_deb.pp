@@ -3,7 +3,7 @@ class env::big::configure_nvidia_gpu::fabricmanager_deb () {
 ### This class exists for GPU clusters equipped with nvswitch technology
 ### that require the fabricmanager driver
 ### Installation is provides by the usage of a deb packages
-if $::env::common::software_versions::nvidia_fabricmanager =~ /^580/ {
+  if $::env::common::software_versions::nvidia_fabricmanager =~ /^580/ {
     Package {
       'nvidia-fabricmanager':
         ensure  => "$::env::common::software_versions::nvidia_fabricmanager",
@@ -13,7 +13,7 @@ if $::env::common::software_versions::nvidia_fabricmanager =~ /^580/ {
     $nvfabric_vars = split($::env::common::software_versions::nvidia_fabricmanager, '_')
     $nvfabric_major = $nvfabric_vars[0]
     $nvfabric_version = $nvfabric_vars[1]
-    Package{
+    Package {
       'nvidia-fabricmanager':
         name => "nvidia-fabricmanager-$nvfabric_major",
         ensure => $nvfabric_version,

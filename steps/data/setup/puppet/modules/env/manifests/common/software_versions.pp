@@ -36,6 +36,9 @@ class env::common::software_versions {
       case $lsbdistcodename {
         'trixie' : {
           $nvidia_driver          = '580.126.09'
+          $nvidia_fabricmanager   = '580.126.09-1'
+          $datacenter_gpu_manager = '1:3.3.9'
+          $dcgm_exporter          = '3.3.5-1'
           $lmod                   = '8.7.60-1+g5k1.0.0'
           $amdgpu_version         = '30.30'
         }
@@ -44,9 +47,9 @@ class env::common::software_versions {
           $amdgpu_version         = '6.4.1'
           $rocm_version           = '6.4.1'
           $nvidia_driver          = '580.95.05'
-          $nvidia_cuda            = '13.0.2_580.95.05_linux'
-          $datacenter_gpu_manager = '1:3.3.3'
           $nvidia_fabricmanager   = '580.95.05-1'
+          $datacenter_gpu_manager = '1:3.3.3'
+          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $dcgm_exporter          = '3.3.5-1'
           $libfabric1             = '1.11.0-2+g5k1'
         }
@@ -55,9 +58,9 @@ class env::common::software_versions {
           $amdgpu_version         = '6.3.3'
           $rocm_version           = '6.3.3'
           $nvidia_driver          = '580.95.05'
-          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $datacenter_gpu_manager = '1:3.3.3'
           $nvidia_fabricmanager   = '580.95.05-1'
+          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $dcgm_exporter          = '3.3.5-1'
           $libfabric1             = '1.11.0-2+g5k1'
         }
@@ -79,6 +82,7 @@ class env::common::software_versions {
       case $lsbdistcodename {
         'trixie' : {
           $nvidia_driver          = '580.126.09'
+          $dcgm_exporter          = '3.3.5-1'
         }
         default : {
           fail "${::lsbdistcodename} not supported."
