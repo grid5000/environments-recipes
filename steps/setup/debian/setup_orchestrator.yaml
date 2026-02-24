@@ -72,7 +72,7 @@
       - group:
         - exec_in: source /root/.profile
         - exec_in: rm /var/lib/dhcpcd/duid
-    # module apt must be uninstalled BEFORE stdlib for dependency reasons
+    # puppet apt module must be uninstalled BEFORE stdlib for dependency reasons
     # not uninstalled on trixie (except min variant) as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
     - test:
       - exec_in: test "$${release}" != "trixie" -a "$${g5k_variant}" != "min" -a "$${g5k_variant}" != "big" -a "$${g5k_variant}" != "std"
@@ -83,11 +83,18 @@
       - exec_in: test "$${release}" == "bookworm"
       - exec_in: puppet module uninstall puppetlabs-augeas_core
     - test:
-      # purge only on trixie min variant as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
+      # automatically purge trixie min variant only as already remove by incompatible ruby version from g5k-meta-packages-debian13-base
       - exec_in: test "$${release}" == "trixie" -a "$${g5k_variant}" == "min"
       - group:
         - exec_in: rm puppetserver_$${puppetserver_6_version}_all.deb
         - exec_in: apt-mark auto puppetserver puppet-agent
+        - exec_in: rm -rf /opt/puppetlabs/
+    - test:
+      # purge as already removed under base and higher variants by incompatible ruby version from g5k-meta-packages-debian13-base
+      - exec_in: test "$${release}" == "trixie" -a "$${g5k_variant}" != "min"
+      - group:
+        - exec_in: DEBIAN_FRONTEND=noninteractive apt-get purge -qy puppetserver puppet-agent openjdk-11-jre-headless
+        - exec_in: rm -rf /opt/puppetlabs/
     # We tagged packet as "automatically installed" to auto-remove them at the end of the orchestration step
     - exec_in: apt-mark auto puppet lsb-release
     - exec_in: apt-get --yes autoremove --purge | tee /tmp/temp_purge
