@@ -24,7 +24,7 @@ class env::big::configure_nvidia_gpu::prometheus () {
           mode    => '0644',
           source  => "puppet:///modules/env/big/nvidia/dcgm-exporter.service";
       }
-      if $::env::common::software_versions::dcgm_exporter == '3.3.5-1' {
+      if $::env::common::software_versions::dcgm_exporter =~ /^3/ {
         file {
           '/etc/dcgm-exporter/default-counters.csv':
             ensure  => file,
@@ -33,6 +33,11 @@ class env::big::configure_nvidia_gpu::prometheus () {
             mode    => '0644',
             source  => "puppet:///modules/env/big/nvidia/default-counters.csv",
             require => Env::Common::G5kpackages['nvidia-dcgm-exporter'];
+          '/var/log/nvidia-dcgm':
+            ensure    => directory,
+            owner     => root,
+            group     => root,
+            require   => Package['datacenter-gpu-manager'];
         }
         service {
         'nvidia-dcgm.service':
@@ -42,8 +47,7 @@ class env::big::configure_nvidia_gpu::prometheus () {
           enable => true,
           require => [File['/etc/systemd/system/dcgm-exporter.service'], Package['dcgm-exporter']];
         }
-      }
-      else {
+      } else {
         service {
           'nvidia-dcgm.service':
             enable => false,
