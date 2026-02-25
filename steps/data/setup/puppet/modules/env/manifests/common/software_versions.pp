@@ -15,11 +15,13 @@ class env::common::software_versions {
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
       'trixie' : {
-        # Source: https://packages.debian.org/sid/amd64/singularity-container/download
-        $singularity_package  = 'singularity-container'
-        $singularity_version  = '4.1.5+ds4-1+b1'
+        # for now (Bug #18025)
+        # https://apptainer.org/docs/admin/main/installation.html#install-debian-packages
+        $singularity_package  = 'apptainer'
+        $singularity_version  = '1.4.5'
       }
       'bookworm' : {
+        # Source: https://packages.debian.org/sid/amd64/singularity-container/download
         $singularity_package  = 'singularity-container'
         $singularity_version  = '4.1.5+ds3-1~fto12+1'
       }
@@ -83,6 +85,7 @@ class env::common::software_versions {
         'trixie' : {
           $nvidia_driver          = '580.126.09'
           $dcgm_exporter          = '3.3.5-1'
+          #$lmod                   = '8.7.60-1+g5k1.0.0'
         }
         default : {
           fail "${::lsbdistcodename} not supported."
