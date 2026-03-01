@@ -65,6 +65,7 @@ global:
   qemu_initrd_path: $${kameleon_cwd}/qemu_initrd
   qemu_append_cmdline: $${installer_cmdline}
   qemu_iso_path: $${kameleon_cwd}/qemu.iso
+  qemu_use_virtio_scsi: false
 
   # rootfs options
   disk_device: /dev/vda
