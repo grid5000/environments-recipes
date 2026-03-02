@@ -50,6 +50,7 @@ setup:
   - install_packages
   - setup_orchestrator
   - run_orchestrator
+  - install_ca_bookworm
 
 export:
   - clean_dhcp_leases
