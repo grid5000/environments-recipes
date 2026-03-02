@@ -37,6 +37,7 @@ global:
   timezone: Europe/Paris
   # passwords
   root_password: grid5000
+  qemu_use_virtio_scsi: true
 
 bootstrap:
   - "@base"
