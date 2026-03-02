@@ -55,12 +55,12 @@ setup:
   - configure_apt
   - configure_g5k_apt_sources_without_apt_key
   - do_not_clean_tmp
-  - use_isc_dhcp_not_dhcpcd_base
   - install_packages
   - set_g5k_release
   - set_g5k_dhclient_hook
   - set_g5k_motd
   - configure_ssh_server
+  - use_dhcpcd
 
 export:
   - clean_dhcp_leases
