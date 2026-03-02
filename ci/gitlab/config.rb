@@ -10,7 +10,7 @@ def all_sites
 end
 
 def clusters_for_site(site)
-  REF['sites'][site]['clusters'].keys
+  (REF['sites'][site]['clusters'] || {}).keys
 end
 
 def clusters_per_arch_for_site(site)
