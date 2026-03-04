@@ -29,6 +29,7 @@
 - qemu_uefi_code_path: /usr/share/AAVMF/AAVMF_CODE.fd
 - qemu_uefi_vars_path: /usr/share/AAVMF/AAVMF_VARS.fd
 - qemu_netdev_user_options:
+- qemu_use_virtio_scsi: false
 - disk_cache: unsafe
 
 - start_vm:
@@ -155,7 +156,11 @@
             SERIAL_TELNET="telnet:localhost:$${telnet_port},server"
           fi
           # Select disk
-          QEMU_DRIVES="-drive file=$${image_disk}.$${image_format},cache=$${disk_cache},media=disk,if=virtio,id=drive0"
+          if [ "$${qemu_use_virtio_scsi}" == "true" ]; then
+            QEMU_DRIVES="-device virtio-scsi-device,id=scsi -drive file=$${image_disk}.$${image_format},cache=$${disk_cache},if=none,id=hd0 -device scsi-hd,drive=hd0"
+          else
+            QEMU_DRIVES="-drive file=$${image_disk}.$${image_format},cache=$${disk_cache},media=disk,if=virtio,id=drive0"
+          fi
           QEMU_BOOT=
           QEMU_APPEND_CMDLINE=
           if [ "$${qemu_uefi}" == "true" ]; then
