@@ -35,10 +35,10 @@ class env::common::software_versions {
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
           $rocm_version           = '6.4.1'
-          $nvidia_driver          = '550.54.14'
-          $nvidia_cuda            = '12.2.2_535.104.05_linux'
+          $nvidia_driver          = '580.95.05'
+          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $datacenter_gpu_manager = '1:3.3.3'
-          $nvidia_fabricmanager   = '550_550.54.14-1'
+          $nvidia_fabricmanager   = '580.95.05-1'
           $dcgm_exporter          = '3.3.5-1'
           $libfabric1             = '1.11.0-2+g5k1'
         }
@@ -48,7 +48,7 @@ class env::common::software_versions {
           $nvidia_driver          = '580.95.05'
           $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $datacenter_gpu_manager = '1:3.3.3'
-          $nvidia_fabricmanager   = '535_535.183.06-1'
+          $nvidia_fabricmanager   = '580.95.05-1'
           $dcgm_exporter          = '3.3.5-1'
           $libfabric1             = '1.11.0-2+g5k1'
         }
