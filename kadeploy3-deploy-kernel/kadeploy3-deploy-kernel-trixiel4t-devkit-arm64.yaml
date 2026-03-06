@@ -9,11 +9,11 @@
 #
 #==============================================================================
 ---
-extend: kadeploy3-deploy-kernel-bullseye-arm64.yaml
+extend: kadeploy3-deploy-kernel-trixie-arm64.yaml
 
 global:
   deb_kernel: other
-  g5k_l4t_version: r38.4.0-bullseye
+  g5k_l4t_version: r38.4.0-trixie
   tmpfs_size: 4G
 
 bootstrap:
