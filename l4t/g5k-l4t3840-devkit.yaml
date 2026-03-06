@@ -41,7 +41,7 @@ global:
   l4t_version_minor: "4"
   l4t_version_patch: "0"
   l4t_kernel_version: "6.8"
-  debian_version: bullseye
+  debian_version: trixie
   debian_kernel_package: linux-image-arm64
   package_name: g5k-l4t-r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}-$${debian_version}
   target_directory: /grid5000/l4t
