@@ -16,6 +16,17 @@ class env::big::install_openmpi () {
   })
 
   case "${::lsbdistcodename}" {
+    "trixie" : {
+      # FIXME nothing for now (bug #17590)
+    }
+    "bullseye", "bookworm" : {
+      # Debian11|12 disable many providers by default. We restore UCX and Fabric,
+      # while keeping openib disabled to avoid useless warnings
+      file { '/etc/openmpi/openmpi-mca-params.conf':
+        content => "#Managed by Grid'5000 environments recipes\nbtl_base_warn_component_unused=0\nbtl = ^openib",
+        require => Package['openmpi-bin'];
+      }
+    }
     "buster" : {
       # The 'verbs' OFI provider is broken in OpenMPI 3.1.3. We disable it.
       # See https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=10918
@@ -26,14 +37,6 @@ class env::big::install_openmpi () {
       file_line { 'disable_verbs_ofi_provider':
         path => '/etc/openmpi/openmpi-mca-params.conf',
         line => 'mtl_ofi_provider_exclude = shm,sockets,tcp,udp,rstream,verbs',
-        require => Package['openmpi-bin'];
-      }
-    }
-    "bullseye", "bookworm" : {
-      # Debian11|12 disable many providers by default. We restore UCX and Fabric,
-      # while keeping openib disabled to avoid useless warnings
-      file { '/etc/openmpi/openmpi-mca-params.conf':
-        content => "#Managed by Grid'5000 environments recipes\nbtl_base_warn_component_unused=0\nbtl = ^openib",
         require => Package['openmpi-bin'];
       }
     }

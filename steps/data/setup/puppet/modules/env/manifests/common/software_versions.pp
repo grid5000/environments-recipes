@@ -5,21 +5,29 @@ class env::common::software_versions {
   $g5k_meta_packages           = '0.7.59'
   $g5k_checks                  = '0.11.28'
   $sudo_g5k                    = '1.13'
-  $ruby_net_ssh                = '1:6.1.0-2+deb11u1'
+  $ruby_net_ssh_bookworm       = '1:6.1.0-2+deb11u1'
   $libguestfs_backport_arm64   = '1:1.40.2-7~bpog5k10+1'
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
-  $g5k_jupyterlab              = '0.11'
+  # g5k-jupyterlab_0.12 available for tests only for debian 13 trixie (bug #17228)
+  $g5k_jupyterlab              = '0.12'
   $kameleon                    = '2.11.0.1'
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
+      'trixie' : {
+        # for now (Bug #18025)
+        # https://apptainer.org/docs/admin/main/installation.html#install-debian-packages
+        $singularity_package  = 'apptainer'
+        $singularity_version  = '1.4.5'
+      }
+      'bookworm' : {
+        # Source: https://packages.debian.org/sid/amd64/singularity-container/download
+        $singularity_package  = 'singularity-container'
+        $singularity_version  = '4.1.5+ds3-1~fto12+1'
+      }
       'bullseye' : {
         $singularity_package  = 'singularity-ce'
         $singularity_version  = '4.1.2-focal'
-      }
-      'bookworm' : {
-        $singularity_package  = 'singularity-container'
-        $singularity_version  = '4.1.5+ds3-1~fto12+1'
       }
     }
   }
@@ -29,35 +37,55 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'x86_64'
       case $lsbdistcodename {
         'trixie' : {
-          # custom package (with module-stats-wrapper rebuild) for trixie (bug #17450)
+          $nvidia_driver          = '580.126.09'
+          $nvidia_fabricmanager   = '580.126.09-1'
+          $datacenter_gpu_manager = '1:3.3.9'
+          $dcgm_exporter          = '3.3.5-1'
           $lmod                   = '8.7.60-1+g5k1.0.0'
+          $amdgpu_version         = '30.30'
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
+          $amdgpu_version         = '6.4.1'
           $rocm_version           = '6.4.1'
           $nvidia_driver          = '580.95.05'
-          $nvidia_cuda            = '13.0.2_580.95.05_linux'
-          $datacenter_gpu_manager = '1:3.3.3'
           $nvidia_fabricmanager   = '580.95.05-1'
+          $datacenter_gpu_manager = '1:3.3.3'
+          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $dcgm_exporter          = '3.3.5-1'
           $libfabric1             = '1.11.0-2+g5k1'
         }
         'bullseye': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
+          $amdgpu_version         = '6.3.3'
           $rocm_version           = '6.3.3'
           $nvidia_driver          = '580.95.05'
-          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $datacenter_gpu_manager = '1:3.3.3'
           $nvidia_fabricmanager   = '580.95.05-1'
+          $nvidia_cuda            = '13.0.2_580.95.05_linux'
           $dcgm_exporter          = '3.3.5-1'
           $libfabric1             = '1.11.0-2+g5k1'
         }
         'buster': {
+          $amdgpu_version         = '4.3.1'
           $rocm_version           = '4.3.1'
           $nvidia_driver          = '460.91.03'
           $nvidia_cuda            = '10.1.243_418.87.00_linux'
           $datacenter_gpu_manager = '1:1.7.2'
           $dcgm_exporter          = '2.0.0-rc.11'
+        }
+        default : {
+          fail "${::lsbdistcodename} not supported."
+        }
+      }
+    }
+    'arm64': {
+      $nvidia_driver_arch         = 'aarch64'
+      case $lsbdistcodename {
+        'trixie' : {
+          $nvidia_driver          = '580.126.09'
+          $dcgm_exporter          = '3.3.5-1'
+          #$lmod                   = '8.7.60-1+g5k1.0.0'
         }
         default : {
           fail "${::lsbdistcodename} not supported."

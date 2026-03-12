@@ -8,13 +8,16 @@ class env::big::configure_nvidia_gpu::drivers () {
     "amd64": {
       $libdir = '/usr/lib/x86_64-linux-gnu'
     }
+    "arm64": {
+      $libdir = '/usr/lib/aarch64-linux-gnu/'
+    }
     "ppc64el": {
       $libdir = '/usr/lib/powerpc64le-linux-gnu'
     }
   }
 
-  $driver_source = "http://packages.grid5000.fr/other/nvidia/NVIDIA-Linux-${::env::common::software_versions::nvidia_driver_arch}-${::env::common::software_versions::nvidia_driver}.run"
   $nvidia_basename = 'NVIDIA-Linux'
+  $driver_source = "http://packages.grid5000.fr/other/nvidia/$nvidia_basename-${::env::common::software_versions::nvidia_driver_arch}-${::env::common::software_versions::nvidia_driver}.run"
   $nvidia_runfile = "$nvidia_basename.run"
 
   file{
