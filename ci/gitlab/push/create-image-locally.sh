@@ -118,17 +118,29 @@ versioned_env_name="${environment_name}-${tag}"
 rsync -av "${HOST}:${env_dir}/${environment_name}.dsc" "${versioned_env_name}.dsc"
 rsync -av "${HOST}:${env_dir}/${environment_name}.tar.zst" "${versioned_env_name}.tar.zst"
 # rsync/mv the qcow2 if needed
-if [ "${is_std_env}" == "no" ]; then
-  qcow2_file="${env_dir}/${environment_name}.qcow2"
-  # Test existence of the qcow2 file on the remote before trying to fetch it
-  if ssh "${HOST}" test -f "'${qcow2_file}'"; then
-    echo "Found qcow2 file for ${environment_name}, syncing it."
-    rsync -av "${HOST}:${qcow2_file}" "${versioned_env_name}.qcow2"
-    mv "${versioned_env_name}.qcow2" /grid5000/virt-images
-    ln -sf "/grid5000/virt-images/${versioned_env_name}.qcow2" "/grid5000/virt-images/${environment_name}.qcow2"
+formats_file="${env_dir}/${environment_name}_formats"
+qcow2_file="${env_dir}/${environment_name}.qcow2"
+# Test existece of the _format file first
+if ssh "${HOST}" test -f "${formats_file}"; then
+  echo "Found _formats file for ${environment_name}, syncing it."
+  rsync -av "${HOST}:${formats_file}" "${versioned_env_name}_formats"
+  formats=$(tr '\r\n' ' ' < "${versioned_env_name}_formats")
+
+  # Test existence of qcow2 in the _formats file
+  if [[ " ${formats} " =~ " qcow2 " ]]; then
+    if ssh "${HOST}" test -f "${qcow2_file}"; then
+      echo "Found qcow2 file for ${environment_name}, syncing it."
+      rsync -av "${HOST}:${qcow2_file}" "${versioned_env_name}.qcow2"
+      mv "${versioned_env_name}.qcow2" /grid5000/virt-images
+      ln -sf "/grid5000/virt-images/${versioned_env_name}.qcow2" "/grid5000/virt-images/${environment_name}.qcow2"
+    else
+      echo "No qcow2 file found for ${environment_name}, skipping."
+    fi
   else
-    echo "No qcow2 file found for ${environment_name}, skipping."
+    echo "qcow2 format not listed in _formats file for ${environment_name}, skipping."
   fi
+else
+  echo "No _formats file found for ${environment_name}, skipping."
 fi
 # FIXME: intentionally no copying log: those are empty?!
 
