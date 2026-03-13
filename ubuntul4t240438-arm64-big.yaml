@@ -67,8 +67,10 @@ setup:
             -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/urandom" c 1 9\)@#\1@' \
             $${l4t_dir}/nv_tegra/nv-apply-debs.sh
     - apply_L4T:
-      - exec_in: $${l4t_dir}/apply_binaries.sh --openrm -r $${rootfs}
-      - exec_in: DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes --fix-broken install
+      - exec_in: |
+          rm /etc/cloud/ds-identify.cfg
+          $${l4t_dir}/apply_binaries.sh --openrm -r $${rootfs}
+          DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes --fix-broken install
     - disable_unwanted_L4T_services:
       - exec_in: |
           set -e
@@ -93,7 +95,7 @@ setup:
       - exec_in: |
           set -e
           if [ -n "$${extra_pip3_packages}" ]; then
-            pip3 -m install $${extra_pip3_packages} --break-system-packages
+            pip3 install $${extra_pip3_packages} --break-system-packages
           fi
     - clean_apt_cache:
       - on_setup_clean:
