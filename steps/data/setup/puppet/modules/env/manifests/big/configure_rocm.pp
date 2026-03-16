@@ -16,7 +16,7 @@ class env::big::configure_rocm () {
     'repo.radeon.com-rocm':
       comment      => 'Repo for AMD ROCM packages',
       location     => $rocm_source_url,
-      release      => $amdgpu_releases[$::lsbdistcodename],
+      release      => $rocm_releases[$::lsbdistcodename],
       repos        => 'main',
       architecture => 'amd64',
       require      => Exec['retrieve rocm key'],
