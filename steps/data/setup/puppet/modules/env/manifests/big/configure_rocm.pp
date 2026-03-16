@@ -46,7 +46,7 @@ class env::big::configure_rocm () {
     [ 'rocminfo', 'rocm-smi-lib', 'rocm-device-libs', 'hsa-amd-aqlprofile' ]:
       ensure          => installed,
       install_options => ['--no-install-recommends'],
-      require         => Apt::Source['repo.radeon.com-rocm'];
+      require         => [Apt::Source['repo.radeon.com-rocm'],Exec['apt_update']];
   }
 
   file {
@@ -63,7 +63,7 @@ class env::big::configure_rocm () {
         [ 'rock-dkms', 'hip-base', 'hip-rocclr', 'libtinfo5']:
           ensure          => installed,
           install_options => ['--no-install-recommends'],
-          require         => Apt::Source['repo.radeon.com-rocm'];
+          require         => [Apt::Source['repo.radeon.com-rocm'],Exec['apt_update']];
       }
 
       exec {
@@ -79,7 +79,7 @@ class env::big::configure_rocm () {
           command  => "mkdir /tmp/rocm && cd /tmp/rocm && apt download rocm-llvm && dpkg-deb -x rocm-llvm_*.deb rocm-llvm && dpkg-deb --control rocm-llvm_*.deb rocm-llvm/DEBIAN && sed -i 's/^Depends: .*/Depends: libc6/g' rocm-llvm/DEBIAN/control && dpkg -b rocm-llvm/ rocm-llvm.deb && apt install -y ./rocm-llvm.deb && rm -fr /tmp/rocm",
           provider => shell,
           timeout  => 1800,
-          require  => Apt::Source['repo.radeon.com-rocm'];
+          require  => [Apt::Source['repo.radeon.com-rocm'],Exec['apt_update']];
       }
       file {
         '/etc/apt/preferences.d/rocm-pin-600':
