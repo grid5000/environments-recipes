@@ -106,3 +106,8 @@
 
 - generate_md5:
   - exec_local: md5sum $${kameleon_recipe_name}.* > $${kameleon_recipe_name}.md5
+
+- generate_formats:
+  - exec_local: echo "Writing appliance formats to file"
+  - exec_local: |
+      echo "$${appliance_formats}" | sed 's/ /\n/g' > $${kameleon_recipe_name}_formats
