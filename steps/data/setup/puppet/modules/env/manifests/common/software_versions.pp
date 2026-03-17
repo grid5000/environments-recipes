@@ -92,6 +92,9 @@ class env::common::software_versions {
           $nvidia_cuda            = '13.0.2_580.95.05_linux_sbsa'
           $dcgm_exporter          = '3.3.5-1'
         }
+        'bullseye': {
+          # GPU stack is not supported on Debian 11 arm64 due to compatibility limitations.
+        }
         default : {
           fail "${::lsbdistcodename} not supported."
         }
