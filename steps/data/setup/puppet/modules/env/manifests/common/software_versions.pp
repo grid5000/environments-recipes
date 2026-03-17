@@ -87,6 +87,10 @@ class env::common::software_versions {
           $dcgm_exporter          = '3.3.5-1'
           #$lmod                   = '8.7.60-1+g5k1.0.0'
         }
+        'bookworm': {
+          $nvidia_driver          = '580.126.09'
+          $dcgm_exporter          = '3.3.5-1'
+        }
         default : {
           fail "${::lsbdistcodename} not supported."
         }
