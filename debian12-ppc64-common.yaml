@@ -13,7 +13,7 @@ global:
   g5k_kernel_path: "/vmlinux"
   g5k_initrd_path: "/initrd.img"
   # Export format to generate
-  appliance_formats: qcow2 tar.zst
+  appliance_formats: tar.zst
   # Output base filename
   output: "$${kameleon_cwd}/$${kameleon_recipe_name}"
   # Grid'5000 environment variant
