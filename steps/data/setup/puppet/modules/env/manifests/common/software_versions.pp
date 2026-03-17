@@ -89,6 +89,7 @@ class env::common::software_versions {
         }
         'bookworm': {
           $nvidia_driver          = '580.126.09'
+          $nvidia_cuda            = '13.0.2_580.95.05_linux_sbsa'
           $dcgm_exporter          = '3.3.5-1'
         }
         default : {
