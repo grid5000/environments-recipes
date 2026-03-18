@@ -1,14 +1,16 @@
 class env::big::configure_nvidia_gpu::cuda () {
 
   $driver_source = "http://packages.grid5000.fr/other/cuda/cuda_$::env::common::software_versions::nvidia_cuda.run"
+  $cuda_args = '--silent'
   case "$env::deb_arch" {
     "amd64": {
       $libcuda = '/usr/lib/x86_64-linux-gnu/libcuda.so'
-      $cuda_args = '--silent'
     }
     "ppc64el": {
       $libcuda = '/usr/lib/powerpc64le-linux-gnu/libcuda.so'
-      $cuda_args = '--silent'
+    }
+    "arm64": {
+      $libcuda = '/usr/lib/aarch64-linux-gnu/libcuda.so'
     }
   }
 
