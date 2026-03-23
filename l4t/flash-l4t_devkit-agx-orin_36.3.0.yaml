@@ -1,0 +1,105 @@
+#==============================================================================
+#
+# DESCRIPTION: Base recipe to build a docker image to flash L4T
+# COPYRIGHT: CNRS 2023-2025, Univ Grenoble-Alpes 2025
+# LICENSE: GPLv2+
+# AUTHOR: Pierre Neyron <pierre.neyron@imag.fr>
+#         Djoser SIMEU <djoser.simeu@gmail.com>
+#
+#==============================================================================
+---
+extend: steps/backend/$${backend}.yaml
+
+# Loads some helpful aliases (this files are located in steps/aliases/ directory)
+aliases: defaults.yaml
+
+# Custom shell environement (this files are located in steps/env/ directory)
+env:
+  - bashrc
+  - functions.sh
+
+# Global variables use by Kameleon engine and the steps
+global:
+  arch: aarch64
+  backend: docker
+  docker_cleanup_section: export
+  out_context_docker_image: "ubuntu:20.04"
+
+  l4t_version_major: "36"
+  l4t_version_minor: "3"
+  l4t_version_patch: "0"
+  l4t_version: r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}
+  nvidia_BSP_url: "https://developer.nvidia.com/downloads/embedded/L4t/r$${l4t_version_major}_release_v$${l4t_version_minor}.$${l4t_version_patch}/release/jetson_linux_r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
+  nvidia_sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r$${l4t_version_major}_release_v$${l4t_version_minor}.$${l4t_version_patch}/release/tegra_linux_sample-root-filesystem_r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
+  l4t_dir: "/nvidia/Linux_for_Tegra"
+  boardid: "3701"
+  boardsku: "0005"
+  boardrev: "G.0"
+  fab: "501"
+
+  rootfs: "$${l4t_dir}/rootfs"
+  target_docker_image: "$${kameleon_recipe_name}-$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}"
+
+bootstrap:
+  - prepare_docker
+  - start_docker
+  - install_additional_necessary_packages_in_out_context:
+    - update_package_list:
+      - apt-get_out: update
+    - install_packages:
+      - apt-get_out: install lbzip2 wget qemu-user-static
+setup:
+  - install_L4T:
+    - install_nvidia_BSP:
+      - exec_out: |
+          set -e
+          mkdir -p $${l4t_dir}
+          wget --progress=dot:giga -O- $${nvidia_BSP_url} | tar -jx --strip-components=1 -C $${l4t_dir}
+    - install_nvidia_sample_rootfs:
+      - exec_out: wget --progress=dot:giga -O- $${nvidia_sample_rootfs_url} | tar -jx -C $${l4t_dir}/rootfs
+    - apply_binaries:
+      - exec_out: |
+          set -e
+          cd $${l4t_dir}
+          ./apply_binaries.sh
+  - setup_system_fs_in_chroot
+  - customize:
+    - breakpoint:
+      - breakpoint
+  - setup_for_flashing:
+    - install_required_debs:
+      - apt-get_out: install binutils usbutils udev python3-yaml liblz4-tool cpio openssh-client libxml2-utils perl-modules-5.30 dosfstools xxd gcc
+    - prebuild_flash_image:
+      - unsetup-system-fs-chroot_in
+      - exec_out: |
+          set -e
+          # Force the creation of the loop devices
+          # (if the loop module is yet to be loaded by the flash script, loop devices won't be created in the out container)
+          for d in {0..7}; do
+            [ -e /dev/loop$d ] || mknod /dev/loop$d b 7 $d
+          done
+          cd $${l4t_dir}
+          #https://forums.developer.nvidia.com/t/jetson-agx-orin-board-id-sku-fab/278977/6
+          export BOARDID=$${boardid}
+          export BOARDSKU=$${boardsku}
+          export BOARDREV=$${boardrev}
+          export FAB=$${fab}
+          ./flash.sh --no-flash jetson-agx-orin-devkit mmcblk0p1
+export:
+  - export_docker_image_ready_to_flash:
+    - commit_and_configure_to_flash:
+      - exec_local: |
+          set -e
+          # Stop the current docker container so that we can configure the image
+          docker stop $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null || docker kill $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
+          # Create the final version of the image, ready to flash
+          docker commit -c 'ENV USER=root' -c 'WORKDIR $${l4t_dir}' -c 'ENTRYPOINT ["./flash.sh"]' $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) $${target_docker_image} > /dev/null
+          # Delete the container
+          docker rm $(< $KAMELEON_WORKDIR/MAIN_CONTAINER_ID) > /dev/null
+          rm -f $KAMELEON_WORKDIR/MAIN_CONTAINER_ID
+    - explain_how_to_flash:
+      - exec_local: |
+          echo 'You can now flash AGX Orin modules using a command line such as:'
+          echo
+          echo '$ docker run -it --rm --privileged -v /dev/bus/usb:/dev/bus/usb/ -v /dev:/dev $${target_docker_image} -r jetson-agx-orin-devkit mmcblk0p1'
+          echo
