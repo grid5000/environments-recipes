@@ -2,13 +2,12 @@
 
 class env::common::software_versions {
   $g5k_subnets                 = '1.4.2'
-  $g5k_meta_packages           = '0.7.59'
+  $g5k_meta_packages           = '0.7.61'
   $g5k_checks                  = '0.11.28'
   $sudo_g5k                    = '1.13'
   $ruby_net_ssh_bookworm       = '1:6.1.0-2+deb11u1'
   $libguestfs_backport_arm64   = '1:1.40.2-7~bpog5k10+1'
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
-  # g5k-jupyterlab_0.12 available for tests only for debian 13 trixie (bug #17228)
   $g5k_jupyterlab              = '0.12'
   $kameleon                    = '2.11.0.1'
 
