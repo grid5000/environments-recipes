@@ -57,6 +57,10 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
   if $env::deb_arch == 'arm64' or $env::deb_arch == 'ppc64el' {
     class { 'env::std::install_libguestfs_backport': }
   }
+  # fix missing bridge-utils package (bug #18142)
+  if "$lsbdistcodename" == 'trixie' {
+    class { 'env::std::install_bridge': }
+  }
   # kameleon
   class { 'env::std::install_kameleon': }
 }
