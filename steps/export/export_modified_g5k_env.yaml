@@ -85,10 +85,10 @@
         kaenv_boot_initrd='--modify boot_initrd=$${grid5000_environment_export_boot_initrd}'
       fi
       if [ -n "$${grid5000_environment_export_boot_kernel_params}" ]; then
-        kaenv_boot_kernel_params='--modify boot_kernel_params="$${grid5000_environment_export_boot_kernel_params}"'
+        kaenv_boot_kernel_params=(--modify boot_kernel_params="$${grid5000_environment_export_boot_kernel_params}")
       fi
       if [ -n "$${grid5000_environment_export_postinstall_script}" ]; then
-        kaenv_postinstall_script='--modify postinstalls_script0="$${grid5000_environment_export_postinstall_script}"'
+        kaenv_postinstall_script=(--modify postinstalls_script0="$${grid5000_environment_export_postinstall_script}")
       fi
       if [ -n "$${grid5000_environment_export_postinstall_archive}" ]; then
         kaenv_postinstall_archive='--modify postinstalls_archive0="$${grid5000_environment_export_postinstall_archive}"'
@@ -97,18 +97,14 @@
         kaenv_postinstall_compression='--modify postinstalls_compression0="$${grid5000_environment_export_postinstall_compression}"'
       fi
       if [ -n "$${grid5000_environment_export_additional_postinstall_archive}" -a -n "$${grid5000_environment_export_additional_postinstall_compression}" -a -n "$${grid5000_environment_export_additional_postinstall_script}" ]; then
-        kaenv_additional_postinstall="--add-postinstall \"$${grid5000_environment_export_baseurl}/$${grid5000_environment_export_additional_postinstall_archive}:$${grid5000_environment_export_additional_postinstall_compression}:$${grid5000_environment_export_additional_postinstall_script}\""
+        kaenv_additional_postinstall=(--add-postinstall "$${grid5000_environment_export_baseurl}/$${grid5000_environment_export_additional_postinstall_archive}:$${grid5000_environment_export_additional_postinstall_compression}:$${grid5000_environment_export_additional_postinstall_script}")
       fi
       if [ "$${grid5000_environment_export_no_kexec}" == "true" ]; then
         kaenv_no_kexec="--modify options.kexec=false"
       fi
       if [ -n "$${grid5000_environment_export_custom_variables}" ]; then
-        kaenv_add_variable=$(
-        IFS=";"
-        for v in $${grid5000_environment_export_custom_variables}; do
-          echo "--add-variable $v"
-        done
-        )
+        # multiple custom variables are separated by ;
+        mapfile -d \; -t kaenv_add_variables < <(echo -n '$${grid5000_environment_export_custom_variables}')
       fi
       if [ -n "$${grid5000_environment_export_baseurl}" ]; then
         kaenv_image_file="$${grid5000_environment_export_baseurl}/$${kameleon_recipe_name}.$${grid5000_environment_export_format}"
@@ -128,13 +124,13 @@
         ${kaenv_alias} \
         ${kaenv_boot_kernel} \
         ${kaenv_boot_initrd} \
-        ${kaenv_boot_kernel_params} \
-        ${kaenv_postinstall_script} \
+        "${kaenv_boot_kernel_params[@]}" \
+        "${kaenv_postinstall_script[@]}" \
         ${kaenv_postinstall_archive} \
         ${kaenv_postinstall_compression} \
-        ${kaenv_additional_postinstall} \
+        "${kaenv_additional_postinstall[@]}" \
         ${kaenv_no_kexec} \
-        ${kaenv_add_variable} \
+        ${kaenv_add_variables[@]/#/--add-variable } \
         > $${grid5000_environment_export_name}.dsc
 - create_additional_postinstall_archive:
   - exec_local: |
