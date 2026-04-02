@@ -40,7 +40,10 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
     # megacli (RAID controler)
     class { 'env::std::install_megacli': }
     # g5k systemd generator
-    class { 'env::std::g5k_generator': }
+    # smbios-utils no more available in trixie (Bug #17937)
+    if "$lsbdistcodename" != 'trixie' {
+      class { 'env::std::g5k_generator': }
+    }
     # g5k-disk-manager-backend
     class { 'env::std::configure_g5kdiskmanagerbackend': }
     # g5k-pmem-manager
@@ -53,6 +56,10 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
   # Install backported libguestfs-tools from g5k packages on non-x86 arch
   if $env::deb_arch == 'arm64' or $env::deb_arch == 'ppc64el' {
     class { 'env::std::install_libguestfs_backport': }
+  }
+  # fix missing bridge-utils package (bug #18142)
+  if "$lsbdistcodename" == 'trixie' {
+    class { 'env::std::install_bridge': }
   }
   # kameleon
   class { 'env::std::install_kameleon': }

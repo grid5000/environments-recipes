@@ -1,0 +1,32 @@
+Port 6667
+
+HostKey /etc/oar/oar_ssh_host_rsa_key
+
+# Authentication:
+
+LoginGraceTime 10m
+PermitRootLogin no
+
+# To disable tunneled clear text passwords, change to "no" here!
+PasswordAuthentication no
+
+# Change to "yes" to enable keyboard-interactive authentication.  Depending on
+# the system's configuration, this may involve passwords, challenge-response,
+# one-time passwords or some combination of these and other methods.
+# Beware issues with some PAM modules and threads.
+KbdInteractiveAuthentication no
+
+UsePAM yes
+
+X11Forwarding yes
+PrintMotd no
+PermitUserEnvironment yes
+MaxStartups 500
+
+AcceptEnv LANG LC_* OAR_CPUSET OAR_USER_CPUSET OAR_USER_GPUDEVICE OAR_JOB_USER
+
+# override default of no subsystems
+Subsystem    sftp    /usr/lib/openssh/sftp-server
+
+ChallengeResponseAuthentication no
+AllowUsers oar
