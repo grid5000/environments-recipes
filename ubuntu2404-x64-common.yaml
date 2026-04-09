@@ -47,7 +47,7 @@ setup:
   - configure_apt
   - configure_g5k_apt_sources
   - install_packages
-  - cloud-init
+  - cloud_init
   - set_g5k_release
   - set_g5k_motd
   - clear_hostname
