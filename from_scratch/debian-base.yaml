@@ -62,7 +62,6 @@ bootstrap:
 
 setup:
   - "@base"
-  - cloud-init
 
 export:
   - "@base"
