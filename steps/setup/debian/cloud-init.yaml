@@ -1,0 +1,2 @@
+- install_cloud_init:
+  - apt-get_in: install cloud-init
