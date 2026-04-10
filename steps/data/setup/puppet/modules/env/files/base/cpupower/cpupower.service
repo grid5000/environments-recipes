@@ -1,0 +1,12 @@
+[Unit]
+Description=Apply cpupower configuration
+ConditionVirtualization=!container
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/cpupower
+ExecStart=/usr/local/sbin/cpupower-service
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
