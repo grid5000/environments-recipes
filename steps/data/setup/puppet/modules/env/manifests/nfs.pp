@@ -28,6 +28,8 @@ class env::nfs ( $variant = "nfs", $parent_parameters = {} ){
   class { 'env::nfs::install_storage5k_requirements': }
   # module spack
   class { 'env::nfs::install_module': }
+  # xdg_runtime_dir in shell
+  class { 'env::nfs::configure_xdg_runtime_dir': }
   # Souce profile by shell
   class { 'env::nfs::source_profile_by_shell': }
 }
