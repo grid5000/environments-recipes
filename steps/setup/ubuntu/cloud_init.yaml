@@ -1,0 +1,2 @@
+- reset_cloud_init:
+  - exec_in: cloud-init clean --machine-id

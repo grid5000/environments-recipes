@@ -51,6 +51,7 @@ setup:
   - configure_system
   - configure_apt
   - install_packages
+  - cloud_init
   - setup_orchestrator
   - run_orchestrator
 
