@@ -17,8 +17,8 @@ global:
 
   # Grid'5000 Kadeploy environment parameters
   g5k_postinst_script: g5k-postinstall --net debian-bridged --net hpc --fstab nfs --fstab ondemand --restrict-user std --disk-aliases
-  # Disable cgroup v2 and force cgroup v1 - Bug #12723
-  g5k_kernel_params: "systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true"
+  # Disable cgroup v2 and force cgroup v1 - Bug #12723 and #18205
+  g5k_kernel_params: "systemd.unified_cgroup_hierarchy=false systemd.legacy_systemd_cgroup_controller=true SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1"
   # QEMU options
   image_size: 25G
   # Visibility override
