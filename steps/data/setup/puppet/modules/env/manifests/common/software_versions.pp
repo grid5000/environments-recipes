@@ -13,7 +13,7 @@ class env::common::software_versions {
   # New major debian13 compatible g5k-checks package (cf. bugs #17988 #14546)
   case $lsbdistcodename {
     'trixie' : {
-      $g5k_checks = '0.12.0'
+      $g5k_checks = '0.12.1'
     }
     'bullseye' : {
       $g5k_checks = '0.11.30'
