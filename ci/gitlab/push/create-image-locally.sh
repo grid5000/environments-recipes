@@ -52,11 +52,10 @@ fi
 
 set -x
 
-case ${environment_name} in
-  *-std)
-    is_std_env="yes"
-    ;;
-esac
+# Do not reserve + deploy nodes for a debian13-std env for now
+if [[ ${environment_name} = *std ]] && [[ ${environment_name} != debian13*-std ]]; then
+  is_std_env="yes"
+fi
 
 # 80 retries of 15s makes it a 20 min timeout.
 RETRIES=80
