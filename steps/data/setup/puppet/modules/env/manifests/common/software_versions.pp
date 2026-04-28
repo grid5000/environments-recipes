@@ -16,7 +16,7 @@ class env::common::software_versions {
       $g5k_checks = '0.12.1'
     }
     'bullseye' : {
-      $g5k_checks = '0.11.30'
+      $g5k_checks = '0.12.1'
     }
   }
 
