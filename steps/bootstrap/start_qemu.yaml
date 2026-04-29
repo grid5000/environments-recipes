@@ -34,9 +34,9 @@
 
 - start_vm:
   - on_checkpoint: redo
-  - check_cmd_local: qemu-system-$${qemu_arch}
-  - check_cmd_local: socat
-  - check_cmd_local: kvm-ok
+  - check_cmd_on_bootstrap_init_local: qemu-system-$${qemu_arch}
+  - check_cmd_on_bootstrap_init_local: socat
+  - check_cmd_on_bootstrap_init_local: kvm-ok
   - on_bootstrap_clean:
     - test:
       - exec_local: test "$${shutdown_vm_synchrone}" == "false" -a "$${vm_cleanup_section}" == "bootstrap"
@@ -256,9 +256,9 @@
 
 - start_vm_synchrone:
   - on_checkpoint: use_cache
-  - check_cmd_local: qemu-system-$${qemu_arch}
-  - check_cmd_local: socat
-  - check_cmd_local: kvm-ok
+  - check_cmd_on_bootstrap_init_local: qemu-system-$${qemu_arch}
+  - check_cmd_on_bootstrap_init_local: socat
+  - check_cmd_on_bootstrap_init_local: kvm-ok
   - on_clean:
     - test:
       - exec_local: test "$${shutdown_vm_synchrone}" == "true"

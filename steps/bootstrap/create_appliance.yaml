@@ -4,8 +4,8 @@
 - create_appliance_script: $${kameleon_data_dir}/helpers/create_appliance.py
 
 - create_appliance:
-  - check_cmd_local: virt-make-fs
-  - check_cmd_local: grub-mkstandalone
+  - check_cmd_on_bootstrap_init_local: virt-make-fs
+  - check_cmd_on_bootstrap_init_local: grub-mkstandalone
   - exec_local: |
       set -e
       rm -f $${image_disk}.$${image_format}
