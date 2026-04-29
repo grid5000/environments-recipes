@@ -119,16 +119,25 @@ in2out:
       - exec_in: cat @1
       - exec_out: cat > @2
 
-check_cmd_out:
-  - rescue:
-    - exec_out: command -V @1 2> /dev/null
-    - breakpoint: "@1 is missing from out_context"
-
-check_cmd_local:
+# check_cmd_on_bootstrap_init_local inserts the command check at the beginning
+# of the bootstrap section (beginning of the build) but it can only be used as
+# a first level command of a microstep because at other levels more
+# introspection is required
+check_cmd_on_bootstrap_init_local:
   - on_bootstrap_init:
     - rescue:
       - exec_local: command -V @1 2> /dev/null
       - breakpoint: "@1 is missing from local_context"
+
+check_cmd_local:
+  - rescue:
+    - exec_local: command -V @1 2> /dev/null
+    - breakpoint: "@1 is missing from local_context"
+
+check_cmd_out:
+  - rescue:
+    - exec_out: command -V @1 2> /dev/null
+    - breakpoint: "@1 is missing from out_context"
 
 check_cmd_in:
   - rescue:

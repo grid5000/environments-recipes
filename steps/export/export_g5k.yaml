@@ -17,8 +17,8 @@
 - g5k_no_kexec: "false"
 
 # - save_as_tgz:
-#   - check_cmd_local: guestfish
-#   - check_cmd_local: gzip
+#   - check_cmd_on_bootstrap_init_local: guestfish
+#   - check_cmd_on_bootstrap_init_local: gzip
 #   - exec_local: echo "Exporting appliance to $${output}.tgz"
 #   - exec_local: mkdir -p $${kameleon_cwd}/.mnt
 #   - exec_local: LIBGUESTFS_CACHEDIR=$${kameleon_cwd} guestmount --ro -i -a $${input} $${kameleon_cwd}/.mnt

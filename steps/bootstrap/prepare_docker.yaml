@@ -2,7 +2,7 @@
 - docker_image: $${kameleon_recipe_name}_$${kameleon_short_uuid}
 
 - pull_and_tag_base_image:
-  - check_cmd_local: docker
+  - check_cmd_on_bootstrap_init_local: docker
   - exec_local: |
       set -e
       if ! docker image ls --format "{{.Repository}}:{{.Tag}}" | grep -q $${from_docker_image}; then

@@ -26,7 +26,7 @@
 
 - start_docker_container:
   - on_checkpoint: disabled
-  - check_cmd_local: docker
+  - check_cmd_on_bootstrap_init_local: docker
   - on_bootstrap_init:
     - test:
       - exec_local: test "$${arch}" != "$(uname -m)"

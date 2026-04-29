@@ -1,5 +1,5 @@
 - create_initial_image:
-  - check_cmd_local: qemu-img
+  - check_cmd_on_bootstrap_init_local: qemu-img
   - exec_local: |
       rm -f $${image_disk}.$${image_format}
       qemu-img create -f qcow2 $${image_disk}.$${image_format} $${image_size}

@@ -36,7 +36,7 @@
         --medium $${virtualbox_disk_filename}
 
 - save_box:
-  - check_cmd_local: vagrant
+  - check_cmd_on_bootstrap_init_local: vagrant
   - exec_local: echo "Create vagrant box $${vagrant_box_filename}..."
   - exec_local: rm -f $${vagrant_box_filename}
   - exec_local: vagrant package --base $${virtualbox_vmid} --output $${vagrant_box_filename}
