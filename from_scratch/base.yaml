@@ -133,6 +133,7 @@ bootstrap:
 # Install and configuration steps
 setup:
   - minimal_install
+  - fix_copyfail
   - clean_system
 
 # Export the generated appliance in the format of your choice

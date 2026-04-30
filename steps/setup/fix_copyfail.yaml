@@ -1,0 +1,6 @@
+- create_algif_aead_conf:
+    - write_in:
+        - /etc/modprobe.d/disable-algif-aead.conf
+        - install algif_aead /bin/false
+
+
