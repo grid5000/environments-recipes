@@ -8,14 +8,15 @@ tag=""
 oar_arch=""
 local_user=false
 is_std_env="no"
+archive=false
 
 usage() {
-  echo "Usage: $0 -e <environment_name> -c <commit> -t <tag> -a <oar_arch> [-l]"
+  echo "Usage: $0 -e <environment_name> -c <commit> -t <tag> -a <oar_arch> [-l] [-z]"
   echo "Set '-l' to connect as the local user instead of ajenkins."
   exit 1
 }
 
-while getopts ":a:e:c:t:l" o; do
+while getopts ":a:e:c:t:lz" o; do
   case "${o}" in
     a)
       oar_arch=${OPTARG}
@@ -31,6 +32,9 @@ while getopts ":a:e:c:t:l" o; do
       ;;
     l)
       local_user=true
+      ;;
+    z)
+      archive=true
       ;;
     *)
       usage
@@ -111,6 +115,12 @@ else
   HOST="ajenkins@nancy"
 fi
 
+if [ "${archive}" = true ]; then
+  target_env_dir="/grid5000/archives"
+else
+  target_env_dir="/grid5000"
+fi
+
 # The environment name with the version/tag.
 versioned_env_name="${environment_name}-${tag}"
 
@@ -131,8 +141,8 @@ if ssh "${HOST}" test -f "${formats_file}"; then
     if ssh "${HOST}" test -f "${qcow2_file}"; then
       echo "Found qcow2 file for ${environment_name}, syncing it."
       rsync -av "${HOST}:${qcow2_file}" "${versioned_env_name}.qcow2"
-      mv "${versioned_env_name}.qcow2" /grid5000/virt-images
-      ln -sf "/grid5000/virt-images/${versioned_env_name}.qcow2" "/grid5000/virt-images/${environment_name}.qcow2"
+      mv "${versioned_env_name}.qcow2" "${target_env_dir}/virt-images"
+      ln -sf "${target_env_dir}/virt-images/${versioned_env_name}.qcow2" "${target_env_dir}/virt-images/${environment_name}.qcow2"
     else
       echo "No qcow2 file found for ${environment_name}, skipping."
     fi
@@ -155,8 +165,14 @@ sed -e "s|\\(file: \\)[^$]*|\\1server:///grid5000/images/${environment_name}-${t
 sed -e "s/version: [[:digit:]]\+/version: ${tag}/" -i "${versioned_env_name}.dsc"
 
 # Now move the files to their final destinations
-mv "${versioned_env_name}.dsc" /grid5000/descriptions
-mv "${versioned_env_name}.tar.zst" /grid5000/images
+mv "${versioned_env_name}.dsc" "${target_env_dir}/descriptions"
+mv "${versioned_env_name}.tar.zst" "${target_env_dir}/images"
+
+# If we're archiving this environment, we're done.
+if [ "${archive}" = true ]; then
+  echo "Finished archiving environment."
+  exit 0
+fi
 
 # Remove (dev) environments if they exist
 # Existence is tested through grepping "name:" in the description given by
