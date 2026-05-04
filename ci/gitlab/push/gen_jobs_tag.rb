@@ -115,6 +115,13 @@ def gen_environments_push
         LOCAL_FAILURE_HANDLER,
       ]
     end.flatten
+    # Always add 'archive' site.
+    push_all.concat([
+        START_SECTION % { site: 'archive' },
+        "cat ci/gitlab/push/create-image-locally.sh| ssh ajenkins@lyon 'TMP=`mktemp -d`; cat - > $TMP/job.sh; chmod 755 -R $TMP; $TMP/job.sh -e #{environment} -a #{oar_arch} -c #{COMMIT} -t #{TAG} -z; RETVAL=$?; rm -rf $TMP; exit $RETVAL' || LOCAL_FAIL=\"archive\"",
+        END_SECTION % { site: 'archive' },
+        LOCAL_FAILURE_HANDLER,
+    ])
     full_pipeline["#{environment}"] = {
       'stage' => env_with_arch,
       'variables' => {
