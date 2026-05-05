@@ -1,7 +1,7 @@
 # This file defines the software versions in use
 
 class env::common::software_versions {
-  $g5k_subnets                 = '1.4.2'
+  $g5k_subnets                 = '1.4.3'
   $g5k_meta_packages           = '0.7.62'
   $sudo_g5k                    = '1.13'
   $ruby_net_ssh_bookworm       = '1:6.1.0-2+deb11u1'
