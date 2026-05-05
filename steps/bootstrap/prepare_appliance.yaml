@@ -1,12 +1,12 @@
 - insecure_ssh_key: $${kameleon_cwd}/insecure_ssh_key
 
 - generate_ssh_keys:
-  - check_cmd_local: ssh-keygen
+  - check_cmd_on_bootstrap_init_local: ssh-keygen
   - exec_local: echo -e  'y\n' | ssh-keygen -q -t rsa -b 4096 -f $${insecure_ssh_key} -N ''
   - exec_local: cat $${insecure_ssh_key}
 
 - inject_ssh_private_key:
-  - check_cmd_local: virt-customize
+  - check_cmd_on_bootstrap_init_local: virt-customize
   - exec_local: |
       virt-customize \
         -a $${image_disk}.$${image_format} \

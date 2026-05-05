@@ -1,16 +1,18 @@
-- copy_autoinstall_script_to_http_directory:
+- installer_iso_rebuild: false
+
+- rebuild_iso_installer:
   - test:
     - exec_local: test "$${installer_iso_rebuild}" == "true"
     # Rebuild iso for Autoinstall/cloud-init if qemu-sendkeys is not working (currently under arm64 arch)
     - group:
-      - check_cmd_local: 7z
+      - check_cmd_local: 7zz
       - check_cmd_local: xorriso
       - check_cmd_local: fdisk
       - exec_local: |
           ISO_WORKING_DIR="iso-temp"
-          echo "Extract iso using 7z"
+          echo "Extract iso using 7zip"
           mkdir -p "${ISO_WORKING_DIR}"
-          7z x "$${qemu_iso_path}" -x'![BOOT]' "-o${ISO_WORKING_DIR}"
+          7zz x "$${qemu_iso_path}" -x'![BOOT]' "-o${ISO_WORKING_DIR}"
           echo "Extract efi.img"
           SECTOR_START=$(/sbin/fdisk -l "$${qemu_iso_path}" | grep iso2 | awk '{print $2}')
           SECTOR_COUNT=$(/sbin/fdisk -l "$${qemu_iso_path}" | grep iso2 | awk '{print $4}')
@@ -26,6 +28,8 @@
           mv "$${qemu_iso_path}-new" "$${qemu_iso_path}"
           # cleaning
           rm -rf "${ISO_WORKING_DIR}"
+    - exec_local: echo "Nothing to rebuild"
+- copy_autoinstall_script_to_http_directory:
   - test:
     - exec_local: test -n "$${base_autoinstall_path}"
     # Autoinstall/cloud-init
