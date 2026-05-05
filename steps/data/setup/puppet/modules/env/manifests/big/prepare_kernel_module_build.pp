@@ -4,9 +4,31 @@ class env::big::prepare_kernel_module_build {
   # Installs kernel headers for the latest available kernel, which can be different
   # from the running kernel.
 
-  package {
-    ['module-assistant', 'dkms']:
-      ensure    => installed;
+
+  # debian13 env only
+  # Provide linux-image packages from packages.grid5000.fr, built for full cgroup v1 support (Bug #18205)
+  # Added in big recipe for nvidia modules building
+  if $::lsbdistcodename == 'trixie' {
+    env::common::g5kpackages {
+      "linux-image":
+        release  => "${::lsbdistcodename}",
+        packages => ["linux-image-${env::deb_arch}", "linux-headers-${env::deb_arch}"],
+        ensure   => installed;
+    }
+
+    package {
+      ['module-assistant', 'dkms']:
+        ensure    => installed,
+        require   => [Env::Common::G5kpackages['linux-image'], Exec['apt_update']];
+    }
+
+  } else {
+
+    package {
+      ['module-assistant', 'dkms']:
+        ensure    => installed;
+    }
+
   }
 
   exec {
@@ -15,4 +37,5 @@ class env::big::prepare_kernel_module_build {
       user      => root,
       require   => Package['module-assistant'];
   }
+
 }
