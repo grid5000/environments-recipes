@@ -61,6 +61,8 @@ class env::std ( $variant = "big", $parent_parameters = {} ){
   if "$lsbdistcodename" == 'trixie' {
     class { 'env::std::install_bridge': }
   }
+  # fix swap page size (bug 17842)
+  class { 'env::std::fix_swap': }
   # kameleon
   class { 'env::std::install_kameleon': }
 }
