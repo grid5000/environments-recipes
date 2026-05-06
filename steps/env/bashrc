@@ -7,6 +7,9 @@ export LC_ALL=${LC_ALL:-"POSIX"}
 
 export DEBIAN_FRONTEND=noninteractive
 
+# unset XDG_RUNTIME_DIR (bug 17936)
+unset XDG_RUNTIME_DIR
+
 if [ -t 1 ] ; then
 export TERM=xterm
 # for fast typing
