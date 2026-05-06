@@ -31,6 +31,7 @@ global:
   deb_mirror_hostname: deb.debian.org
   deb_mirror_directory: /debian
   deb_mirror_uri: http://$${deb_mirror_hostname}$${deb_mirror_directory}
+  deb_backports_uri: $${deb_mirror_uri}
   deb_security_hostname: security.debian.org
   deb_security_directory: /debian
   deb_components: main contrib non-free

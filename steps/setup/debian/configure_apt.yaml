@@ -37,8 +37,8 @@
       - append_in:
         - /etc/apt/sources.list
         - |
-          deb $${deb_mirror_uri} $${release}-backports $${deb_components}
-          deb-src $${deb_mirror_uri} $${release}-backports $${deb_components}
+          deb $${deb_backports_uri} $${release}-backports $${deb_components}
+          deb-src $${deb_backports_uri} $${release}-backports $${deb_components}
       - test:
         # cf: https://www.lucas-nussbaum.net/blog/?p=947
         - exec_in: test "$${release}" != "jessie"

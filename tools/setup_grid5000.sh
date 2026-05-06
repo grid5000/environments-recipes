@@ -21,12 +21,6 @@ if [ "$ARCH" = "amd64" ]; then
     rm -rf /etc/apt/sources.list.d/repo.radeon.com-amdgpu.list
 fi
 
-# Temporary fix for debian repo moved to archive on debian 11
-if [ $(lsb_release -rs) = "11" ]; then
-    # We need to replace deb.debian.org with archive.debian.org in sources list
-    sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
-fi
-
 apt-get update
 
 # When a kernel security update is released, the current kernel version is not available anymore on debian package repositories
