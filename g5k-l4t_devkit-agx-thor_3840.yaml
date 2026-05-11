@@ -50,6 +50,7 @@ global:
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   nvidia_BSP_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
+  sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Tegra_Linux_Sample-Root-Filesystem_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
   cross_compilation_toolchain_url: "https://developer.nvidia.com/downloads/embedded/L4T/r38_Release_v2.0/release/x-tools.tbz2"
   cross_compilation_toolchain_dir: "$${workdir}/toolchain"
   kernel_sources_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/source/public_sources.tbz2"
@@ -76,6 +77,15 @@ setup:
     - download_and_extract_nvidia_BSP:
       - exec_out: mkdir -p $${workdir}
       - exec_out: wget -O- -q "$${nvidia_BSP_url}" | tar -C $${workdir} -jxv
+
+  # - install_rootfs:
+  #   - download_rootfs_sample:
+  #     - exec_out: wget -O- -q "$${sample_rootfs_url}" | tar -C $${rootfs} -jxv
+  #     - exec_out: |
+  #         set -e
+  #         pushd $${l4t_dir}
+  #         ./apply_binaries.sh --openrm
+  #         popd
   - fix_BSP:
     - remove_compiled_kernel_packages:
       - exec_out: rm $${l4t_dir}/kernel/nvidia-l4t-*.deb
@@ -93,14 +103,28 @@ setup:
           set -e
           mkdir -p $${workdir}/tmp
           pushd $${workdir}/tmp
-          wget -nv -r -l3 -nd -H -D packages.debian.org,ftp.fr.debian.org,security.debian.org \
-               --accept-regex "(packages\.debian\.org/$${debian_version}/(|arm64/)linux-image(|/download)|(ftp\.fr|security)\.debian\.org/debian(|-update|-security)/pool/(|updates/)main/l/linux-)" \
-               https://packages.debian.org/$${debian_version}/$${debian_kernel_package}
-          rm -f robot.txt
+          echo "deb [arch=arm64 trusted=yes] http://deb.debian.org/debian $${debian_version} main" > /etc/apt/sources.list.d/debian-$${debian_version}.list
+          apt-get update
+          DEPS=$(apt-cache depends linux-image-arm64:arm64 | awk '/Depends:/ {print $2""}')
+          apt-get download linux-image-arm64:arm64 $DEPS
+          # wget -nv -r -l3 -nd -H -D packages.debian.org,ftp.fr.debian.org,security.debian.org \
+          #      --accept-regex "(packages\.debian\.org/$${debian_version}/(|arm64/)linux-image(|/download)|(ftp\.fr|security)\.debian\.org/debian(|-update|-security)/pool/(|updates/)main/l/linux-)" \
+          #      https://packages.debian.org/$${debian_version}/$${debian_kernel_package}
+          # rm -f robot.txt
+          rm -f /etc/apt/sources.list.d/debian-$${debian_version}.list
+          apt-get update
           dpkg -X $(ls -S | head -n1) .
           cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
           popd
           rm -r $${workdir}/tmp
+    - install_drivers_sources:
+      - exec_out: |
+          set -e
+          pushd $${src_dir}
+          tar xf kernel_oot_modules_src.tbz2
+          tar xf nvidia_kernel_display_driver_source.tbz2
+          tar xf nvidia_unified_gpu_display_driver_source.tbz2
+          popd
   - build_kernel:
     - install_tools:
       - apt-get_out: install make gcc xxd flex bison python3 bc rsync kmod libelf-dev libssl-dev
@@ -152,7 +176,7 @@ setup:
           set -e
           pushd $${kernel_src_dir}
           ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
-          for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI TEGRA_HOST1X DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
+          for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA TEGRA_HOST1X FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
             ./scripts/config --disable $c
           done
           popd
@@ -196,35 +220,33 @@ setup:
           pushd $${kernel_src_dir}
           ./scripts/config --disable DEBUG_INFO
           popd
-    #- dive_in: &1
-    #  - on_checkpoint: disabled
-    #  - apt-get_out: install libncurses-dev
-    #  - exec_local: |
-    #      echo "Kernel make command: $${kernel_make_cmd}"
-    #  - breakpoint
+    # - dive_in: &1
+    #   - on_checkpoint: disabled
+    #   - apt-get_out: install libncurses-dev
+    #   - exec_local: |
+    #       echo "Kernel make command: $${kernel_make_cmd}"
+      #- breakpoint
     - build_kernel_objects:
+      - breakpoint
       - exec_out: |
           set -e
-          pushd $${kernel_src_dir}
-          mkdir -p output
-          openssl req -new -x509 -newkey rsa:2048 \
-          -keyout output/signing_key.pem \
-          -out output/signing_key.pem \
-          -days 3650 -nodes \
-          -subj "/CN=Kernel Module Signing/"
-          $${kernel_make_cmd} Image
+          pushd $${src_dir}
+          export CROSS_COMPILE=$${cross_compilation_toolchain_dir}/x-tools/aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
+          make -C kernel
           popd
       - exec_out: |
           set -e
-          pushd $${kernel_src_dir}
-          $${kernel_make_cmd} dtbs
+          pushd $${src_dir}
+          export KERNEL_HEADERS=$PWD/kernel/kernel-noble
+          export kernel_name=noble
+          make modules
           popd
       - exec_out: |
           set -e
-          pushd $${kernel_src_dir}
-          $${kernel_make_cmd} modules
+          pushd $${src_dir}
+          make dtbs
           popd
-    #- dive_in_again: *1
+      - breakpoint
     - install_kernel_objects:
       - exec_out: |
           cp $${kernel_src_dir}/arch/arm64/boot/Image $${l4t_dir}/kernel/
@@ -238,12 +260,45 @@ setup:
           $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs}/usr/src/linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR" headers_install
           EXTMOD_DIR=${EXTMOD_DIR//\"/}
           tar -C $${rootfs}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR
+      - breakpoint
       - exec_out: |
           set -e
+          export INSTALL_MOD_PATH=$${rootfs}
           KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
-          $${kernel_make_cmd} INSTALL_MOD_PATH="$${rootfs}" modules_install
-          ln -sfn /usr/src/linux-headers-$KERNEL_RELEASE $${rootfs}/lib/modules/$KERNEL_RELEASE/build
-          tar -C $${rootfs} -jcvf $${l4t_dir}/kernel/kernel_supplements.tbz2 lib/modules/$KERNEL_RELEASE
+          $${kernel_make_cmd} modules_install
+          pushd $${src_dir}
+          export KERNEL_HEADERS=$PWD/kernel/kernel-noble
+          export kernel_name=noble
+          make modules_install
+          popd
+          ln -sfn /usr/src/linux-headers-$KERNEL_RELEASE $${rootfs}/lib/modules/6.8.12-tegra/build
+          tar -C $${rootfs} -jcvf $${l4t_dir}/kernel/kernel_supplements.tbz2 lib/modules/6.8.12-tegra
+      # - exec_out: |
+      #     set -e
+      #     KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
+      #     # ugly ack to please Nvidia's apply_binaries.sh script.
+      #     EXTMOD_DIR=$(grep -e '^\s*EXTMOD_DIR=' $${l4t_dir}/apply_binaries.sh | sed -e 's/^.*=//')
+      #     $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs}/usr/src/linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR" headers_install
+      #     EXTMOD_DIR=${EXTMOD_DIR//\"/}
+      #     tar -C $${rootfs}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR
+      # - breakpoint
+      # - exec_out: |
+      #     set -e
+      #     pushd $${src_dir}
+      #     export INSTALL_MOD_PATH=$${rootfs}
+      #     make install -C kernel
+      #     cp kernel/kernel-noble/arch/arm64/boot/Image $${l4t_dir}/kernel/Image
+      #     cp $${kernel_src_dir}/arch/arm64/boot/dts/nvidia/* $${l4t_dir}/kernel/dtb/
+      #     popd
+      # - exec_out: |
+      #     set -e
+      #     pushd $${src_dir}
+      #     export KERNEL_HEADERS=$PWD/kernel/kernel-noble
+      #     export kernel_name=noble
+      #     make modules_install
+      #     ln -sfn $${rootfs}/usr/src/linux-headers-$KERNEL_RELEASE $${rootfs}/lib/modules/6.8.12-tegra/build
+      #     tar -C $${rootfs} -jcvf $${l4t_dir}/kernel/kernel_supplements.tbz2 lib/modules/6.8.12-tegra
+      #     popd
   - remove_kernel_sources:
     - delete_toolchain:
       - exec_out: rm -rf $${workdir}/toolchain
