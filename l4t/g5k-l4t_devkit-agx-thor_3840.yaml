@@ -102,6 +102,7 @@ setup:
           rm -f /etc/apt/sources.list.d/debian-$${debian_version}.list
           apt-get update
           dpkg -X $(ls -S | head -n1) .
+          ln -s $${src_dir}/kernel/kernel-* $${kernel_src_dir}
           cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
           popd
           rm -r $${workdir}/tmp
