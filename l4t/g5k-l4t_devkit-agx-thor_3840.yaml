@@ -8,7 +8,7 @@
 #
 #==============================================================================
 ---
-extend: steps/backend/$${backend}.yaml
+extend: ../steps/backend/$${backend}.yaml
 
 # Loads some helpful aliases (this files are located in steps/aliases/ directory)
 aliases: defaults.yaml
