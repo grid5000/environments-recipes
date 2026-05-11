@@ -50,13 +50,12 @@ global:
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   nvidia_BSP_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
-  sample_rootfs_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Tegra_Linux_Sample-Root-Filesystem_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
   cross_compilation_toolchain_url: "https://developer.nvidia.com/downloads/embedded/L4T/r38_Release_v2.0/release/x-tools.tbz2"
   cross_compilation_toolchain_dir: "$${workdir}/toolchain"
-  kernel_sources_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/source/public_sources.tbz2"
+  l4t_kernel_sources_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/source/public_sources.tbz2"
   l4t_kernel_config_file: "tegra_prod_defconfig"
   src_dir: $${workdir}/src
-  kernel_src_dir: $${src_dir}/kernel/kernel-noble
+  kernel_src_dir: $${src_dir}/kernel/kernel-$${l4t_kernel_version}
   kernel_build_dir: $${src_dir}/build
   kernel_version_suffix: -l4t$${l4t_version_major}$${l4t_version_minor}$${l4t_version_patch}$${debian_version}
   kernel_make_cmd: "make -C $${kernel_src_dir} -j $(nproc) ARCH=arm64 LOCALVERSION=$${kernel_version_suffix} CROSS_COMPILE=$${cross_compilation_toolchain_dir}/x-tools/aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-"
@@ -77,15 +76,6 @@ setup:
     - download_and_extract_nvidia_BSP:
       - exec_out: mkdir -p $${workdir}
       - exec_out: wget -O- -q "$${nvidia_BSP_url}" | tar -C $${workdir} -jxv
-
-  # - install_rootfs:
-  #   - download_rootfs_sample:
-  #     - exec_out: wget -O- -q "$${sample_rootfs_url}" | tar -C $${rootfs} -jxv
-  #     - exec_out: |
-  #         set -e
-  #         pushd $${l4t_dir}
-  #         ./apply_binaries.sh --openrm
-  #         popd
   - fix_BSP:
     - remove_compiled_kernel_packages:
       - exec_out: rm $${l4t_dir}/kernel/nvidia-l4t-*.deb
@@ -93,10 +83,12 @@ setup:
     - install_cross_compilation_chain:
       - exec_out: mkdir -p "$${cross_compilation_toolchain_dir}"
       - exec_out: wget -O- -q "$${cross_compilation_toolchain_url}" | tar -C $${cross_compilation_toolchain_dir} -xj
-    - download_and_extract_kernel_sources:
+    - download_and_extract_l4t_kernel_sources:
       - on_checkpoint: disable
       - exec_out: mkdir -p $${src_dir}
-      - exec_out: wget -O- -q "$${kernel_sources_url}" | tar -C $${src_dir} --strip-components=2 -xj
+      - breakpoint
+      - exec_out: wget -O- -q "$${l4t_kernel_sources_url}" | tar -C $${src_dir} --strip-components=2 -xj
+      - breakpoint
       - exec_out: tar -xf $${src_dir}/kernel_src.tbz2 -C $${src_dir}
     - download_and_extract_debian_kernel_config:
       - exec_out: |
@@ -107,10 +99,6 @@ setup:
           apt-get update
           DEPS=$(apt-cache depends linux-image-arm64:arm64 | awk '/Depends:/ {print $2""}')
           apt-get download linux-image-arm64:arm64 $DEPS
-          # wget -nv -r -l3 -nd -H -D packages.debian.org,ftp.fr.debian.org,security.debian.org \
-          #      --accept-regex "(packages\.debian\.org/$${debian_version}/(|arm64/)linux-image(|/download)|(ftp\.fr|security)\.debian\.org/debian(|-update|-security)/pool/(|updates/)main/l/linux-)" \
-          #      https://packages.debian.org/$${debian_version}/$${debian_kernel_package}
-          # rm -f robot.txt
           rm -f /etc/apt/sources.list.d/debian-$${debian_version}.list
           apt-get update
           dpkg -X $(ls -S | head -n1) .
@@ -220,33 +208,29 @@ setup:
           pushd $${kernel_src_dir}
           ./scripts/config --disable DEBUG_INFO
           popd
-    # - dive_in: &1
-    #   - on_checkpoint: disabled
-    #   - apt-get_out: install libncurses-dev
-    #   - exec_local: |
-    #       echo "Kernel make command: $${kernel_make_cmd}"
-      #- breakpoint
+    - dive_in: &1
+      - on_checkpoint: disabled
+      - apt-get_out: install libncurses-dev
+      - exec_local: |
+          echo "Kernel make command: $${kernel_make_cmd}"
+      - breakpoint
     - build_kernel_objects:
-      - breakpoint
       - exec_out: |
           set -e
-          pushd $${src_dir}
-          export CROSS_COMPILE=$${cross_compilation_toolchain_dir}/x-tools/aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
-          make -C kernel
+          pushd $${kernel_src_dir}
+          $${kernel_make_cmd} Image
           popd
       - exec_out: |
           set -e
-          pushd $${src_dir}
-          export KERNEL_HEADERS=$PWD/kernel/kernel-noble
-          export kernel_name=noble
-          make modules
+          pushd $${kernel_src_dir}
+          $${kernel_make_cmd} dtbs
           popd
       - exec_out: |
           set -e
-          pushd $${src_dir}
-          make dtbs
+          pushd $${kernel_src_dir}
+          $${kernel_make_cmd} modules
           popd
-      - breakpoint
+    - dive_in_again: *1
     - install_kernel_objects:
       - exec_out: |
           cp $${kernel_src_dir}/arch/arm64/boot/Image $${l4t_dir}/kernel/
@@ -260,7 +244,6 @@ setup:
           $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs}/usr/src/linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR" headers_install
           EXTMOD_DIR=${EXTMOD_DIR//\"/}
           tar -C $${rootfs}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR
-      - breakpoint
       - exec_out: |
           set -e
           export INSTALL_MOD_PATH=$${rootfs}
