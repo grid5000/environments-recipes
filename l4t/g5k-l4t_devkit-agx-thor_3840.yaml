@@ -163,6 +163,9 @@ setup:
       - exec_out: |
           set -e
           pushd $${kernel_src_dir}
+          # Unset LOCALVERSION, which is set to "-prod" in tegra_prod_config
+          # Then we set LOCALVERSION in the compilation command line
+          ./scripts/config --set-str LOCALVERSION ""
           ./scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
           for c in DMA_BCM2835 DRM_TEGRA DMA_SUN6I FSL_EDMA TEGRA_HOST1X FSL_QDMA QCOM_BAM_DMA K3_DMA SCSI_UFSHCD_PCI DEBUG_INFO_BTF VIDEO_CX231XX_DVB; do
             ./scripts/config --disable $c
