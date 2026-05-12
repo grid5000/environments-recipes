@@ -25,7 +25,7 @@ global:
 
   # Docker image to use for the out context with debootstrap
   out_context_distrib: "ubuntu"
-  out_context_release: "20.04"
+  out_context_release: "22.04"
   out_context_docker_image: "$${out_context_distrib}:$${out_context_release}"
   out_context_debian_backports: false
 
@@ -86,9 +86,7 @@ setup:
     - download_and_extract_l4t_kernel_sources:
       - on_checkpoint: disable
       - exec_out: mkdir -p $${src_dir}
-      - breakpoint
       - exec_out: wget -O- -q "$${l4t_kernel_sources_url}" | tar -C $${src_dir} --strip-components=2 -xj
-      - breakpoint
       - exec_out: tar -xf $${src_dir}/kernel_src.tbz2 -C $${src_dir}
     - download_and_extract_debian_kernel_config:
       - exec_out: |
@@ -102,10 +100,11 @@ setup:
           rm -f /etc/apt/sources.list.d/debian-$${debian_version}.list
           apt-get update
           dpkg -X $(ls -S | head -n1) .
+          # kernel is in the kernel-noble directory, foring name with a symlink
           ln -s $${src_dir}/kernel/kernel-* $${kernel_src_dir}
           cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
-          popd
           rm -r $${workdir}/tmp
+          popd
     - install_drivers_sources:
       - exec_out: |
           set -e
