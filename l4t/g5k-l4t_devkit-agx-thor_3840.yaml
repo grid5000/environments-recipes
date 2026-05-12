@@ -88,6 +88,9 @@ setup:
       - exec_out: mkdir -p $${src_dir}
       - exec_out: wget -O- -q "$${l4t_kernel_sources_url}" | tar -C $${src_dir} --strip-components=2 -xj
       - exec_out: tar -xf $${src_dir}/kernel_src.tbz2 -C $${src_dir}
+      - exec_out: tar xf $${src_dir}/kernel_oot_modules_src.tbz2 -C $${src_dir}
+      - exec_out: tar xf $${src_dir}/nvidia_kernel_display_driver_source.tbz2 -C $${src_dir}
+      - exec_out: tar xf $${src_dir}/nvidia_unified_gpu_display_driver_source.tbz2 -C $${src_dir}
     - download_and_extract_debian_kernel_config:
       - exec_out: |
           set -e
@@ -104,14 +107,6 @@ setup:
           ln -s $${src_dir}/kernel/kernel-* $${kernel_src_dir}
           cp $${workdir}/tmp/boot/config-* $${kernel_src_dir}/arch/arm64/configs/debian_defconfig
           rm -r $${workdir}/tmp
-          popd
-    - install_drivers_sources:
-      - exec_out: |
-          set -e
-          pushd $${src_dir}
-          tar xf kernel_oot_modules_src.tbz2
-          tar xf nvidia_kernel_display_driver_source.tbz2
-          tar xf nvidia_unified_gpu_display_driver_source.tbz2
           popd
   - build_kernel:
     - install_tools:
