@@ -238,7 +238,8 @@ setup:
           set -e
           KERNEL_RELEASE=$($${kernel_make_cmd} kernelrelease | grep -ve '^make')
           # ugly ack to please Nvidia's apply_binaries.sh script.
-          EXTMOD_DIR=$(grep -e '^\s*EXTMOD_DIR=' $${l4t_dir}/apply_binaries.sh | sed -e 's/^.*="\?\([^"]*\)"\?$/\1/')
+          # EXTMOD_DIR=ubuntu24.04_aarch64|ubuntu22.04_aarch64 -> ubuntu24.04_aarch64
+          EXTMOD_DIR=$(grep -e '^\s*EXTMOD_DIR=' $${l4t_dir}/apply_binaries.sh | sed -e 's/^.*="\?\([^|]*\)\(|[^"]*\)\?"\?/\1/')
           $${kernel_make_cmd} INSTALL_HDR_PATH="$${rootfs}/usr/src/linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR" headers_install
           tar -C $${rootfs}/usr/src -jcvf $${l4t_dir}/kernel/kernel_headers.tbz2 linux-headers-$KERNEL_RELEASE-$EXTMOD_DIR
       - exec_out: |
