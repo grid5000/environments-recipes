@@ -206,12 +206,12 @@ setup:
           pushd $${kernel_src_dir}
           ./scripts/config --disable DEBUG_INFO
           popd
-    - dive_in: &1
-      - on_checkpoint: disabled
-      - apt-get_out: install libncurses-dev
-      - exec_local: |
-          echo "Kernel make command: $${kernel_make_cmd}"
-      - breakpoint
+    #- dive_in: &1
+    #  - on_checkpoint: disabled
+    #  - apt-get_out: install libncurses-dev
+    #  - exec_local: |
+    #      echo "Kernel make command: $${kernel_make_cmd}"
+    #  - breakpoint
     - build_kernel_objects:
       - exec_out: |
           set -e
@@ -290,7 +290,7 @@ export:
            Nvidia BSP R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}
            Linux kernel compiled for Debian $${debian_version}
           EOF
-          echo 9 > debian/compat
+          echo 10 > debian/compat
           cat > debian/copyright <<EOF
           Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
           Upstream-Name: Linux for Tegra
