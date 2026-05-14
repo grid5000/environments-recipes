@@ -42,11 +42,6 @@ bootstrap:
 setup:
   - "@base"
   - prepare_L4T:
-    - install_L4T_required_packages:
-      - apt-get_in: update
-      - apt-get_in: -q=2 remove --purge linux-image-* linux-modules-* linux-headers-*
-      - apt-get_in: install libegl1 libcairo2 libgles2 libgtk-3-0 libwayland-egl1 libxkbcommon0 liboss4-salsa-asound2 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 device-tree-compiler libdatrie1 libfontconfig1 libharfbuzz0b libpangoft2-1.0-0 libpixman-1-0 libxrender1 libfontconfig1 libpango-1.0-0 libpangocairo-1.0-0 libnl-route-3-200 libevdev2 libinput10 libjpeg-turbo8 libunwind8 libwayland-cursor0 qemu-user-static bridge-utils python3-tk python3-matplotlib gir1.2-appindicator3-0.1
-
     - install_nvidia_BSP:
       - on_setup_clean:
         - exec_in: rm -rf $${workdir}
@@ -59,6 +54,10 @@ setup:
         - exec_in: umount $${l4t_dir}/rootfs
       - exec_in: mount --bind $${rootfs} $${l4t_dir}/rootfs
   - apply_L4T_overlay:
+    - install_L4T_required_packages:
+      - apt-get_in: update
+      - apt-get_in: -q=2 remove --purge linux-image-* linux-modules-* linux-headers-*
+      - apt-get_in: install bridge-utils device-tree-compiler g++ gir1.2-appindicator3-0.1 libasound2t64 libcairo2 libdatrie1 libegl1 libgbm1 libgles2 libglvnd0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 libgtk-3-0t64 libharfbuzz0b libinput10 liblcms2-2 libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 libpcre3 libpixman-1-0 libseat1 libwayland-client0 libwayland-cursor0 libwayland-egl1 libwayland-server0 libx11-xcb1 libxcb-dri3-0 libxcb-present0 libxrender1 nvme-cli python3-matplotlib python3-tk qemu-user-static
     - fix_nv_apply_debs_for_using_slash_as_rootfs:
       - exec_in: |
           sed -i.bak \
@@ -66,11 +65,9 @@ setup:
             -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/random" c 1 8\)@#\1@' \
             -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/urandom" c 1 9\)@#\1@' \
             $${l4t_dir}/nv_tegra/nv-apply-debs.sh
+      - exec_in: rm /etc/cloud/ds-identify.cfg
     - apply_L4T:
-      - exec_in: |
-          rm /etc/cloud/ds-identify.cfg
-          $${l4t_dir}/apply_binaries.sh --openrm -r $${rootfs}
-          DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes --fix-broken install
+      - exec_in: $${l4t_dir}/apply_binaries.sh --openrm -r $${rootfs}
     - disable_unwanted_L4T_services:
       - exec_in: |
           set -e
@@ -83,11 +80,8 @@ setup:
           printf "/etc/nvpmodel.conf" > /var/lib/nvpmodel/conf_file_path
           printf "pmode:%04d" $${l4t_nvp_model} > /var/lib/nvpmodel/status
   - install_extra_packages:
-    - download_extra_packages:
-      - apt-get_in: clean
-      - apt-get_in: update
-      - apt-get_in: install --download-only $${extra_deb_packages}
     - install_extra_deb_packages:
+      - apt-get_in: update
       - apt-get_in: install $${extra_deb_packages}
       - apt-get_in: clean
     - install_extra_pip3_packages:
