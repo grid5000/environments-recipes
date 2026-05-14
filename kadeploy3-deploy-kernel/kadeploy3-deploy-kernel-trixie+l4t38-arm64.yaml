@@ -1,0 +1,47 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Kadeploy3 ramdisk OS (used in the deployment phase) for
+#              Nvidia Jetson AGX Thor devkit
+# Notes:
+# - working kernel command line:
+#     console=ttyUTC0,115200 ramdisk_size=260000 rw rootwait root=/root.tmp net.ifnames=0 biosdevname=0 mminit_loglevel=4 earlycon=tegra_utc,mmio32,0xc5a0000 clk_ignore_unused firmware_class.path=/etc/firmware fbcon=map:0 efi=runtime audit_backlog_limit=8192 video=efifb:off bl_prof_dataptr=6225920@0x2004010000 bl_prof_ro_ptr=65536@0x2004000000
+#
+#==============================================================================
+---
+extend: kadeploy3-deploy-kernel-trixie-arm64.yaml
+
+global:
+  deb_kernel: other
+  tmpfs_size: 2G
+  l4t_version_major: "38"
+  l4t_version_minor: "4"
+  l4t_version_patch: "0"
+  l4t_archive: "Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
+  l4t_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/$${l4t_archive}"
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - add_l4t_kernel:
+    - fetch_l4t_tarball:
+      - exec_out: wget -q $${l4t_url}
+    - install_bzip2:
+      - apt-get_out: install bzip2
+    - unpack_l4t_kernel_files:
+      - exec_out: tar -xvf $${l4t_archive} Linux_for_Tegra/kernel/Image Linux_for_Tegra/kernel/kernel_supplements.tbz2 Linux_for_Tegra/kernel/kernel_oot_modules.tbz2
+    - install_l4t_linux_kernel:
+      - exec_out: tar -jxf Linux_for_Tegra/kernel/kernel_supplements.tbz2 -C $${rootfs} lib/modules/
+      - exec_out: tar -jxf Linux_for_Tegra/kernel/kernel_oot_modules.tbz2 -C $${rootfs} usr/lib/modules/
+      - exec_out: cp -av Linux_for_Tegra/kernel/Image $${rootfs}/boot/
+      - exec_in: |
+          KERNEL_VERSION=$(cd /lib/modules; ls)
+          ln -snv /lib/modules/$KERNEL_VERSION /lib/modules/$KERNEL_VERSION-arm64
+          mv -v /boot/Image /boot/$${kernel_filename}-$KERNEL_VERSION-arm64
+          touch /boot/initrd.img-$KERNEL_VERSION-arm64
+    - clean_files:
+      - exec_out: rm -rf Linux_for_Tegra $${l4t_archive}
+export:
+  - "@base"
