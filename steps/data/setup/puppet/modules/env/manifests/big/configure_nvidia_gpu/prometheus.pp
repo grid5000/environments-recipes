@@ -24,7 +24,7 @@ class env::big::configure_nvidia_gpu::prometheus () {
           mode    => '0644',
           source  => "puppet:///modules/env/big/nvidia/dcgm-exporter.service";
       }
-      if $::env::common::software_versions::dcgm_exporter =~ /^3/ {
+      if $::env::common::software_versions::dcgm_exporter != undef and $::env::common::software_versions::dcgm_exporter =~ /^3/ {
         file {
           '/etc/dcgm-exporter/default-counters.csv':
             ensure  => file,
