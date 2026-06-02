@@ -17,7 +17,7 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   # kvm
   class { 'env::big::configure_kvm': }
   # nvidia
-  if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' or $env::deb_arch == 'arm64' {
+  if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' or ($env::deb_arch == 'arm64' and $::lsbdistcodename == 'trixie') {
     class { 'env::big::configure_nvidia_gpu': }
   }
   if $env::deb_arch == 'amd64' {
