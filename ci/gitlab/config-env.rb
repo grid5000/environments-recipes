@@ -5,6 +5,7 @@ ARCHS_ARM = %w[arm64].freeze
 VARIANTS_ALL = %w[min base nfs big std rocm].freeze
 VARIANTS_ALL_BUT_ROCM = %w[min base nfs big std].freeze
 VARIANTS_ALL_BUT_STD_ROCM = %w[min base nfs big].freeze
+VARIANTS_MIN = %w[min].freeze
 VARIANTS_MIN_NFS = %w[min nfs].freeze
 VARIANTS_MIN_NFS_BIG = %w[min nfs big].freeze
 
@@ -43,6 +44,9 @@ ENV_CONFIG = {
   },
   'almalinux' => {
     '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
+  },
+  'nixos' => {
+    '2605' => map_variants_to_archs(VARIANTS_MIN, ARCHS_X),
   },
 }.freeze
 

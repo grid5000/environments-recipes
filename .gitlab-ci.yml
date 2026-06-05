@@ -158,4 +158,3 @@ push-environments-pipeline:
 
 include:
   - 'ci/gitlab/sanity.yml'
-  - 'ci/gitlab/generate-nixos-image.yml'
