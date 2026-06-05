@@ -25,8 +25,15 @@ spec:
   tags:
     - grid5000-shell
   script:
-    - echo "Generating ${ENV_NAME}, version ${GENERATED_ENV_VERSION}"
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.inria.fr/grid5000/jenkins-scripts.git --depth 1 --branch master
-    # GENERATED_ENV_VERSION is populated by the "clone-refrepo" job
-    - RUBYLIB=jenkins-scripts/lib:reference-repository/lib ci/gitlab/run_job.rb --job build --env ${ENV_NAME} --version ${GENERATED_ENV_VERSION} ${POSTINSTALL_BRANCH:+"-p${POSTINSTALL_FILE}"}
+    - |
+      echo "Generating ${ENV_NAME}, version ${GENERATED_ENV_VERSION}"
+      if [[ ${ENV_NAME} == nixos* ]]; then
+        echo "Detected NixOS environment, using NixOS image generation script"
+        rsync -av ci/gitlab/generate-nixos-image_deploy-batch.bash ajenkins@$SITE:
+        ssh ajenkins@$SITE < ci/gitlab/generate-nixos-image_launcher.bash
+      else
+        git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.inria.fr/grid5000/jenkins-scripts.git --depth 1 --branch master
+        # GENERATED_ENV_VERSION is populated by the "clone-refrepo" job
+        RUBYLIB=jenkins-scripts/lib:reference-repository/lib ci/gitlab/run_job.rb --job build --env ${ENV_NAME} --version ${GENERATED_ENV_VERSION} ${POSTINSTALL_BRANCH:+"-p${POSTINSTALL_FILE}"}
+      fi
   after_script: !reference [.postjob-cleanup, after_script]
