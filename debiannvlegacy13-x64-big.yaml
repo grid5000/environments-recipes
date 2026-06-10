@@ -1,0 +1,40 @@
+#==============================================================================
+# vim: softtabstop=2 shiftwidth=2 expandtab fenc=utf-8 cc=81 tw=80
+#==============================================================================
+#
+# DESCRIPTION: Debian trixie (13) x64 big Grid'5000 environment
+#
+#==============================================================================
+---
+extend: ./debian13-x64-common.yaml
+
+global:
+  # Grid'5000 environment variant
+  g5k_variant: big
+  g5k_distrib: $${distrib}nvlegacy
+  g5k_description: $${distrib} $${release_number} ($${release}) with nvidia proprietary (legacy) kernel module for $${arch} - $${g5k_variant}
+
+  # Grid'5000 Kadeploy environment parameters
+  g5k_postinst_script: g5k-postinstall --net debian --net hpc --fstab nfs --fstab ondemand --restrict-user current --disk-aliases
+  # QEMU options
+  image_size: 27G
+  # nvidia module licence
+  nvidia_module: proprietary
+
+bootstrap:
+  - "@base"
+
+setup:
+  - "@base"
+  - last_tweaks:
+    - fix_env_name:
+      - exec_in: |
+          sed -i -e '1s/^$${distrib}$${release_number}-/$${g5k_distrib}$${release_number}-/' /etc/grid5000/release
+    - change_motd:
+      - exec_in: |
+          sed -i \
+              -e 's/^Debian$${release_number}-/Debiannvlegacy$${release_number}-/' \
+              /etc/motd
+
+export:
+  - "@base"
