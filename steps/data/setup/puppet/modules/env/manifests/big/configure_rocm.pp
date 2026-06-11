@@ -89,7 +89,7 @@ class env::big::configure_rocm () {
           notify  => Exec['apt_update'];
       }
       package {
-        [ 'hip-dev', 'rocm-hip-runtime']:
+        ['hip-dev', 'rocm-hip-runtime', 'hipcc']:
           ensure          => installed,
           install_options => ['--no-install-recommends'],
           require         => Exec['build_and_install_rocm_llvm'];
