@@ -17,7 +17,7 @@ ssh-keygen -f "/home/ajenkins/.ssh/known_hosts" -R $NODE
 
 echo "Copying flake and build script to $NODE..."
 ssh -o StrictHostKeyChecking=no root@$NODE mkdir -p /build/
-rsync -v flake.nix configuration.nix build-image.bash root@$NODE:/build/
+rsync -v flake.nix configuration.nix build-image.bash .env root@$NODE:/build/
 
 echo "Running build script on $NODE..."
 ssh -o StrictHostKeyChecking=no root@$NODE "cd /build && bash build-image.bash"
