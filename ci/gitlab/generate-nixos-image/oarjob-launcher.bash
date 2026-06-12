@@ -12,8 +12,9 @@ kadeploy3 -u lschoepp nixos-x86_64-linux
 
 NODE=$(head -n 1 $OAR_NODE_FILE)
 
-# Remove any existing known host entry for the node to avoid warnings
+# Remove any existing known host entry for the node (including by its IP) to avoid warnings
 ssh-keygen -f "/home/ajenkins/.ssh/known_hosts" -R $NODE
+ssh-keygen -f "/home/ajenkins/.ssh/known_hosts" -R $(dig +short $NODE)
 
 echo "Copying flake and build script to $NODE..."
 ssh -o StrictHostKeyChecking=no root@$NODE mkdir -p /build/
