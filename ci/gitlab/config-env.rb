@@ -14,24 +14,25 @@ end
 
 ENV_CONFIG = {
   'debian' => {
-    '11' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
-    'nvopen11' => map_variants_to_archs(%w[big std], ARCHS_X),
-    '12' =>  map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
-    '13' =>  map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
-    'testing' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
-    'l4t1135' =>  map_variants_to_archs(%w[std], ARCHS_ARM),
-    'gh11' => map_variants_to_archs(%w[std], ARCHS_ARM),
+    '11'         => map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
+    'nvopen11'   => map_variants_to_archs(%w[big std], ARCHS_X),
+    '12'         => map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
+    '13'         => map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
+    'nvlegacy13' => map_variants_to_archs(%w[big std], ARCHS_X),
+    'testing'    => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
+    'l4t1135'    => map_variants_to_archs(%w[std], ARCHS_ARM),
+    'gh11'       => map_variants_to_archs(%w[std], ARCHS_ARM),
   },
   'ubuntu' => {
     '2004' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
     '2204' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
     '2404' => {
-      'min' => ARCHS_X_ARM,
-      'nfs' => ARCHS_X_ARM,
+      'min'  => ARCHS_X_ARM,
+      'nfs'  => ARCHS_X_ARM,
       'rocm' => ARCHS_X,
     },
     'l4t200435' => map_variants_to_archs(%w[big], ARCHS_ARM),
-    'gh2404' => map_variants_to_archs(%w[big], ARCHS_ARM),
+    'gh2404'    => map_variants_to_archs(%w[big], ARCHS_ARM),
   },
   'centosstream' => {
     '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
