@@ -9,6 +9,9 @@ in
 
   system.stateVersion = "26.05";
 
+  # Fix possible timeout on boot waiting for a TPM device
+  systemd.tpm2.enable = false;
+
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = lib.mkForce (pkgs.writeTextFile {
     name = "nixos2605-x64-min.dsc";
