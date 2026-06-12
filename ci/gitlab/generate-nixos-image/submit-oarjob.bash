@@ -21,14 +21,14 @@ done
 
 kill $TAIL_PID 2>/dev/null || true
 
-STATUS=$(oarstat -s -j $OAR_JOB_ID)
-echo "Job $OAR_JOB_ID finished with status: $STATUS"
+EXIT_CODE=$(oarstat -Jj $OAR_JOB_ID | jq -r '.[].exit_code')
 
 # Cleanup
 rm -f OAR.${OAR_JOB_ID}.stdout OAR.${OAR_JOB_ID}.stderr
 
-if [[ "$STATUS" == *"Error"* ]]; then
-  # TODO: Make it fails correctly when the job failed
-  echo "Job failed!"
+if [[ "$EXIT_CODE" != "0" ]]; then
+  echo "ERROR: Job $OAR_JOB_ID finished with status: $EXIT_CODE"
   exit 1
+else
+  echo "Job $OAR_JOB_ID finished successfully."
 fi
