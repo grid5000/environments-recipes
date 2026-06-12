@@ -36,7 +36,7 @@ in
       boot:
         kernel: /boot/bzImage
         initrd: /boot/initrd
-        kernel_params: init=boot/init console=tty0 console=ttyS0,115200
+        kernel_params: modprobe.blacklist=nouveau
       filesystem: ext4
       partition_type: 131
       multipart: false
