@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, config, modulesPath, ... }:
 let
   version = "$GENERATED_ENV_VERSION";
   pipelineId = "$CI_PIPELINE_ID";
@@ -26,9 +26,9 @@ in
       destructive: false
       os: linux
       image:
-        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitSha}/nixos2605-x64-min.tar.xz
+        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitSha}/nixos2605-x64-min.tar.zst
         kind: tar
-        compression: xz
+        compression: zstd
       postinstalls:
       - archive: server:///grid5000/postinstalls/g5k-postinstall.tgz
         compression: gzip
@@ -53,7 +53,44 @@ in
       mkdir $out
 
       ln -s ${config.system.build.kadeploy_env_description} $out/nixos2605-x64-min.dsc
-      ln -s ${config.system.build.g5k-image-archive}/tarball/*.tar.xz $out/nixos2605-x64-min.tar.xz
+      ln -s ${config.system.build.g5k-image-archive}/tarball/nixos2605-x64-min.tar.zst $out/nixos2605-x64-min.tar.zst
     '';
+  });
+
+  # Fix the compression to use zstd like other environments
+  system.build.g5k-image-archive = lib.mkForce (import "${toString modulesPath}/../lib/make-system-tarball.nix" {
+    fileName = "nixos2605-x64-min";
+    stdenv = pkgs.stdenv;
+    closureInfo = pkgs.closureInfo;
+    pixz = pkgs.pixz;
+
+    # ZSTD compression support
+    compressCommand = "zstd -T0 --rm";
+    compressionExtension = ".zst";
+    extraInputs = [ pkgs.zstd ];
+
+    extraCommands = "mkdir -p etc/ssh root tmp var/log";
+    storeContents = [
+      {
+        object = config.system.build.toplevel;
+        symlink = "/run/current-system";
+      }
+    ];
+
+    contents = [
+      {
+        source = config.system.build.initialRamdisk + "/" + config.system.boot.loader.initrdFile;
+        target = "/boot/" + config.system.boot.loader.initrdFile;
+      }
+      {
+        source = config.boot.kernelPackages.kernel + "/" + config.system.boot.loader.kernelFile;
+        target = "/boot/" + config.system.boot.loader.kernelFile;
+      }
+      {
+        source = "${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init";
+        target = "/boot/init";
+      }
+    ];
+
   });
 }
