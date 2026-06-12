@@ -29,8 +29,14 @@ spec:
       echo "Generating ${ENV_NAME}, version ${GENERATED_ENV_VERSION}"
       if [[ ${ENV_NAME} == nixos* ]]; then
         echo "Detected NixOS environment, using NixOS image generation script"
-        rsync -av ci/gitlab/generate-nixos-image_deploy-batch.bash ajenkins@$SITE:
-        ssh ajenkins@$SITE < ci/gitlab/generate-nixos-image_launcher.bash
+        # Create a .env file to share environment variables with the OAR job
+        cd ci/gitlab/generate-nixos-image
+        echo "CI_PIPELINE_ID=${CI_PIPELINE_ID}" > .env
+        echo "CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}" >> .env
+        echo "ENV_NAME=${ENV_NAME}" >> .env
+        echo "GENERATED_ENV_VERSION=${GENERATED_ENV_VERSION}" >> .env
+        rsync -rv ./ ajenkins@$SITE:generate-nixos-image/
+        ssh ajenkins@$SITE "cd generate-nixos-image && bash submit-oarjob.bash"
       else
         git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.inria.fr/grid5000/jenkins-scripts.git --depth 1 --branch master
         # GENERATED_ENV_VERSION is populated by the "clone-refrepo" job
