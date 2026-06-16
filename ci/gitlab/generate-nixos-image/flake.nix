@@ -15,12 +15,13 @@
       nixpkgs,
       nixos-g5k-image,
       ...
-    }:
+    } @ inputs:
     let
       system = "x86_64-linux";
 
       nixosConfig = nixpkgs.lib.nixosSystem {
         inherit system;
+        specialArgs = { inherit inputs; };
 
         modules = [
           nixos-g5k-image.nixosModules.g5k-image
@@ -34,5 +35,8 @@
         g5k-image = nixosConfig.config.system.build.g5k-image;
         default = g5k-image;
       };
+
+      # Rebuild with `nixos-rebuild --flake /etc/nixos#default switch`
+      nixosConfigurations.default = nixosConfig;
     };
 }
