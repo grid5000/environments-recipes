@@ -1,18 +1,22 @@
-{ pkgs, lib, config, modulesPath, ... }:
-let
+{
+  pkgs,
+  lib,
+  config,
+  modulesPath,
+  inputs,
+  ...
+}: let
   version = "$GENERATED_ENV_VERSION";
   pipelineId = "$CI_PIPELINE_ID";
   commitShortSha = "$CI_COMMIT_SHORT_SHA";
   commitSha = "$CI_COMMIT_SHA";
-in
-{
-  environment.systemPackages = with pkgs; [ vim ];
+in {
+  environment.systemPackages = with pkgs; [vim];
 
   system.stateVersion = "26.05";
 
   # Fix possible timeout on boot waiting for a TPM device
   systemd.tpm2.enable = false;
-
 
   environment.etc = {
     "grid5000/release".text = ''
@@ -26,8 +30,6 @@ in
     '';
   };
 
-
-  # TODO: voir comment ça se passe côté utilisateur
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = lib.mkForce (pkgs.writeTextFile {
     name = "nixos2605-x64-min.dsc";
@@ -83,9 +85,15 @@ in
     # ZSTD compression support
     compressCommand = "zstd -T0 --rm";
     compressionExtension = ".zst";
-    extraInputs = [ pkgs.zstd ];
+    extraInputs = [pkgs.zstd];
 
-    extraCommands = "mkdir -p etc/ssh root tmp var/log";
+    extraCommands = pkgs.writeScript "extra-commands.sh" ''
+      mkdir -p etc/ssh root tmp var/log etc/nixos
+
+      # Allow easy nixos-rebuild of the current flake by having a writable copy in etc/nixos
+      cp -r ${inputs.self}/{flake.nix,configuration.nix,flake.lock} etc/nixos/
+      chmod -R u+w etc/nixos
+    '';
     storeContents = [
       {
         object = config.system.build.toplevel;
@@ -107,6 +115,5 @@ in
         target = "/boot/init";
       }
     ];
-
   });
 }
