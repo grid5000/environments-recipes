@@ -33,6 +33,7 @@ spec:
         cd ci/gitlab/generate-nixos-image
         echo "CI_PIPELINE_ID=${CI_PIPELINE_ID}" > .env
         echo "CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}" >> .env
+        echo "CI_COMMIT_SHA=${CI_COMMIT_SHA}" >> .env
         echo "ENV_NAME=${ENV_NAME}" >> .env
         echo "GENERATED_ENV_VERSION=${GENERATED_ENV_VERSION}" >> .env
         rsync -rv ./ ajenkins@$SITE:generate-nixos-image/

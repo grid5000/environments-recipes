@@ -2,7 +2,8 @@
 let
   version = "$GENERATED_ENV_VERSION";
   pipelineId = "$CI_PIPELINE_ID";
-  commitSha = "$CI_COMMIT_SHORT_SHA";
+  commitShortSha = "$CI_COMMIT_SHORT_SHA";
+  commitSha = "$CI_COMMIT_SHA";
 in
 {
   environment.systemPackages = with pkgs; [ vim ];
@@ -11,6 +12,20 @@ in
 
   # Fix possible timeout on boot waiting for a TPM device
   systemd.tpm2.enable = false;
+
+
+  environment.etc = {
+    "grid5000/release".text = ''
+      nixos2605-x64-min-${version}
+      ${commitSha}
+    '';
+    "motd".text = ''
+      nixos2605-x64-min-${version}
+      (Image based on NixOS 26.05 for AMD64)
+      Maintained by support-staff <support-staff@lists.grid5000.fr>
+    '';
+  };
+
 
   # TODO: voir comment ça se passe côté utilisateur
   # Fix the generated kadeploy env description
@@ -27,7 +42,7 @@ in
       destructive: false
       os: linux
       image:
-        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitSha}/nixos2605-x64-min.tar.zst
+        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitShortSha}/nixos2605-x64-min.tar.zst
         kind: tar
         compression: zstd
       postinstalls:
