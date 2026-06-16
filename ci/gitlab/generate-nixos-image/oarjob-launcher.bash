@@ -1,27 +1,24 @@
 #!/bin/bash
 #OAR -n generate-nixos-image
 #OAR -l nodes=1,walltime=1:00
-#OAR -t deploy
 #OAR -O OAR.%jobid%.stdout
 #OAR -E OAR.%jobid%.stderr
 
 set -euo pipefail
 
-echo "Deploying NixOS image..."
-kadeploy3 -u lschoepp nixos-x86_64-linux
+echo "Installing nix on standard environment..."
+# We need super user rights to mount tmpfs and install nix
+sudo-g5k
+# There may not be enough space in / but we have a lot of RAM
+sudo mkdir -p /nix
+sudo mount -t tmpfs -o size=32G tmpfs /nix
+curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+source /etc/profile.d/nix.sh
 
-NODE=$(head -n 1 $OAR_NODE_FILE)
-
-# Remove any existing known host entry for the node (including by its IP) to avoid warnings
-ssh-keygen -f "/home/ajenkins/.ssh/known_hosts" -R $NODE
-ssh-keygen -f "/home/ajenkins/.ssh/known_hosts" -R $(dig +short $NODE)
-
-echo "Copying flake and build script to $NODE..."
-ssh -o StrictHostKeyChecking=no root@$NODE mkdir -p /build/
-rsync -v flake.nix configuration.nix build-image.bash .env root@$NODE:/build/
-
-echo "Running build script on $NODE..."
-ssh -o StrictHostKeyChecking=no root@$NODE "cd /build && bash build-image.bash"
+echo "Running build script..."
+# Remove previous result symlink if any
+rm -f result
+bash build-image.bash
 
 # Load CI variables from .env file
 source .env
@@ -34,4 +31,4 @@ echo "Removing old environments... (DISABLED)"
 
 echo "Copying environment to home ($TARGET_DIR) directory..."
 mkdir -p $TARGET_DIR
-rsync -rLv root@$NODE:/build/result/ $TARGET_DIR/
+rsync -rLv result/ $TARGET_DIR/
