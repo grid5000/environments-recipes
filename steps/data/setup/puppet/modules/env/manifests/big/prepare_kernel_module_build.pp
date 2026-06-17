@@ -27,7 +27,7 @@ class env::big::prepare_kernel_module_build {
   } elsif $::lsbdistcodename == 'bullseye' {
 
     package {
-      ['module-assistant', 'dkms', "linux-image-6.1-${env::deb_arch}"]:
+      ['module-assistant', 'dkms', "linux-image-6.1-${env::deb_arch}", "linux-headers-6.1-${env::deb_arch}"]:
         ensure    => installed;
     }
 
