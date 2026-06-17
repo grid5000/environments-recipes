@@ -22,6 +22,15 @@ class env::big::prepare_kernel_module_build {
         require   => [Env::Common::G5kpackages['linux-image'], Exec['apt_update']];
     }
 
+  # debian11 env only
+  # Fix regarding CVE-2026-23111 mitigation (Bug #18365)
+  } elsif $::lsbdistcodename == 'bullseye' {
+
+    package {
+      ['module-assistant', 'dkms', "linux-image-6.1-${env::deb_arch}"]:
+        ensure    => installed;
+    }
+
   } else {
 
     package {
