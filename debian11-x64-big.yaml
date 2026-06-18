@@ -15,11 +15,19 @@ global:
   g5k_postinst_script: g5k-postinstall --net debian --net hpc --fstab nfs --fstab ondemand --restrict-user current --disk-aliases
   # QEMU options
   image_size: 28G
+  kernel_version: 6.1
+  kernel_package: linux-image-$${kernel_version}-$${deb_arch}
+  kernel_headers: linux-headers-$${kernel_version}-$${deb_arch}
 
 bootstrap:
   - "@base"
 
 setup:
+  - install_custom_kernel:
+    - update_apt:
+      - apt-get_in: update
+    - install_linux_image:
+      - apt-get_in: install $${kernel_package} $${kernel_headers}
   - "@base"
 
 export:
