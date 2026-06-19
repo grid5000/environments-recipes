@@ -39,11 +39,21 @@ global:
   puppetlabs_apt_version: 6.3.0
   # Nvidia module licence
   nvidia_module: proprietary
+  # Kernel update for vulnerabilities
+  kernel_version: 6.1
+  kernel_package: linux-image-$${kernel_version}-$${deb_arch}
+  kernel_headers: linux-headers-$${kernel_version}-$${deb_arch}
+
 
 bootstrap:
   - "@base"
 
 setup:
+  - install_custom_kernel:
+    - update_apt:
+      - apt-get_in: update
+    - install_linux_image:
+      - apt-get_in: install $${kernel_package} $${kernel_headers}
   - "@base"
   - configure_system
   - configure_apt
