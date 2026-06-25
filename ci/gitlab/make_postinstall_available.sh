@@ -55,7 +55,7 @@ fi
 echo "Extracting tgz"
 unzip postinstall.zip
 dpkg-deb -xv g5k-postinstall*.deb .
-remote_folder="~ajenkins/public/environments/pipelines/${folder}"
+remote_folder="/home/ajenkins/public/environments/pipelines/${folder}"
 echo "Creating the following folder on remote: ${remote_folder}"
 
 # NOTE: we do want remote_folder to expand client-side
