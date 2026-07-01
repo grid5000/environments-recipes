@@ -1,0 +1,18 @@
+- create_kernel_symlinks_hook:
+  - exec_in: |
+      mkdir -p /etc/kernel/install.d/
+      cat <<'EOF' > /etc/kernel/install.d/01-symlinks.install
+      #!/bin/bash
+      #KERNEL_VERSION="${2:-$(uname -r)}"
+      KERNEL_IMAGE="/boot/vmlinuz-6.1.0-0.deb11.49-amd64" #${KERNEL_VERSION}"
+      INITRAMFS_IMAGE="/boot/initramfs-6.1.0-0.deb11.49-amd64.img"
+      echo "Create relative symlinks in /:"
+      ln -sfvn ${KERNEL_IMAGE#/} /vmlinuz
+      ln -sfvn ${INITRAMFS_IMAGE#/} /initramfs.img
+      EOF
+      chmod 755 /etc/kernel/install.d/01-symlinks.install
+- force_create_kernel_symlinks:
+  - on_setup_clean:
+    - exec_in: |
+        KERNEL_PKG=$(rpm -q kernel --last | head -n1 | cut -d\  -f1)
+        /etc/kernel/install.d/01-symlinks.install add ${KERNEL_PKG#kernel-}
