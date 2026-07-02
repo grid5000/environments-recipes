@@ -7,8 +7,8 @@
       KERNEL_IMAGE="/boot/vmlinuz-6.1.0-0.deb11.49-amd64" #${KERNEL_VERSION}"
       INITRAMFS_IMAGE="/boot/initramfs-6.1.0-0.deb11.49-amd64.img"
       echo "Create relative symlinks in /:"
-      ln -sfvn ${KERNEL_IMAGE#/} /vmlinuz
-      ln -sfvn ${INITRAMFS_IMAGE#/} /initramfs.img
+      ln -sfvn /boot/vmlinuz-6.1.0-0.deb11.49-amd64 /vmlinuz
+      ln -sfvn /boot/initrd.img-6.1.0-0.deb11.49-amd64 /initrd.img
       EOF
       chmod 755 /etc/kernel/install.d/01-symlinks.install
 - force_create_kernel_symlinks:
