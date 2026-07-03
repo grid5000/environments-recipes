@@ -11,24 +11,54 @@
   commitShortSha = "$CI_COMMIT_SHORT_SHA";
   commitSha = "$CI_COMMIT_SHA";
 in {
-  environment.systemPackages = with pkgs; [vim];
+  environment.systemPackages = with pkgs; [
+    vim
+    inetutils # For ping6 and other network utilities
+    # TODO: compare installed packages with other min images
+  ];
 
   system.stateVersion = "26.05";
 
   # Fix possible timeout on boot waiting for a TPM device
+  boot.initrd.systemd.tpm2.enable = false;
   systemd.tpm2.enable = false;
+
+  time.timeZone = "Europe/Paris";
+  boot.loader = {
+    # TODO: disable grub in module
+    grub.enable = lib.mkForce false;
+    systemd-boot.enable = true;
+    # We need to change the boot order on rebuild otherwise we will keep using the initial config known by kadeploy
+    efi = {
+      canTouchEfiVariables = true;
+      efiSysMountPoint = "/boot/efi";
+    };
+  };
+
+  # We need to mount the EFI partition to be able to change the boot order on rebuild
+  fileSystems."/boot/efi" = {
+    device = "/dev/disk/by-partlabel/efi";
+    fsType = "vfat";
+    options = ["fmask=0022" "dmask=0022"];
+  };
+
+  # TODO: remove installation-device.nix instead of forcing to false
+  # TODO: using networkmanager currently breaks ipv6?
+  networking.networkmanager.enable = lib.mkForce false;
+  networking.useDHCP = true;
 
   environment.etc = {
     "grid5000/release".text = ''
       nixos2605-x64-min-${version}
       ${commitSha}
     '';
-    "motd".text = ''
-      nixos2605-x64-min-${version}
-      (Image based on NixOS 26.05 for AMD64)
-      Maintained by support-staff <support-staff@lists.grid5000.fr>
-    '';
   };
+
+  users.motd = ''
+    nixos2605-x64-min-${version}
+    (Image based on NixOS 26.05 for AMD64)
+    Maintained by support-staff <support-staff@lists.grid5000.fr>
+  '';
 
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = lib.mkForce (pkgs.writeTextFile {
@@ -50,11 +80,11 @@ in {
       postinstalls:
       - archive: server:///grid5000/postinstalls/g5k-postinstall.tgz
         compression: gzip
-        script: g5k-postinstall --net none,predictable_kernel_name,traditional-names --bootloader no-grub-from-deployed-env
+        script: g5k-postinstall --net none --disk-aliases
       boot:
-        kernel: /boot/bzImage
-        initrd: /boot/initrd
-        kernel_params: init=boot/init modprobe.blacklist=nouveau
+        kernel: ${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}
+        initrd: ${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}
+        kernel_params: init=${config.system.build.toplevel}/init rw modprobe.blacklist=nouveau
       filesystem: ext4
       partition_type: 131
       multipart: false
@@ -88,32 +118,32 @@ in {
     extraInputs = [pkgs.zstd];
 
     extraCommands = pkgs.writeScript "extra-commands.sh" ''
-      mkdir -p etc/ssh root tmp var/log etc/nixos
+      # Add necessary dirs for compatibility with g5k-postinstall and systemd boot
+      mkdir -p boot root tmp var/log etc/nixos etc/NetworkManager/system-connections/ run
+
+      # This provides /etc/os-release and other required files for kadeploy
+      cp -a ${config.system.build.etc}/etc/. etc/
+      chmod -R u+w etc/
+
+      # For compatibility with g5k-postinstall, we need to be able to add udev rules and to modify the fstab
+      rm etc/udev/rules.d etc/fstab
+      cp -aL "${config.system.build.etc}/etc/udev/rules.d/." etc/udev/rules.d/
+      cp -aL "${config.system.build.etc}/etc/fstab" etc/fstab
+      chmod -R u+w etc/udev/rules.d/ etc/fstab
 
       # Allow easy nixos-rebuild of the current flake by having a writable copy in etc/nixos
       cp -r ${inputs.self}/{flake.nix,configuration.nix,flake.lock} etc/nixos/
       chmod -R u+w etc/nixos
     '';
+
     storeContents = [
       {
         object = config.system.build.toplevel;
-        symlink = "/run/current-system";
+        symlink = "/nix/var/nix/profiles/system";
       }
     ];
 
     contents = [
-      {
-        source = config.system.build.initialRamdisk + "/" + config.system.boot.loader.initrdFile;
-        target = "/boot/" + config.system.boot.loader.initrdFile;
-      }
-      {
-        source = config.boot.kernelPackages.kernel + "/" + config.system.boot.loader.kernelFile;
-        target = "/boot/" + config.system.boot.loader.kernelFile;
-      }
-      {
-        source = "${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init";
-        target = "/boot/init";
-      }
     ];
   });
 }
