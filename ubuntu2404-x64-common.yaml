@@ -51,6 +51,7 @@ setup:
   - set_g5k_release
   - set_g5k_motd
   - clear_hostname
+  - use_isc_dhcp
 
 export:
   - "@base"
