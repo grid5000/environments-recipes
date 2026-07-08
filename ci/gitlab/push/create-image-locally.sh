@@ -198,21 +198,53 @@ popd
 # site.
 job_uid=0
 if [ "${is_std_env}" == "yes" ]; then
+  case "$oar_arch" in
+    x86_64)  env_arch="x64" ;;
+    ppc64le) env_arch="ppc64" ;;
+    aarch64) env_arch="arm64" ;;
+    *)
+      echo "Unsupported architecture: $oar_arch" >&2
+      exit 1
+      ;;
+    esac
+  target_environment="${environment_name%-std}-${env_arch}-std"
+
+  cluster_filter="$(
+    jq -r --arg env "$target_environment" '
+      [
+        .sites
+        | to_entries[]
+        | .value.clusters
+        | to_entries[]
+        | . as $cluster
+        | ($cluster.value.nodes | to_entries[0].value.software."standard-environment") as $node_env
+        | select($node_env == $env)
+        | $cluster.key
+      ]
+      | "cluster in (" + (map("'"'"'" + . + "'"'"'") | join(",")) + ")"
+    ' /etc/grid5000/refapi-subset.json
+  )"
+
+  if [[ "$cluster_filter" == "cluster in ()" ]]; then
+    echo "No clusters with default environment=$target_environment found, skipping destructive jobs"
+  else
+
   # Create a job and wait for it.
-  job_uid=$(oarsub -J -q admin -l /nodes=BEST,walltime=0:10 -p "cpuarch='${oar_arch}'" -n "Gitlab Standard Environment Push" -t exotic -t allowed=maintenance -t deploy -t destructive "sleep infinity" | jq -r '.job_id')
-  job_state=$(get_job_state "${job_uid}")
-  tries=0
-  while [ "${tries}" -lt "${RETRIES}" ] && [ "${job_state}" != "Running" ]; do
-    tries=$((tries + 1))
-    echo "Try ${tries}/${RETRIES}."
-    sleep ${SLEEP_TIME}
+    job_uid=$(oarsub -J -q admin -l /nodes=BEST,walltime=0:10 -p "cpuarch='${oar_arch}' and $cluster_filter" -n "Gitlab Standard Environment Push" -t exotic -t allowed=maintenance -t deploy -t destructive "sleep infinity" | jq -r '.job_id')
     job_state=$(get_job_state "${job_uid}")
-  done
+    tries=0
+    while [ "${tries}" -lt "${RETRIES}" ] && [ "${job_state}" != "Running" ]; do
+      tries=$((tries + 1))
+      echo "Try ${tries}/${RETRIES}."
+      sleep ${SLEEP_TIME}
+      job_state=$(get_job_state "${job_uid}")
+    done
 
   # We've either timed out or a job.
-  if [ "${job_state}" != "Running" ]; then
-    echo "Could not get a job, aborting"
-    exit 1
+    if [ "${job_state}" != "Running" ]; then
+      echo "Could not get a job, aborting"
+      exit 1
+    fi
   fi
 fi
 
@@ -220,6 +252,6 @@ fi
 sudo -u deploy /usr/bin/kaenv3 -a "/grid5000/descriptions/${versioned_env_name}.dsc"
 sudo -u deploy /usr/sbin/kaenv3-dev -a "/grid5000/descriptions/${versioned_env_name}.dsc"
 
-if [ "${is_std_env}" == "yes" ]; then
+if [ "${job_uid}" != 0 ]; then
   oardel "${job_uid}"
 fi
