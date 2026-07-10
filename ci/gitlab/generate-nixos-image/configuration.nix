@@ -26,12 +26,6 @@ in {
     enable = true;
   };
 
-  security.polkit.enable = true;
-
-  security.sudo = {
-    enable = true;
-  };
-
   # Fix possible timeout on boot waiting for a TPM device
   boot.initrd.systemd.tpm2.enable = false;
   systemd.tpm2.enable = false;
@@ -133,14 +127,17 @@ in {
 
     extraCommands = pkgs.writeScript "extra-commands.sh" ''
       # Add necessary dirs for compatibility with g5k-postinstall and systemd boot
-      mkdir -p boot root tmp var/log etc/nixos etc/NetworkManager/system-connections/ run
+      mkdir -p boot root tmp var/log etc/nixos etc/ssh etc/udev/rules.d etc/NetworkManager/system-connections/ run
 
-      # This provides /etc/os-release and other required files for kadeploy
-      cp -a ${config.system.build.etc}/etc/. etc/
-      chmod -R u+w etc/
+      # Pre-populate the Nix SQLite database (Necessary to avoid problematic overwrites of existing packages on nixos-rebuild)
+      export NIX_STATE_DIR="$(pwd)/nix/var/nix"
+      export NIX_CONF_DIR="$(pwd)/etc/nix"
+
+      mkdir -p $NIX_STATE_DIR/db
+      ${config.nix.package.out}/bin/nix-store --load-db < nix-path-registration
+      rm nix-path-registration
 
       # For compatibility with g5k-postinstall, we need to be able to add udev rules and to modify the fstab
-      rm etc/udev/rules.d etc/fstab
       cp -aL "${config.system.build.etc}/etc/udev/rules.d/." etc/udev/rules.d/
       cp -aL "${config.system.build.etc}/etc/fstab" etc/fstab
       chmod -R u+w etc/udev/rules.d/ etc/fstab
