@@ -4,17 +4,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixos-g5k-image = {
-      url = "github:oar-team/nixos-g5k-image";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = {
-    nixpkgs,
-    nixos-g5k-image,
-    ...
-  } @ inputs: let
+  outputs = {nixpkgs, ...} @ inputs: let
     system = "x86_64-linux";
 
     nixosConfig = nixpkgs.lib.nixosSystem {
@@ -22,7 +14,6 @@
       specialArgs = {inherit inputs;};
 
       modules = [
-        nixos-g5k-image.nixosModules.g5k-image-systemd
         ./configuration.nix
       ];
     };
