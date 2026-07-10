@@ -54,6 +54,11 @@ in {
   # TODO: using networkmanager currently breaks ipv6?
   networking.useDHCP = true;
 
+  # Set the hostname with DHCP
+  networking.hostName = "";
+  networking.dhcpcd.setHostname = true;
+  security.polkit.enable = true;
+
   environment.etc = {
     "grid5000/release".text = ''
       nixos2605-x64-min-${version}
