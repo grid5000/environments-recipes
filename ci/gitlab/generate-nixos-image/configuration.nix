@@ -12,12 +12,25 @@
   commitSha = "$CI_COMMIT_SHA";
 in {
   environment.systemPackages = with pkgs; [
+    busybox
     vim
-    inetutils # For ping6 and other network utilities
     # TODO: compare installed packages with other min images
   ];
 
   system.stateVersion = "26.05";
+
+  # Ensure compatibility with all clusters
+  hardware.enableAllHardware = true;
+
+  services.openssh = {
+    enable = true;
+  };
+
+  security.polkit.enable = true;
+
+  security.sudo = {
+    enable = true;
+  };
 
   # Fix possible timeout on boot waiting for a TPM device
   boot.initrd.systemd.tpm2.enable = false;
@@ -25,26 +38,26 @@ in {
 
   time.timeZone = "Europe/Paris";
   boot.loader = {
-    # TODO: disable grub in module
-    grub.enable = lib.mkForce false;
     systemd-boot.enable = true;
     # We need to change the boot order on rebuild otherwise we will keep using the initial config known by kadeploy
-    efi = {
-      canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot/efi";
-    };
+    #efi = {
+    #  canTouchEfiVariables = true;
+    #  efiSysMountPoint = "/boot/efi";
+    #};
   };
 
+  fileSystems."/" = {
+    device = "/dev/disk/by-partlabel/KDPL_DEPLOY_disk0";
+    fsType = "ext4";
+  };
   # We need to mount the EFI partition to be able to change the boot order on rebuild
-  fileSystems."/boot/efi" = {
-    device = "/dev/disk/by-partlabel/efi";
-    fsType = "vfat";
-    options = ["fmask=0022" "dmask=0022"];
-  };
+  #fileSystems."/boot/efi" = {
+  #  device = "/dev/disk/by-partlabel/efi";
+  #  fsType = "vfat";
+  #  options = ["fmask=0022" "dmask=0022"];
+  #};
 
-  # TODO: remove installation-device.nix instead of forcing to false
   # TODO: using networkmanager currently breaks ipv6?
-  networking.networkmanager.enable = lib.mkForce false;
   networking.useDHCP = true;
 
   environment.etc = {
@@ -52,16 +65,17 @@ in {
       nixos2605-x64-min-${version}
       ${commitSha}
     '';
+    "motd".text = ''
+      nixos2605-x64-min-${version}
+      (Image based on NixOS 26.05 for AMD64)
+      Maintained by support-staff <support-staff@lists.grid5000.fr>
+    '';
   };
 
-  users.motd = ''
-    nixos2605-x64-min-${version}
-    (Image based on NixOS 26.05 for AMD64)
-    Maintained by support-staff <support-staff@lists.grid5000.fr>
-  '';
+  users.motdFile = "/etc/motd";
 
   # Fix the generated kadeploy env description
-  system.build.kadeploy_env_description = lib.mkForce (pkgs.writeTextFile {
+  system.build.kadeploy_env_description = pkgs.writeTextFile {
     name = "nixos2605-x64-min.dsc";
     text = ''
       name: nixos2605-min
@@ -89,10 +103,10 @@ in {
       partition_type: 131
       multipart: false
     '';
-  });
+  };
 
   # Fix the name of the generated files
-  system.build.g5k-image = lib.mkForce (pkgs.stdenv.mkDerivation {
+  system.build.g5k-image = pkgs.stdenv.mkDerivation {
     name = "g5k-image";
     dontUnpack = true;
     doCheck = false;
@@ -103,10 +117,10 @@ in {
       ln -s ${config.system.build.kadeploy_env_description} $out/nixos2605-x64-min.dsc
       ln -s ${config.system.build.g5k-image-archive}/tarball/nixos2605-x64-min.tar.zst $out/nixos2605-x64-min.tar.zst
     '';
-  });
+  };
 
   # Fix the compression to use zstd like other environments
-  system.build.g5k-image-archive = lib.mkForce (import "${toString modulesPath}/../lib/make-system-tarball.nix" {
+  system.build.g5k-image-archive = import "${toString modulesPath}/../lib/make-system-tarball.nix" {
     fileName = "nixos2605-x64-min";
     stdenv = pkgs.stdenv;
     closureInfo = pkgs.closureInfo;
@@ -145,5 +159,5 @@ in {
 
     contents = [
     ];
-  });
+  };
 }
