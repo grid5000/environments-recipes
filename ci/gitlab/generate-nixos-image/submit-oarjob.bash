@@ -15,7 +15,7 @@ echo "Job $OAR_JOB_ID submitted successfully. Waiting for it to finish..."
 tail -F "OAR.${OAR_JOB_ID}.stdout" "OAR.${OAR_JOB_ID}.stderr" &
 TAIL_PID=$!
 
-while ! oarstat -s -j $OAR_JOB_ID | grep -q 'Terminated\|Error'; do
+while [[ "$(oarstat -Jj $OAR_JOB_ID | jq -r '.[].state')" =~ Waiting|Launching|Running|Finishing ]]; do
   sleep 10
 done
 
