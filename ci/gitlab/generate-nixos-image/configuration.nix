@@ -9,7 +9,8 @@ in {
   environment.systemPackages = with pkgs; [
     busybox
     vim
-    # TODO: compare installed packages with other min images
+    rsync
+    gnupg
   ];
 
   system.stateVersion = "26.05";
