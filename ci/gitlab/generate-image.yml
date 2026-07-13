@@ -4,7 +4,6 @@ spec:
       type: boolean
     environment-name:
 ---
-
 "gen-$[[ inputs.environment-name ]]":
   stage: generate
   variables:
@@ -36,8 +35,11 @@ spec:
         echo "CI_COMMIT_SHA=${CI_COMMIT_SHA}" >> .env
         echo "ENV_NAME=${ENV_NAME}" >> .env
         echo "GENERATED_ENV_VERSION=${GENERATED_ENV_VERSION}" >> .env
-        rsync -rv ./ ajenkins@$SITE:generate-nixos-image/
-        ssh ajenkins@$SITE "cd generate-nixos-image && bash submit-oarjob.bash"
+        TMP_DIR=generate-nixos-image.${CI_PIPELINE_ID}
+        rsync -rv ./ ajenkins@$SITE:"$TMP_DIR"/
+        # Ensures the temporary directory is cleaned up on exit
+        trap "ssh ajenkins@$SITE 'rm -rf $TMP_DIR'" EXIT
+        ssh ajenkins@$SITE "cd '$TMP_DIR' && bash submit-oarjob.bash"
       else
         git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.inria.fr/grid5000/jenkins-scripts.git --depth 1 --branch master
         # GENERATED_ENV_VERSION is populated by the "clone-refrepo" job
