@@ -1,2 +1,0 @@
-- install_isc_dhcp:
-  - apt-get_in: install isc-dhcp-client
