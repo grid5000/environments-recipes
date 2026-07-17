@@ -12,6 +12,15 @@ in {
   imports = [
     ./configuration.nix
   ];
+
+  # Add build dependencies (required to rebuild some packages) to allows offline rebuilds on deployment
+  system.extraDependencies = with pkgs; [
+    stdenv
+    stdenvNoCC
+    python3
+    perl
+  ];
+
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = pkgs.writeTextFile {
     name = "nixos2605-x64-min.dsc";
