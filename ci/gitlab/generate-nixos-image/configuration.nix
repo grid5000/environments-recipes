@@ -17,6 +17,8 @@ in {
 
   # Ensure compatibility with all clusters
   hardware.enableAllHardware = true;
+  # For compatibility with RAID controller like on larochette
+  boot.initrd.availableKernelModules = ["mpi3mr"];
 
   services.openssh = {
     enable = true;
