@@ -10,6 +10,7 @@
   - exec_in: echo "ipv4only" >> /etc/dhcpcd.conf
   - exec_in: echo "dhcp" >> /etc/dhcpcd.conf
   - exec_in: echo "noipv6" >> /etc/dhcpcd.conf
+  - exec_in: echo "nodhcp6" >> /etc/dhcpcd.conf
 
 
 
