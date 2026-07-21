@@ -1,13 +1,15 @@
 - install_dhcpcd:
   - apt-get_in: install dhcpcd-base
 
-    #- use_ipv4:
-    # - exec_in: dhcpcd -4
+- use_ipv4:
+  - exec_in: dhcpcd -4
 
 - change_conf:
   - exec_in: rm /var/lib/dhcpcd/duid
-  - exec_in: echo "env force_hostname=YES" >> /etc/dhcpcd.conf
+  - exec_in: echo "env force_hostname=yes" >> /etc/dhcpcd.conf
+  - exec_in: echo "ipv4only" >> /etc/dhcpcd.conf
+  - exec_in: echo "dhcp" >> /etc/dhcpcd.conf
+  - exec_in: echo "noipv6" >> /etc/dhcpcd.conf
 
-- use_ipv4:
-  - exec_in: dhcpcd -4
+
 
