@@ -9,4 +9,4 @@
   - exec_in: echo "env force_hostname=yes" >> /etc/dhcpcd.conf
 
 - do_stuff:
-  - exec_in: dhcpcd -n eno1
+  - exec_in: dhcpcd -z eno1
