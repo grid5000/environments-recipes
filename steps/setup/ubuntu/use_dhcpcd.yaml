@@ -8,8 +8,3 @@
   - exec_in: rm /var/lib/dhcpcd/duid
   - exec_in: echo "env force_hostname=yes" >> /etc/dhcpcd.conf
 
-- reboot_dhcp:
-  - exec_in: dhcpcd -y
-
-
-
