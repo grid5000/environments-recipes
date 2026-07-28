@@ -52,7 +52,7 @@ global:
   nvidia_BSP_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/release/Jetson_Linux_R$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}_aarch64.tbz2"
   cross_compilation_toolchain_url: "https://developer.nvidia.com/downloads/embedded/L4T/r38_Release_v2.0/release/x-tools.tbz2"
   cross_compilation_toolchain_dir: "$${workdir}/toolchain"
-  l4t_kernel_sources_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/source/public_sources.tbz2"
+  l4t_kernel_sources_url: "https://developer.nvidia.com/downloads/embedded/L4T/r$${l4t_version_major}_Release_v$${l4t_version_minor}.$${l4t_version_patch}/sources/public_sources.tbz2"
   l4t_kernel_config_file: "tegra_prod_defconfig"
   src_dir: $${workdir}/src
   kernel_src_dir: $${src_dir}/kernel/kernel-$${l4t_kernel_version}
