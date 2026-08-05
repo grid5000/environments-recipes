@@ -9,7 +9,7 @@ class env::common::software_versions {
   $libguestfs_backport_ppc64el = '1:1.40.2-7~bpog5k10+1'
   $g5k_jupyterlab              = '0.12'
   $kameleon                    = '2.11.0.1'
-  $g5k_checks = '0.12.1'
+  $g5k_checks                  = '0.12.1'
 
   if "$env::deb_arch" == 'amd64' {
     case $lsbdistcodename {
@@ -84,6 +84,7 @@ class env::common::software_versions {
         'trixie' : {
           $nvidia_driver          = '580.126.09'
           $dcgm_exporter          = '3.3.5-1'
+          # Default debian package for now (Bug #17450)
           #$lmod                   = '8.7.60-1+g5k1.0.0'
         }
         'bookworm', 'bullseye': {
