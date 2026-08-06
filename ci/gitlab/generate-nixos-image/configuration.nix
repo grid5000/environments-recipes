@@ -52,42 +52,7 @@ in {
     };
   };
 
-  # The first boot will use a simplified grub.cfg generated from the minios with the correct kernel parameters
-  # For subsequent boots, we need to copy these parameters before generating our own grub.cfg
-  systemd.services.save-kadeploy-cmdline = {
-    description = "Save Kadeploy kernel parameters for subsequent nixos-rebuilds";
-    wantedBy = ["multi-user.target"];
-
-    unitConfig = {
-      # Run only if the file hasn't been created yet
-      ConditionPathExists = "!/etc/nixos/kadeploy-cmdline.txt";
-    };
-
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-
-    script = ''
-      read -r cmdline < /proc/cmdline
-      filtered_params=()
-
-      for param in $cmdline; do
-        case "$param" in
-          # Filter out params managed by NixOS bootloader or kadeploy's deployment process
-          init=*|root=*|rw)
-            ;;
-          *)
-            filtered_params+=("$param")
-            ;;
-        esac
-      done
-
-      # Write the filtered parameters space-separated to the nixos folder
-      echo -n "''${filtered_params[*]}" > /etc/nixos/kadeploy-cmdline.txt
-    '';
-  };
-
+  # On initial deployment, kadeploy will write the kernel parameters to kadeploy-cmdline.txt
   boot.kernelParams = let
     cmdlineFile = ./kadeploy-cmdline.txt;
   in
