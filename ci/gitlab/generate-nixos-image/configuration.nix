@@ -55,10 +55,14 @@ in {
   # On initial deployment, kadeploy will write the kernel parameters to kadeploy-cmdline.txt
   boot.kernelParams = let
     cmdlineFile = ./kadeploy-cmdline.txt;
+    rawParams = if builtins.pathExists cmdlineFile
+                then builtins.readFile cmdlineFile
+                else "";
+    paramsList = lib.splitString " " (lib.trim rawParams);
+    # Ignore empty parameters and the initial init= parameter
+    isWantedParam = x: x != "" && !(lib.hasPrefix "init=" x);
   in
-    if builtins.pathExists cmdlineFile
-    then builtins.filter (x: x != "") (lib.splitString " " (lib.trim (builtins.readFile cmdlineFile)))
-    else [];
+    builtins.filter isWantedParam paramsList;
 
   # TODO: using networkmanager currently breaks ipv6?
   networking.useDHCP = true;
