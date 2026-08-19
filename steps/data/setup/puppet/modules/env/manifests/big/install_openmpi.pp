@@ -17,7 +17,7 @@ class env::big::install_openmpi () {
 
   case "${::lsbdistcodename}" {
     "trixie" : {
-      # FIXME nothing for now (bug #17590)
+      fail "${::lsbdistcodename} not supported as Open MPI provided by module(s) (bug #17590)."
     }
     "bullseye", "bookworm" : {
       # Debian11|12 disable many providers by default. We restore UCX and Fabric,

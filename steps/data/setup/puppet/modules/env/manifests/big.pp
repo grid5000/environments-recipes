@@ -38,10 +38,13 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   if $env::deb_arch == 'amd64' {
     class { 'env::big::install_singularity': }
   }
-  #Allow sshfs
+  # Allow sshfs
   class { 'env::big::configure_sshfs': }
-  # Config OpenMPI
-  class { 'env::big::install_openmpi': }
+  # OpenMPI install and config
+  # provided by module(s) for Debian 13 Trixie (bug #17590)
+  if $::lsbdistcodename != 'trixie' {
+    class { 'env::big::install_openmpi': }
+  }
   # Snmp tools
   class { 'env::big::install_snmp_tools': }
   # remove RESUME device from initramfs
