@@ -53,7 +53,7 @@ fi
 set -x
 
 # Only reserve + deploy nodes for current std envs
-if [[ ${environment_name} = debian11*-std ]]; then
+if [[ ${environment_name} = debian*13*-std ]]; then
   is_std_env="yes"
 fi
 
