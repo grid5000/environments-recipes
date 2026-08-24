@@ -16,13 +16,15 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   class { 'env::big::configure_postfix': }
   # kvm
   class { 'env::big::configure_kvm': }
-  # nvidia
+  # NVIDIA
+  # GPU kernel module only for Debian 13 Trixie (bugs #15653 and #14466)
   if $env::deb_arch == 'amd64' or $env::deb_arch == 'ppc64el' or ($env::deb_arch == 'arm64' and $::lsbdistcodename == 'trixie') {
     class { 'env::big::configure_nvidia_gpu': }
   }
+  # AMD
   if $env::deb_arch == 'amd64' {
     class { 'env::big::configure_amd_gpu': }
-    # no GPU stack for now for Debian 13 Trixie (bugs #15653 and #14466)
+    # GPU kernel module only for Debian 13 Trixie (bugs #15653 and #14466)
     if $::lsbdistcodename != 'trixie' {
       # install rocm
       class { 'env::big::configure_rocm': }
@@ -36,10 +38,13 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
   if $env::deb_arch == 'amd64' {
     class { 'env::big::install_singularity': }
   }
-  #Allow sshfs
+  # Allow sshfs
   class { 'env::big::configure_sshfs': }
-  # Config OpenMPI
-  class { 'env::big::install_openmpi': }
+  # OpenMPI install and config
+  # provided by module(s) for Debian 13 Trixie (bug #17590)
+  if $::lsbdistcodename != 'trixie' {
+    class { 'env::big::install_openmpi': }
+  }
   # Snmp tools
   class { 'env::big::install_snmp_tools': }
   # remove RESUME device from initramfs

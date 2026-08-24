@@ -34,7 +34,7 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
       class { 'env::base::enable_cpufreq_with_performance_governor': }
     }
   }
-  #IbOverIP
+  # IbOverIP
   class { 'env::base::configure_ip_over_infiniband': }
   # memlock tuning for infiniband
   class { 'env::base::unlimited_memlock_for_infiniband': }
