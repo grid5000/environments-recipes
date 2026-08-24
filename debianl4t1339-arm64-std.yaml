@@ -7,7 +7,7 @@
 #
 #==============================================================================
 ---
-extend: ./debian11-arm64-common.yaml
+extend: ./debian13-arm64-common.yaml
 
 global:
   g5k_distrib: $${distrib}l4t
@@ -31,8 +31,8 @@ global:
   # Visibility override
   g5k_visibility: shared
   # L4T information
-  l4t_version_major: "38"
-  l4t_version_minor: "4"
+  l4t_version_major: "39"
+  l4t_version_minor: "2"
   l4t_version_patch: "0"
   l4t_version: r$${l4t_version_major}.$${l4t_version_minor}.$${l4t_version_patch}
   # g5k-l4t package version
