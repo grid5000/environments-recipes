@@ -186,6 +186,12 @@ class env::std::configure_oar_client {
       group    => root,
       mode     => '0644',
       source   => 'puppet:///modules/env/std/oar/etc/pam.d/common-session-noninteractive';
+    '/etc/pam.d/sudo-i':
+      ensure   => file,
+      owner    => root,
+      group    => root,
+      mode     => '0644',
+      source   => 'puppet:///modules/env/std/oar/etc/pam.d/sudo-i';
     '/usr/local/sbin/pam_oar_adopt':
       ensure   => file,
       owner    => root,

@@ -1,0 +1,7 @@
+#%PAM-1.0
+
+# Set up user limits from /etc/security/limits.conf.
+session    required   pam_limits.so
+
+# fallback to deault sudo behaviour (cf bug 18570)
+@include sudo
