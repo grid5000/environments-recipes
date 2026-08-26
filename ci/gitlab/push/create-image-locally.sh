@@ -52,8 +52,8 @@ fi
 
 set -x
 
-# Only reserve + deploy nodes for current std envs
-if [[ ${environment_name} = debian11*-std ]]; then
+# Only reserve + deploy nodes for current std envs (debiannvlegacy13-std not catched).
+if [[ ${environment_name} = debian13*-std ]]; then
   is_std_env="yes"
 fi
 
