@@ -84,5 +84,12 @@ in {
     '';
   };
 
+  # Automatically merges all rules from ./udev_rules into the system udev rules
+  services.udev.packages = if builtins.pathExists ./udev_rules then [
+    (pkgs.linkFarm "extra-udev-rules" [
+      { name = "etc/udev/rules.d"; path = ./udev_rules; }
+    ])
+  ] else [];
+
   users.motdFile = "/etc/motd";
 }

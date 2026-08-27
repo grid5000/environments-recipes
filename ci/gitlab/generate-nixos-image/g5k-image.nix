@@ -19,6 +19,7 @@ in {
     stdenvNoCC
     python3
     perl
+    lndir # for conditional pkgs.linkFarm usage
   ];
 
   # Fix the generated kadeploy env description
@@ -41,7 +42,7 @@ in {
       postinstalls:
       - archive: server:///grid5000/postinstalls/g5k-postinstall.tgz
         compression: gzip
-        script: g5k-postinstall --net none --disk-aliases
+        script: g5k-postinstall --net nixos --disk-aliases
       boot:
         kernel: ${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}
         initrd: ${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}
@@ -79,8 +80,8 @@ in {
     extraInputs = [pkgs.zstd];
 
     extraCommands = pkgs.writeScript "extra-commands.sh" ''
-      # Add necessary dirs for compatibility with g5k-postinstall and systemd boot
-      mkdir -p boot root tmp var/log etc/nixos etc/ssh etc/udev/rules.d etc/NetworkManager/system-connections/ run
+      # Add necessary dirs for compatibility with g5k-postinstall to set the ssh host keys before the first boot and for network connections
+      mkdir -p etc/ssh etc/NetworkManager/system-connections
 
       # Pre-populate the Nix SQLite database (Necessary to avoid problematic overwrites of existing packages on nixos-rebuild)
       export NIX_STATE_DIR="$(pwd)/nix/var/nix"
@@ -90,12 +91,8 @@ in {
       ${config.nix.package.out}/bin/nix-store --load-db < nix-path-registration
       rm nix-path-registration
 
-      # For compatibility with g5k-postinstall, we need to be able to add udev rules and to modify the fstab
-      cp -aL "${config.system.build.etc}/etc/udev/rules.d/." etc/udev/rules.d/
-      cp -aL "${config.system.build.etc}/etc/fstab" etc/fstab
-      chmod -R u+w etc/udev/rules.d/ etc/fstab
-
       # Allow easy nixos-rebuild of the current flake by having a writable copy in etc/nixos
+      mkdir -p etc/nixos
       cp -r ${inputs.self}/{flake.nix,g5k-image.nix,configuration.nix,flake.lock} etc/nixos/
       chmod -R u+w etc/nixos
     '';
@@ -103,6 +100,7 @@ in {
     storeContents = [
       {
         object = config.system.build.toplevel;
+        # Must be symlinked here since we rely on /nix/var/nix/profiles/system/activate during GRUB installation
         symlink = "/nix/var/nix/profiles/system";
       }
     ];
