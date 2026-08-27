@@ -6,6 +6,8 @@
   version = "$GENERATED_ENV_VERSION";
   commitSha = "$CI_COMMIT_SHA";
 in {
+  imports = [ ./fstab-parser.nix ];
+
   environment.systemPackages = with pkgs; [
     busybox
     vim
@@ -41,11 +43,11 @@ in {
   };
 
   fileSystems = {
-    "/" = {
+    "/" = lib.mkDefault {
       device = "/dev/disk/by-partlabel/KDPL_DEPLOY_disk0";
       fsType = "ext4";
     };
-    "/boot/efi" = {
+    "/boot/efi" = lib.mkDefault {
       device = "/dev/disk/by-partlabel/efi";
       fsType = "vfat";
       options = ["fmask=0022" "dmask=0022"];

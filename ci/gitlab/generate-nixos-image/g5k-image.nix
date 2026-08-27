@@ -20,6 +20,10 @@ in {
     python3
     perl
     lndir # for conditional pkgs.linkFarm usage
+
+    # For initrd and linux-*-modules-shrunk rebuild
+    xz
+    kmod
   ];
 
   # Fix the generated kadeploy env description
@@ -93,7 +97,7 @@ in {
 
       # Allow easy nixos-rebuild of the current flake by having a writable copy in etc/nixos
       mkdir -p etc/nixos
-      cp -r ${inputs.self}/{flake.nix,g5k-image.nix,configuration.nix,flake.lock} etc/nixos/
+      cp -r ${inputs.self}/{flake.nix,g5k-image.nix,configuration.nix,flake.lock,fstab-parser.nix} etc/nixos/
       chmod -R u+w etc/nixos
     '';
 
