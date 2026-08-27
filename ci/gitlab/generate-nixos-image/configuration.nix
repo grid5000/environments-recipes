@@ -64,12 +64,27 @@ in {
   in
     builtins.filter isWantedParam paramsList;
 
-  # TODO: using networkmanager currently breaks ipv6?
-  networking.useDHCP = true;
+  networking.networkmanager = {
+    # We use NetworkMananger since it's already supported in the postinstall
+    enable = true;
+
+    connectionConfig = {
+      "ipv6.method" = "dhcp"; # Request DHCPv6 even without SLAAC Router Advertisements
+      "ipv6.dhcp-duid" = "llt"; # Standard DUID format (Link-layer + time) for Grid'5000 DHCPv6
+    };
+  };
+
+  # Prioritize DNS resolution so `hostname -f` asks DNS for the canonical FQDN
+  system.nssDatabases.hosts = lib.mkForce [
+    "mymachines"
+    "files"
+    "dns"
+    "myhostname"
+  ];
 
   # Set the hostname with DHCP
   networking.hostName = "";
-  networking.dhcpcd.setHostname = true;
+
   security.polkit.enable = true;
 
   environment.etc = {
