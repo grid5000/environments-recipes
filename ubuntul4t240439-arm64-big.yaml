@@ -22,7 +22,7 @@ global:
   g5k_no_chroot_for_grub: true
   # Generate only the appliance for bare-metal deployment, not for VMs.
   appliance_formats: tar.zst
-  image_size: 30G
+  image_size: 50G
 
   # L4T information
   l4t_version_major: "39"
@@ -46,7 +46,7 @@ setup:
     - install_L4T_required_packages:
       - apt-get_in: update
       - apt-get_in: -q=2 remove --purge linux-image-* linux-modules-* linux-headers-*
-      - apt-get_in: install libegl1 libcairo2 libgles2 libgtk-3-0t64 libwayland-egl1 libxkbcommon0 libasound2t64 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 device-tree-compiler libdatrie1 libfontconfig1 libharfbuzz0b libpangoft2-1.0-0 libpixman-1-0 libxrender1 libpango-1.0-0 libpangocairo-1.0-0 libnl-route-3-200 libevdev2 libinput10 libjpeg-turbo8 libunwind8 libwayland-cursor0 qemu-user-static bridge-utils python3-tk python3-matplotlib gir1.2-appindicator3-0.1
+      - apt-get_in: install libegl1 libcairo2 libgles2 libgtk-3-0t64 libwayland-egl1 libxkbcommon0 libasound2t64 libgstreamer1.0-0 libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 device-tree-compiler libdatrie1 libfontconfig1 libharfbuzz0b libpangoft2-1.0-0 libpixman-1-0 libxrender1 libpango-1.0-0 libpangocairo-1.0-0 libnl-route-3-200 libevdev2 libinput10 libjpeg-turbo8 libunwind8 libwayland-cursor0 qemu-user-static bridge-utils python3-tk python3-matplotlib gir1.2-appindicator3-0.1 libc6-arm64-cross nvme-cli libpcre3 i2c-tools libwayland-server0 libseat1
 
     - install_nvidia_BSP:
       - on_setup_clean:
@@ -63,6 +63,10 @@ setup:
     - fix_nv_apply_debs_for_using_slash_as_rootfs:
       - exec_in: |
           echo -e "function qemu_setup_rootfs() { return 0; }\nfunction qemu_cleanup_rootfs() { return 0; }" > $${l4t_dir}/nv_tegra/nv_qemu_setup_helper.sh
+    - configure_dpkg_noninteractive:
+      - exec_in: |
+          mkdir -p /etc/dpkg/dpkg.cfg.d
+          echo -e "force-confdef\nforce-confold" > /etc/dpkg/dpkg.cfg.d/force-confold
     - apply_L4T:
       - exec_in: $${l4t_dir}/apply_binaries.sh -r $${rootfs}
     - disable_unwanted_L4T_services:
