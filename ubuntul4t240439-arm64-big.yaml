@@ -111,7 +111,7 @@ setup:
       - exec_in: |
           set -e
           if [ -n "$${extra_pip3_packages}" ]; then
-            pip3 install $${extra_pip3_packages}
+            pip3 install --break-system-packages $${extra_pip3_packages}
           fi
     - clean_apt_cache:
       - on_setup_clean:
