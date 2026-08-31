@@ -89,18 +89,20 @@ setup:
       - exec_in: |
           set -e
           # Workaround installation for nsight-system that requires running on target
-          deb=$(ls /var/cache/apt/archives | grep -o -e 'nsight-systems-[^_]\+' || true)
+          deb=$(ls /var/cache/apt/archives | grep -o -e 'nsight-systems-[^_]\+' | sort -u || true)
           if [ -n "$deb" ]; then
             echo "Workaround installation of $deb..."
-            DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
-              $(apt-cache depends $deb | awk '/Depends:/{print $2}')
-            dpkg --unpack /var/cache/apt/archives/$deb*.deb
-            sed -i.orig \
-                -e '4,7s/^/#/' \
-                -e '9,15s/^/#/' \
-                 /var/lib/dpkg/info/$deb.*postinst
-            dpkg --configure --pending
-            mv /var/lib/dpkg/info/$deb.*postinst.orig /var/lib/dpkg/info/$deb.*postinst
+            for package in $deb; do
+              dpkg --unpack /var/cache/apt/archives/$package*.deb || true
+              sed -i.orig \
+                  -e '4,7s/^/#/' \
+                  -e '9,15s/^/#/' \
+                   /var/lib/dpkg/info/$package.*postinst || true
+            done
+            DEBIAN_FRONTEND=noninteractive apt-get -f -y install
+            for package in $deb; do
+              mv /var/lib/dpkg/info/$package.*postinst.orig /var/lib/dpkg/info/$package.*postinst || true
+            done
           fi
       - apt-get_in: install $${extra_deb_packages}
       - apt-get_in: clean
