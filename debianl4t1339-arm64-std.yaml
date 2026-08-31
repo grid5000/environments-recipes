@@ -46,7 +46,8 @@ setup:
   - add_l4t_overlay:
     - fetch_g5k_l4t_package:
       - on_checkpoint: disabled
-      - exec_in: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
+      - exec_in: wget -qO- http://packages.grid5000.fr/grid5000-archive-key.asc > /etc/apt/trusted.gpg.d/grid5000-archive-key.asc 
+      # - exec_in: wget -q http://packages.grid5000.fr/grid5000-archive-key.asc -O- | apt-key add -
       - write_in:
         - /etc/apt/sources.list.d/g5k-l4t.list
         - "deb http://packages.grid5000.fr/deb/g5k-l4t /"
