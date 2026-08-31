@@ -36,5 +36,5 @@ autoinstall:
     popularity-contest popularity-contest/participate boolean false
   late-commands:
     - curtin in-target --target=/target -- apt-get update
-    - curtin in-target --target=/target -- apt-get upgrade -y
+    - curtin in-target --target=/target -- env DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
     - curtin in-target --target /target update-grub2
