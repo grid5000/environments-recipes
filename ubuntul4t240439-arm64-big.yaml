@@ -22,7 +22,7 @@ global:
   g5k_no_chroot_for_grub: true
   # Generate only the appliance for bare-metal deployment, not for VMs.
   appliance_formats: tar.zst
-  image_size: 50G
+  image_size: 65G
 
   # L4T information
   l4t_version_major: "39"
