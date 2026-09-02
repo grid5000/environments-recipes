@@ -41,16 +41,17 @@ bootstrap:
 setup:
   - "@base"
   - fix_boot_partition:
-    - exec_in: |
-        # Move /boot to root filesystem so it gets exported by tar --one-file-system
-        if mountpoint -q /boot; then
-          cp -a /boot /boot_tmp
-          umount /boot
-          rm -rf /boot/*
-          cp -a /boot_tmp/* /boot/
-          rm -rf /boot_tmp
-          sed -i '/\/boot/d' /etc/fstab
-        fi
+    - move_boot:
+      - exec_in: |
+          # Move /boot to root filesystem so it gets exported by tar --one-file-system
+          if mountpoint -q /boot; then
+            cp -a /boot /boot_tmp
+            umount /boot
+            rm -rf /boot/*
+            cp -a /boot_tmp/* /boot/
+            rm -rf /boot_tmp
+            sed -i '/\/boot/d' /etc/fstab
+          fi
   - prepare_L4T:
     - install_L4T_required_packages:
       - apt-get_in: update
