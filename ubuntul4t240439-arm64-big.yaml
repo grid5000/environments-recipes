@@ -86,6 +86,13 @@ setup:
     - install_extra_deb_packages:
       - exec_in: |
           set -e
+          # Prevent xx-nvidia-update-kernel-partitions from failing in chroot
+          mkdir -p /etc/kernel/postinst.d
+          if [ ! -f /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions.real ]; then
+            dpkg-divert --add --rename --divert /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions.real /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions
+            echo -e "#!/bin/sh\nexit 0" > /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions
+            chmod +x /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions
+          fi
           # Workaround installation for nsight-system that requires running on target
           deb=$(ls /var/cache/apt/archives | grep -o -e 'nsight-systems-[^_]\+' | sort -u || true)
           if [ -n "$deb" ]; then
