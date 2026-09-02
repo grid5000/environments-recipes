@@ -16,9 +16,7 @@ global:
   g5k_description: $${distrib} $${release_number} ($${release}) with L4T $${l4t_version} for $${arch} - $${g5k_variant}
   # Grid'5000 environment variant
   g5k_variant: big
-  # Setup Nvidia L4T kernel/initrd and make kadeploy not use update-grub to generate grub.cfg
-  g5k_kernel_path: "/boot/Image"
-  g5k_initrd_path: "/boot/initrd"
+  # Make kadeploy not use update-grub to generate grub.cfg
   g5k_no_chroot_for_grub: true
   # Generate only the appliance for bare-metal deployment, not for VMs.
   appliance_formats: tar.zst
@@ -33,7 +31,7 @@ global:
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   rootfs: "/"
-  extra_deb_packages: "nvidia-jetpack"
+  extra_deb_packages: "nvidia-jetpack linux-nvidia-tegra"
   extra_pip3_packages: "jetson-stats"
   l4t_nvp_model: 3
 
