@@ -45,12 +45,20 @@ setup:
       - exec_in: |
           # Move /boot to root filesystem so it gets exported by tar --one-file-system
           if mountpoint -q /boot; then
+            if mountpoint -q /boot/efi; then
+              EFI_DEV=$(findmnt -n -o SOURCE /boot/efi)
+              umount /boot/efi
+              sed -i '/\/boot\/efi/d' /etc/fstab
+              if [ -n "$EFI_DEV" ]; then wipefs -a "$EFI_DEV"; fi
+            fi
+            BOOT_DEV=$(findmnt -n -o SOURCE /boot)
             cp -a /boot /boot_tmp
             umount /boot
             rm -rf /boot/*
             cp -a /boot_tmp/* /boot/
             rm -rf /boot_tmp
-            sed -i '/\/boot/d' /etc/fstab
+            sed -i '/\/boot /d' /etc/fstab
+            if [ -n "$BOOT_DEV" ]; then wipefs -a "$BOOT_DEV"; fi
           fi
   - prepare_L4T:
     - install_L4T_required_packages:
