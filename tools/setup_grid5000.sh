@@ -34,7 +34,7 @@ if [ "$ARCH" = "arm64" -o "$ARCH" = "ppc64el" ]; then
 	echo deb http://packages.grid5000.fr/deb/libguestfs-backport / > /etc/apt/sources.list.d/libguestfs-backport.list
 fi
 # install other dependencies
-apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends netcat eatmydata libguestfs-tools gnupg-agent
+apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends netcat-opensbd eatmydata libguestfs-tools gnupg-agent
 
 # install dependencies if arm64, for Ubuntu iso autoinstall/cloud-init rebuild. See #13859
 if [ "$ARCH" = "arm64" ]; then
