@@ -45,26 +45,27 @@ bootstrap:
 setup:
   - "@base"
   - add_extlinux_fix_script:
-    - exec_in: |
-        cat << 'EOF' > /usr/local/bin/g5k-fix-extlinux
-        #!/bin/bash
-        # Get UUID from /etc/fstab (created by g5k-postinstall)
-        UUID=$(awk '$2 == "/" {print $1}' /etc/fstab)
-        if [[ "$UUID" == UUID=* ]]; then
-          EXTLINUX_CONF="/boot/extlinux/extlinux.conf"
-          if [ -f "$EXTLINUX_CONF" ]; then
-            sed -i 's|/boot/Image|/boot/vmlinuz|g' "$EXTLINUX_CONF"
-            sed -i 's|/boot/initrd|/boot/initrd.img|g' "$EXTLINUX_CONF"
-            sed -i "s|APPEND \${cbootargs}|APPEND \${cbootargs} root=$UUID|g" "$EXTLINUX_CONF"
-            echo "Updated extlinux.conf with root=$UUID"
+    - write_script:
+      - exec_in: |
+          cat << 'EOF' > /usr/local/bin/g5k-fix-extlinux
+          #!/bin/bash
+          # Get UUID from /etc/fstab (created by g5k-postinstall)
+          UUID=$(awk '$2 == "/" {print $1}' /etc/fstab)
+          if [[ "$UUID" == UUID=* ]]; then
+            EXTLINUX_CONF="/boot/extlinux/extlinux.conf"
+            if [ -f "$EXTLINUX_CONF" ]; then
+              sed -i 's|/boot/Image|/boot/vmlinuz|g' "$EXTLINUX_CONF"
+              sed -i 's|/boot/initrd|/boot/initrd.img|g' "$EXTLINUX_CONF"
+              sed -i "s|APPEND \${cbootargs}|APPEND \${cbootargs} root=$UUID|g" "$EXTLINUX_CONF"
+              echo "Updated extlinux.conf with root=$UUID"
+            else
+              echo "Error: $EXTLINUX_CONF not found"
+            fi
           else
-            echo "Error: $EXTLINUX_CONF not found"
+            echo "Error: Could not find root UUID in /etc/fstab"
           fi
-        else
-          echo "Error: Could not find root UUID in /etc/fstab"
-        fi
-        EOF
-        chmod +x /usr/local/bin/g5k-fix-extlinux
+          EOF
+          chmod +x /usr/local/bin/g5k-fix-extlinux
   - fix_boot_partition:
     - move_boot:
       - exec_in: |
