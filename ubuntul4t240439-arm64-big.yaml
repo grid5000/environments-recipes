@@ -18,8 +18,12 @@ global:
   g5k_variant: big
   # Make kadeploy not use update-grub to generate grub.cfg
   g5k_no_chroot_for_grub: true
-  # Generate only the appliance for bare-metal deployment, not for VMs.
+  g5k_postinst_script: g5k-postinstall --net netplan --fstab nfs --restrict-user current --disk-aliases && chroot ${KADEPLOY_ENV_EXTRACTION_DIR} /usr/local/bin/g5k-fix-extlinux
   appliance_formats: tar.zst
+  appliance_tar_excludes: >-
+    ./etc/fstab ./root/.bash_history ./root/kameleon_workdir ./root/.ssh
+    ./var/tmp/* ./tmp/* ./dev/* ./proc/* ./run/*
+    ./sys/* ./root/.rpmdb ./boot/grub ./boot/grub2
   image_size: 100G
 
   # L4T information
@@ -40,6 +44,27 @@ bootstrap:
 
 setup:
   - "@base"
+  - add_extlinux_fix_script:
+    - exec_in: |
+        cat << 'EOF' > /usr/local/bin/g5k-fix-extlinux
+        #!/bin/bash
+        # Get UUID from /etc/fstab (created by g5k-postinstall)
+        UUID=$(awk '$2 == "/" {print $1}' /etc/fstab)
+        if [[ "$UUID" == UUID=* ]]; then
+          EXTLINUX_CONF="/boot/extlinux/extlinux.conf"
+          if [ -f "$EXTLINUX_CONF" ]; then
+            sed -i 's|/boot/Image|/boot/vmlinuz|g' "$EXTLINUX_CONF"
+            sed -i 's|/boot/initrd|/boot/initrd.img|g' "$EXTLINUX_CONF"
+            sed -i "s|APPEND \${cbootargs}|APPEND \${cbootargs} root=$UUID|g" "$EXTLINUX_CONF"
+            echo "Updated extlinux.conf with root=$UUID"
+          else
+            echo "Error: $EXTLINUX_CONF not found"
+          fi
+        else
+          echo "Error: Could not find root UUID in /etc/fstab"
+        fi
+        EOF
+        chmod +x /usr/local/bin/g5k-fix-extlinux
   - fix_boot_partition:
     - move_boot:
       - exec_in: |
