@@ -14,17 +14,31 @@ in {
   ];
 
   # Add build dependencies (required to rebuild some packages) to allows offline rebuilds on deployment
-  system.extraDependencies = with pkgs; [
-    stdenv
-    stdenvNoCC
-    python3
-    perl
-    lndir # for conditional pkgs.linkFarm usage
+  # The simplest way to understand what packages to put below is to run (after a config change)
+  # `nixos-rebuild --flake /etc/nixos#default dry-run` and to look below the output `these X paths will be fetched`
+  system.extraDependencies = with pkgs;
+    [
+      # Build environments & interpreters
+      stdenvNoCC
+      lndir # for pkgs.linkFarm
 
-    # For initrd and linux-*-modules-shrunk rebuild
-    xz
-    kmod
-  ];
+      # Wrapper hooks & helpers
+      dieHook
+      makeWrapper
+      makeBinaryWrapper
+      makeShellWrapper
+
+      # Tools & headers needed to assemble system-path and service units
+      desktop-file-utils
+      texinfo
+      getconf
+      jq.dev
+      kmod.dev
+      libxslt.dev
+    ]
+    # Transient build-time derivations (e.g. check-sshd-config, initrd udev rules)
+    ++ config.system.checks
+    ++ config.boot.initrd.services.udev.packages;
 
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = pkgs.writeTextFile {
