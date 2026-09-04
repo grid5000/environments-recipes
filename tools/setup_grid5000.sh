@@ -29,8 +29,8 @@ if [ -z "$(apt-cache search linux-image-$(uname -r)-dbg)" ] && [ $(apt-cache mad
     /tmp/environments-recipes/tools/nofsync.stp </dev/null >/dev/null 2>&1 &
 fi
 
-# if arm64 or ppc64, use backported package for libguestfs-tools. see #11432
-if [ "$ARCH" = "arm64" -o "$ARCH" = "ppc64el" ]; then
+# if ppc64, use backported package for libguestfs-tools. see #11432
+if [ "$ARCH" = "ppc64el" ]; then
 	echo deb http://packages.grid5000.fr/deb/libguestfs-backport / > /etc/apt/sources.list.d/libguestfs-backport.list
 fi
 # install other dependencies
