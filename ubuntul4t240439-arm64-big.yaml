@@ -61,7 +61,7 @@ setup:
     - fix_nv_apply_debs_for_using_slash_as_rootfs:
       - exec_in: echo -e "function qemu_setup_rootfs() { return 0; }\nfunction qemu_cleanup_rootfs() { return 0; }" > $${l4t_dir}/nv_tegra/nv_qemu_setup_helper.sh
     - apply_L4T:
-      - exec_in: $${l4t_dir}/apply_binaries.sh -r $${rootfs}
+      - exec_in: DPKG_FORCE="confold,confdef" DEBIAN_FRONTEND=noninteractive $${l4t_dir}/apply_binaries.sh -r $${rootfs}
     - disable_unwanted_L4T_services:
       - exec_in: |
           set -e
@@ -81,20 +81,18 @@ setup:
     - install_extra_deb_packages:
       - exec_in: |
           set -e
-          # Workaround installation for nsight-system that requires running on target
-          deb=$(ls /var/cache/apt/archives | grep -o -e 'nsight-systems-[^_]\+' || true)
-          if [ -n "$deb" ]; then
-            echo "Workaround installation of $deb..."
-            DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install \
-              $(apt-cache depends $deb | awk '/Depends:/{print $2}')
-            dpkg --unpack /var/cache/apt/archives/$deb*.deb
-            sed -i.orig \
-                -e '4,7s/^/#/' \
-                -e '9,15s/^/#/' \
-                 /var/lib/dpkg/info/$deb.*postinst
-            dpkg --configure --pending
-            mv /var/lib/dpkg/info/$deb.*postinst.orig /var/lib/dpkg/info/$deb.*postinst
-          fi
+          # Workaround nsight-systems postinst & skip kernel partition flash
+          for f in /var/cache/apt/archives/*nsight-systems*.deb; do
+            [ -e "$f" ] || continue; p=$(dpkg-deb -f "$f" Package)
+            DEBIAN_FRONTEND=noninteractive apt-get -y --allow-unauthenticated install $(apt-cache depends $p | awk '/Depends:/{print $2}' | tr -d '<>')
+            dpkg --unpack "$f"
+            sed -i.orig -e '4,7s/^/#/' -e '9,15s/^/#/' /var/lib/dpkg/info/$p.*postinst 2>/dev/null || true
+            dpkg --configure --pending || true
+            mv /var/lib/dpkg/info/$p.*postinst.orig /var/lib/dpkg/info/$p.*postinst 2>/dev/null || true
+          done
+          mkdir -p /etc/kernel/postinst.d
+          dpkg-divert --add --rename --divert /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions.real /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions || true
+          ln -sf /bin/true /etc/kernel/postinst.d/xx-nvidia-update-kernel-partitions
       - apt-get_in: install $${extra_deb_packages}
       - apt-get_in: clean
     - install_extra_pip3_packages:
