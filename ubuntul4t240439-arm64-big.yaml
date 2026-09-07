@@ -32,7 +32,7 @@ global:
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   rootfs: "/"
-  extra_deb_packages: "nvidia-jetpack"
+  extra_deb_packages: "nvidia-jetpack linux-nvidia-tegra"
   extra_pip3_packages: "jetson-stats"
   l4t_nvp_model: 3
 
@@ -59,12 +59,7 @@ setup:
       - exec_in: mount --bind $${rootfs} $${l4t_dir}/rootfs
   - apply_L4T_overlay:
     - fix_nv_apply_debs_for_using_slash_as_rootfs:
-      - exec_in: |
-          sed -i.bak \
-            -e 's@^\(install --owner=root --group=root "${QEMU_BIN}" "${L4T_ROOTFS_DIR}/usr/bin/"\)@#\1@' \
-            -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/random" c 1 8\)@#\1@' \
-            -e 's@^\(mknod -m 444 "${L4T_ROOTFS_DIR}/dev/urandom" c 1 9\)@#\1@' \
-            $${l4t_dir}/nv_tegra/nv-apply-debs.sh
+      - exec_in: echo -e "function qemu_setup_rootfs() { return 0; }\nfunction qemu_cleanup_rootfs() { return 0; }" > $${l4t_dir}/nv_tegra/nv_qemu_setup_helper.sh
     - apply_L4T:
       - exec_in: $${l4t_dir}/apply_binaries.sh -r $${rootfs}
     - disable_unwanted_L4T_services:
