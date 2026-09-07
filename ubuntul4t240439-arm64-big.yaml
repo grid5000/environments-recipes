@@ -141,16 +141,35 @@ setup:
             UUID=$(awk '$2 == "/" {print $1}' /etc/fstab)
             if [[ "$UUID" == UUID=* ]]; then
               EXTLINUX_CONF="/boot/extlinux/extlinux.conf"
-              if [ -f "$EXTLINUX_CONF" ]; then
-                REAL_VMLINUZ=$(readlink -f /boot/vmlinuz)
-                REAL_INITRD=$(readlink -f /boot/initrd.img)
-                sed -i "s|/boot/Image|$REAL_VMLINUZ|g" "$EXTLINUX_CONF"
-                sed -i "s|/boot/initrd|$REAL_INITRD|g" "$EXTLINUX_CONF"
-                sed -i "s|APPEND \${cbootargs}|APPEND \${cbootargs} root=$UUID|g" "$EXTLINUX_CONF"
-                echo "Updated extlinux.conf with root=$UUID, kernel=$REAL_VMLINUZ, initrd=$REAL_INITRD"
-              else
-                echo "Error: $EXTLINUX_CONF not found"
+              if [ ! -f "$EXTLINUX_CONF" ]; then
+                echo "Creating $EXTLINUX_CONF..."
+                mkdir -p /boot/extlinux
+                cat << 'EOF3' > "$EXTLINUX_CONF"
+TIMEOUT 30
+DEFAULT primary
+
+MENU TITLE L4T boot options
+
+LABEL primary
+      MENU LABEL primary kernel
+      LINUX /boot/Image
+      INITRD /boot/initrd.img
+      APPEND ${cbootargs} root=PLACEHOLDER rw rootwait rootfstype=ext4
+EOF3
               fi
+              
+              REAL_VMLINUZ=$(readlink -f /boot/vmlinuz)
+              REAL_INITRD=$(readlink -f /boot/initrd.img)
+              sed -i "s|/boot/Image|$REAL_VMLINUZ|g" "$EXTLINUX_CONF"
+              sed -i "s|/boot/initrd.img|$REAL_INITRD|g" "$EXTLINUX_CONF"
+              sed -i "s|/boot/initrd|$REAL_INITRD|g" "$EXTLINUX_CONF"
+              # Handle cases where APPEND doesn't exist by appending it if missing? 
+              # Our created one has it. Existing ones have it.
+              sed -i "s|root=PLACEHOLDER|root=$UUID|g" "$EXTLINUX_CONF"
+              if ! grep -q "root=UUID" "$EXTLINUX_CONF"; then
+                sed -i "s|APPEND \${cbootargs}|APPEND \${cbootargs} root=$UUID|g" "$EXTLINUX_CONF"
+              fi
+              echo "Updated extlinux.conf with root=$UUID, kernel=$REAL_VMLINUZ, initrd=$REAL_INITRD"
             else
               echo "Error: Could not find root UUID in /etc/fstab"
             fi
