@@ -26,7 +26,7 @@ global:
     ./etc/fstab ./root/.bash_history ./root/kameleon_workdir ./root/.ssh
     ./var/tmp/* ./tmp/* ./dev/* ./proc/* ./run/*
     ./sys/* ./root/.rpmdb ./boot/grub ./boot/grub2
-  image_size: 30G
+  image_size: 100G
 
   # L4T information
   l4t_version_major: "39"
