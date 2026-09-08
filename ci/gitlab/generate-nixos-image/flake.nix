@@ -7,28 +7,32 @@
   };
 
   outputs = {nixpkgs, ...} @ inputs: let
-    system = "x86_64-linux";
-
-    g5kImageConfig = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = {inherit inputs;};
-      modules = [
-        ./g5k-image.nix
-      ];
-    };
+    supportedSystems = ["x86_64-linux" "aarch64-linux"];
+    forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
   in {
-    packages.${system} = rec {
+    packages = forAllSystems (system: let
+      g5kImageConfig = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {inherit inputs;};
+        modules = [
+          ./g5k-image.nix
+        ];
+      };
+    in {
       g5k-image = g5kImageConfig.config.system.build.g5k-image;
-      default = g5k-image;
-    };
+    });
 
     # Rebuild with `nixos-rebuild --flake /etc/nixos#default switch`
-    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = {inherit inputs;};
-      modules = [
-        ./configuration.nix
-      ];
-    };
+    # Nix CLI automatically resolves `legacyPackages.${currentSystem}.nixosConfigurations.default`
+    # This allows #default to works for any system architecture
+    legacyPackages = forAllSystems (system: {
+      nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {inherit inputs;};
+        modules = [
+          ./configuration.nix
+        ];
+      };
+    });
   };
 }
