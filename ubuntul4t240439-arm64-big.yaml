@@ -105,5 +105,12 @@ setup:
     - clean_apt_cache:
       - on_setup_clean:
         - apt-get_in: clean
+    - setup_kadeploy_kernel_links:
+      - exec_in: |
+          cd /boot
+          KERNEL=$(ls vmlinuz-* | head -n 1)
+          INITRD=$(ls initrd.img-* | head -n 1)
+          ln -sf $KERNEL Image
+          ln -sf $INITRD initrd
 export:
   - "@base"
