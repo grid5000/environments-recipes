@@ -47,7 +47,7 @@ ENV_CONFIG = {
     '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
   },
   'nixos' => {
-    '2605' => map_variants_to_archs(VARIANTS_MIN, ARCHS_X),
+    '2605' => map_variants_to_archs(VARIANTS_MIN, ARCHS_X_ARM),
   },
 }.freeze
 
