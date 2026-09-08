@@ -16,10 +16,14 @@
         specialArgs = {inherit inputs;};
         modules = [
           ./g5k-image.nix
+          ./vm.nix
         ];
       };
     in {
       g5k-image = g5kImageConfig.config.system.build.g5k-image;
+      # You can test quickly in a VM with `nix run .#vm`
+      # It allows SSH login on localhost port 2222 as root with password "g5k"
+      vm = g5kImageConfig.config.system.build.vm;
     });
 
     # Rebuild with `nixos-rebuild --flake /etc/nixos#default switch`

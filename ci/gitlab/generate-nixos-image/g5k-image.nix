@@ -111,7 +111,7 @@ in {
 
       # Allow easy nixos-rebuild of the current flake by having a writable copy in etc/nixos
       mkdir -p etc/nixos
-      cp -r ${inputs.self}/{flake.nix,g5k-image.nix,configuration.nix,flake.lock,fstab-parser.nix} etc/nixos/
+      cp -r ${inputs.self}/{flake.nix,g5k-image.nix,vm.nix,configuration.nix,flake.lock,fstab-parser.nix} etc/nixos/
       chmod -R u+w etc/nixos
     '';
 
