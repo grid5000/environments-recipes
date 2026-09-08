@@ -13,6 +13,8 @@ global:
   g5k_distrib: $${distrib}l4t
   g5k_release_number: 2404$${l4t_version_major}
   g5k_description: $${distrib} $${release_number} ($${release}) with L4T $${l4t_version} for $${arch} - $${g5k_variant}
+  g5k_kernel_path: "/vmlinuz"
+  g5k_initrd_path: "/initrd.img"
   # Grid'5000 environment variant
   g5k_variant: big
   # Generate only the appliance for bare-metal deployment, not for VMs.
@@ -103,10 +105,9 @@ setup:
         - apt-get_in: clean
     - setup_kadeploy_kernel_links:
       - exec_in: |
-          cd /boot
-          KERNEL=$(ls vmlinuz-* | grep -v "\.old" | head -n 1)
-          INITRD=$(ls initrd.img-* | grep -v "\.old" | head -n 1)
-          if [ -n "$KERNEL" ]; then ln -sf $KERNEL vmlinuz; fi
-          if [ -n "$INITRD" ]; then ln -sf $INITRD initrd.img; fi
+          KERNEL=$(ls /boot/vmlinuz-* | grep -v "\.old" | head -n 1)
+          INITRD=$(ls /boot/initrd.img-* | grep -v "\.old" | head -n 1)
+          if [ -n "$KERNEL" ]; then cp $KERNEL /vmlinuz; fi
+          if [ -n "$INITRD" ]; then cp $INITRD /initrd.img; fi
 export:
   - "@base"
