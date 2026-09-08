@@ -50,7 +50,7 @@ class env::common::software_versions {
           $datacenter_gpu_manager = '1:3.3.9'
           $dcgm_exporter          = '3.3.5-1'
           $lmod                   = '8.7.60-1+g5k1.0.0'
-          $amdgpu_version         = '30.30'
+          $amdgpu_version         = '31.50'
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
