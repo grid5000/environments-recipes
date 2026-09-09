@@ -13,6 +13,7 @@ global:
   g5k_distrib: $${distrib}l4t
   g5k_release_number: 2404$${l4t_version_major}
   g5k_description: $${distrib} $${release_number} ($${release}) with L4T $${l4t_version} for $${arch} - $${g5k_variant}
+  g5k_no_chroot_for_grub: "true"
   # Grid'5000 environment variant
   g5k_variant: big
   # Generate only the appliance for bare-metal deployment, not for VMs.
