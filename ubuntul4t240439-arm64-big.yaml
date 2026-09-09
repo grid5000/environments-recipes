@@ -106,19 +106,8 @@ setup:
       - exec_in: |
           cd /boot
           # Kadeploy requirement
-          if [ -f Image ]; then
-            ln -sf Image vmlinuz
-          else
-            KERNEL=$(ls vmlinuz-* | grep -v "\.old" | head -n 1)
-            if [ -n "$KERNEL" ]; then ln -sf $KERNEL vmlinuz; fi
-          fi
-          
-          if [ -f initrd ]; then
-            ln -sf initrd initrd.img
-          else
-            INITRD=$(ls initrd.img-* | grep -v "\.old" | head -n 1)
-            if [ -n "$INITRD" ]; then ln -sf $INITRD initrd.img; fi
-          fi
+          if [ -f Image ]; then ln -sf Image vmlinuz; fi
+          if [ -f initrd ]; then ln -sf initrd initrd.img; fi
           
           # Workaround for guestmount LVM bug: sync /boot to the underlying rootfs
           mkdir -p /mnt/rootfs
