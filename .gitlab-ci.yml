@@ -53,7 +53,7 @@ upload-custom-postinstall:
 
 clone-refrepo:
   stage: setup
-  image: ${CI_REGISTRY}/grid5000/docker/g5k-debian:bullseye
+  image: ${CI_REGISTRY}/grid5000/docker/g5k-debian:trixie
   tags:
     - grid5000-docker
   needs:
@@ -86,7 +86,7 @@ clone-refrepo:
 
 .pipeline-generation:
   stage: setup
-  image: ${CI_REGISTRY}/grid5000/docker/g5k-debian:bullseye
+  image: ${CI_REGISTRY}/grid5000/docker/g5k-debian:trixie
   tags:
     - grid5000-docker
   needs:
