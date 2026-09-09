@@ -29,7 +29,7 @@ global:
   workdir: "/nvidia"
   l4t_dir: "$${workdir}/Linux_for_Tegra"
   rootfs: "/"
-  extra_deb_packages: "nvidia-jetpack linux-nvidia-tegra"
+  extra_deb_packages: "nvidia-jetpack"
   extra_pip3_packages: "jetson-stats"
   l4t_nvp_model: 3
 
