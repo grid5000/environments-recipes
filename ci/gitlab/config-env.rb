@@ -5,6 +5,7 @@ ARCHS_ARM = %w[arm64].freeze
 VARIANTS_ALL = %w[min base nfs big std rocm].freeze
 VARIANTS_ALL_BUT_ROCM = %w[min base nfs big std].freeze
 VARIANTS_ALL_BUT_STD_ROCM = %w[min base nfs big].freeze
+VARIANTS_ALL_BUT_BASE_ROCM = %w[min nfs big std].freeze
 VARIANTS_MIN_NFS = %w[min nfs].freeze
 VARIANTS_MIN_NFS_BIG = %w[min nfs big].freeze
 
@@ -17,7 +18,7 @@ ENV_CONFIG = {
     '11'         => map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
     'nvopen11'   => map_variants_to_archs(%w[big std], ARCHS_X),
     '12'         => map_variants_to_archs(VARIANTS_MIN_NFS_BIG, ARCHS_ALL),
-    '13'         => map_variants_to_archs(VARIANTS_ALL_BUT_ROCM, ARCHS_ALL),
+    '13'         => map_variants_to_archs(VARIANTS_ALL_BUT_BASE_ROCM, ARCHS_X_ARM),
     'nvlegacy13' => map_variants_to_archs(%w[big std], ARCHS_X),
     'testing'    => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
     'l4t1135'    => map_variants_to_archs(%w[std], ARCHS_ARM),
