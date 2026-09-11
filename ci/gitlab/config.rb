@@ -26,3 +26,13 @@ def clusters_per_arch_for_site(site)
   # Group clusters per arch and return them
   archs_per_cluster.keys.group_by { |k| archs_per_cluster[k] }
 end
+
+# Clusters to be used when generating images
+def gen_clusters_for_arch(arch)
+  arch == 'arm64' ? 'sasquatch' : 'grvingt grele grappe gros'
+end
+
+# Site to be used when generating images
+def gen_site_for_arch(arch)
+  arch == 'arm64' ? 'grenoble' : 'nancy'
+end

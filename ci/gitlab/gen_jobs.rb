@@ -74,6 +74,8 @@ def pipeline_for_config(clusters_config, os, version, arch, variant)
     'local' => 'ci/gitlab/generate-image.yml',
     'inputs' => {
       'autostart' => autostart_generation?(environment),
+      'site' => gen_site_for_arch(arch),
+      'clusters' => gen_clusters_for_arch(arch),
       **common_inputs,
     },
   }

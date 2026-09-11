@@ -51,6 +51,8 @@ def gen_environments_includes
       'inputs' => {
         'autostart' => false,
         'environment-name' => environment,
+        'site' => gen_site_for_arch(arch),
+        'clusters' => gen_clusters_for_arch(arch),
       },
     }
   end.flatten.compact
