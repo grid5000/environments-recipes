@@ -23,9 +23,12 @@ trap "oardel $OAR_JOB_ID" EXIT
 tail -F "OAR.${OAR_JOB_ID}.stdout" "OAR.${OAR_JOB_ID}.stderr" &
 TAIL_PID=$!
 
-while [[ "$(oarstat -Jj $OAR_JOB_ID | jq -r '.[].state')" =~ Waiting|Launching|Running|Finishing ]]; do
+JOB_STATE=""
+while [[ "$JOB_STATE" =~ Waiting|Launching|Running|Finishing ]] || [[ -z "$JOB_STATE" ]]; do
   sleep 10
+  JOB_STATE=$(oarstat -Jj $OAR_JOB_ID | jq -r '.[].state')
 done
+echo "Final job state: $JOB_STATE"
 
 kill $TAIL_PID 2>/dev/null || true
 
