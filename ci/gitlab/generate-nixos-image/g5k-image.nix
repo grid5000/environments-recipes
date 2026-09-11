@@ -47,7 +47,7 @@ in {
     text = ''
       name: nixos2605-min
       alias: nixos2605-${arch}-min
-      arch: ${arch}
+      arch: ${if arch == "arm64" then "aarch64" else arch}
       version: ${version}
       description: NixOS 26.05 for ${arch} - min
       author: support-staff@lists.grid5000.fr
