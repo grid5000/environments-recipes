@@ -18,7 +18,7 @@ fi
 echo "Job $OAR_JOB_ID submitted successfully. Waiting for it to finish..."
 
 # Ensures the job is deleted on exit
-trap "oardel $OAR_JOB_ID" EXIT
+trap "oardel $OAR_JOB_ID || true" EXIT
 
 tail -F "OAR.${OAR_JOB_ID}.stdout" "OAR.${OAR_JOB_ID}.stderr" &
 TAIL_PID=$!
