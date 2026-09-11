@@ -32,6 +32,6 @@ echo "Removing old environments... (DISABLED)"
 #find public/environments/pipelines/ -type f -mtime +14 -print -delete
 #find public/environments/pipelines/ -type d -mtime +14 -empty -print -delete
 
-echo "Copying environment to home ($TARGET_DIR) directory..."
-mkdir -p $TARGET_DIR
-rsync -rLv result/ $TARGET_DIR/
+echo "Copying environment to home ($TARGET_DIR) directory of ajenkins@nancy..."
+ssh ajenkins@nancy "mkdir -p $TARGET_DIR"
+rsync -rLv result/ ajenkins@nancy:"$TARGET_DIR/"
