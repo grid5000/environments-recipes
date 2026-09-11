@@ -7,6 +7,8 @@
 
 set -euo pipefail
 
+echo "Job started on $(hostname -f)"
+
 echo "Installing nix on standard environment..."
 # We need super user rights to mount tmpfs and install nix
 sudo-g5k
