@@ -51,6 +51,8 @@ def gen_environments_includes
       'inputs' => {
         'autostart' => false,
         'environment-name' => environment,
+        'site' => arch == 'arm64' ? 'grenoble' : 'nancy',
+        'clusters' => arch == 'arm64' ? 'sasquatch' : 'grvingt grele grappe gros',
       },
     }
   end.flatten.compact
