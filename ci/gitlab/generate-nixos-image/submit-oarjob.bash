@@ -3,7 +3,12 @@
 set -euo pipefail
 
 echo "Submitting batch job on distant machine..."
-OAR_JOB_ID=$(oarsub -S ./oarjob-launcher.bash | grep OAR_JOB_ID | sed 's/.*=//')
+# $CLUSTERS is the list of clusters separated by spaces. e.g. for "grvingt grele", we need to call `oarsub -p grvingt -p grele`
+PROPERTIES=""
+for cluster in $CLUSTERS; do
+  PROPERTIES="$PROPERTIES -p $cluster"
+done
+OAR_JOB_ID=$(oarsub $PROPERTIES -S ./oarjob-launcher.bash | grep OAR_JOB_ID | sed 's/.*=//')
 
 if [ -z "$OAR_JOB_ID" ]; then
   echo "Failed to submit job."

@@ -3,6 +3,7 @@
 #OAR -l nodes=1,walltime=1:00
 #OAR -O OAR.%jobid%.stdout
 #OAR -E OAR.%jobid%.stderr
+#OAR -t exotic
 
 set -euo pipefail
 

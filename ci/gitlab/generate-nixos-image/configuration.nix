@@ -5,6 +5,7 @@
 }: let
   version = "$GENERATED_ENV_VERSION";
   commitSha = "$CI_COMMIT_SHA";
+  arch = if pkgs.stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
 in {
   imports = [ ./fstab-parser.nix ];
 
@@ -91,12 +92,12 @@ in {
 
   environment.etc = {
     "grid5000/release".text = ''
-      nixos2605-x64-min-${version}
+      nixos2605-${arch}-min-${version}
       ${commitSha}
     '';
     "motd".text = ''
-      nixos2605-x64-min-${version}
-      (Image based on NixOS 26.05 for AMD64)
+      nixos2605-${arch}-min-${version}
+      (Image based on NixOS 26.05 for ${arch})
       Maintained by support-staff <support-staff@lists.grid5000.fr>
     '';
   };

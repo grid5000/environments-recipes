@@ -8,6 +8,7 @@
   version = "$GENERATED_ENV_VERSION";
   pipelineId = "$CI_PIPELINE_ID";
   commitShortSha = "$CI_COMMIT_SHORT_SHA";
+  arch = if pkgs.stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
 in {
   imports = [
     ./configuration.nix
@@ -42,19 +43,19 @@ in {
 
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = pkgs.writeTextFile {
-    name = "nixos2605-x64-min.dsc";
+    name = "nixos2605-${arch}-min.dsc";
     text = ''
       name: nixos2605-min
-      alias: nixos2605-x64-min
-      arch: x86_64
+      alias: nixos2605-${arch}-min
+      arch: ${arch}
       version: ${version}
-      description: NixOS 26.05 for x86_64 - min
+      description: NixOS 26.05 for ${arch} - min
       author: support-staff@lists.grid5000.fr
       visibility: public
       destructive: false
       os: linux
       image:
-        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitShortSha}/nixos2605-x64-min.tar.zst
+        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitShortSha}/nixos2605-${arch}-min.tar.zst
         kind: tar
         compression: zstd
       postinstalls:
@@ -79,15 +80,14 @@ in {
 
     installPhase = ''
       mkdir $out
-
-      ln -s ${config.system.build.kadeploy_env_description} $out/nixos2605-x64-min.dsc
-      ln -s ${config.system.build.g5k-image-archive}/tarball/nixos2605-x64-min.tar.zst $out/nixos2605-x64-min.tar.zst
+      ln -s ${config.system.build.kadeploy_env_description} $out/nixos2605-${arch}-min.dsc
+      ln -s ${config.system.build.g5k-image-archive}/tarball/nixos2605-${arch}-min.tar.zst $out/nixos2605-${arch}-min.tar.zst
     '';
   };
 
   # Fix the compression to use zstd like other environments
   system.build.g5k-image-archive = import "${toString modulesPath}/../lib/make-system-tarball.nix" {
-    fileName = "nixos2605-x64-min";
+    fileName = "nixos2605-${arch}-min";
     stdenv = pkgs.stdenv;
     closureInfo = pkgs.closureInfo;
     pixz = pkgs.pixz;

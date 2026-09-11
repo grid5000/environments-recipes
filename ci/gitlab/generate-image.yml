@@ -2,6 +2,10 @@ spec:
   inputs:
     autostart:
       type: boolean
+    site:
+      type: string
+    clusters:
+      type: string
     environment-name:
 ---
 "gen-$[[ inputs.environment-name ]]":
@@ -11,7 +15,8 @@ spec:
     ENV_NAME: $[[ inputs.environment-name ]]
     # The next two variables are here for the postjob-cleanup.
     OAR_ID_FILE: /tmp/oar-job-id-${CI_JOB_ID}.txt
-    SITE: nancy
+    SITE: "$[[ inputs.site ]]"
+    CLUSTERS: "$[[ inputs.clusters ]]"
     POSTINSTALL_FILE: ${ROOT_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}/postinstall-${POSTINSTALL_BRANCH}.tgz
   rules:
     # We start the job automatically if we're told to do so, otherwise we put
@@ -39,7 +44,7 @@ spec:
         rsync -rv ./ ajenkins@$SITE:"$TMP_DIR"/
         # Ensures the temporary directory is cleaned up on exit
         trap "ssh ajenkins@$SITE 'rm -rf $TMP_DIR'" EXIT
-        ssh ajenkins@$SITE "cd '$TMP_DIR' && bash submit-oarjob.bash"
+        ssh ajenkins@$SITE "cd '$TMP_DIR' && CLUSTERS='$CLUSTERS' bash submit-oarjob.bash"
       else
         git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.inria.fr/grid5000/jenkins-scripts.git --depth 1 --branch master
         # GENERATED_ENV_VERSION is populated by the "clone-refrepo" job
