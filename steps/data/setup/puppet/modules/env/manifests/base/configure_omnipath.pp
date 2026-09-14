@@ -29,10 +29,7 @@ class env::base::configure_omnipath(){
   }
 
   case "${::lsbdistcodename}" {
-    'trixie': {
-      # Nothing (bug #17162)
-    }
-    'bookworm': {
+    'bookworm', 'trixie': {
       ensure_packages(['ucx-utils'], {
         ensure => present
       })
