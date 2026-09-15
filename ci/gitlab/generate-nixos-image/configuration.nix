@@ -20,8 +20,8 @@ in {
 
   # Ensure compatibility with all clusters
   hardware.enableAllHardware = true;
-  # For compatibility with RAID controller like on larochette
-  boot.initrd.availableKernelModules = ["mpi3mr"];
+  # For compatibility with RAID controller like on larochette and pyxis
+  boot.initrd.availableKernelModules = ["mpi3mr" "mpt3sas"];
 
   services.openssh = {
     enable = true;
