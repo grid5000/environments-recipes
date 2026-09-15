@@ -7,6 +7,6 @@
 - change_conf:
   - exec_in: rm /var/lib/dhcpcd/duid
   - exec_in: echo "env force_hostname=yes" >> /etc/dhcpcd.conf
-  - exec_in: echo "ipv4only" >> /etc/dhcpcd.conf
 
-
+- use_ipv6: 
+- exec_in: dhcpcd -6
