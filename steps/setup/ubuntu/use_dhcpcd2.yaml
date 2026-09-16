@@ -1,10 +1,12 @@
 - install_dhcpcd:
-  #  - apt-get_in: install dhcpcd-base
-  - apt-get_in: install isc-dhcp-client 
+  - apt-get_in: install dhcpcd-base
 
-    #- use_ipv4:
-    #  - exec_in: dhcpcd -4
+- use_ipv4:
+  - exec_in: dhcpcd -4
 
-    #- change_conf:
-    #  - exec_in: rm /var/lib/dhcpcd/duid
-    #  - exec_in: echo "env force_hostname=yes" >> /etc/dhcpcd.conf
+- change_conf:
+  - exec_in: rm /var/lib/dhcpcd/duid
+  - exec_in: echo "env force_hostname=yes" >> /etc/dhcpcd.conf
+
+- wait_ipv6:
+  - exec_in: dhcpcd --waitip=6
