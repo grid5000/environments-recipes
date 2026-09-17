@@ -1,10 +1,12 @@
 [Unit]
 Description=activation of all disks before g5k-checks is launched
 After=network-online.target
+Wants=network-online.target
 Before=oar-node.service
 
 [Service]
 Type=oneshot
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 30); do ping -c1 -W2 api.grid5000.fr >/dev/null 2>&1 && exit 0; sleep 1; done; exit 1'
 ExecStart=/usr/local/libexec/g5k-disk-manager-backend --on-boot
 
 [Install]
