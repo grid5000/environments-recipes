@@ -46,14 +46,14 @@ end
 # For the different states, see:
 # https://github.com/grid5000/g5k-api/blob/master/lib/oar/resource.rb#L45
 def user_deploy?(hostname)
-  tries = 6
+  tries = 24
   begin
     url = G5K_API + '/sites/' + site(hostname) + '/status?disks=no&job_details=no&waiting=no&network_address=' + hostname
     hash = JSON::parse(URI.open(url, 'User-Agent' => 'g5k-manager (for disk and pmem)').read)
   rescue
     tries -= 1
     if tries > 0
-      debug("Fetching #{url} failed. Sleeping 2s and retry.")
+      notice("Fetching #{url} failed. Sleeping 2s and retry.")
       sleep(2)
       retry
     else
