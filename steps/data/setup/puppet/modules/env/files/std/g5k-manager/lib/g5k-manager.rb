@@ -53,7 +53,7 @@ def user_deploy?(hostname)
   rescue
     tries -= 1
     if tries > 0
-      notice("Fetching #{url} failed. Sleeping 2s and retry.")
+      debug("Fetching #{url} failed. Sleeping 2s and retry.")
       sleep(2)
       retry
     else
