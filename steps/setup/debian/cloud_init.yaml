@@ -8,11 +8,18 @@
       network: {config: disabled}
 
 - disable_default_user_creation:
-  - exec_in: "sed -i 's/users:/# users:/' /etc/cloud/cloud.cfg"
-  - exec_in: sed -i -e 's/^\( *- default\)/# \1/' /etc/cloud/cloud.cfg
+### Expected result in cloud.cfg after sed
+# users:
+#     - default
+  - exec_in: |
+      sed -i 's/users:/# users:/' /etc/cloud/cloud.cfg
+  - exec_in: |
+      sed -i 's/^\( *- default\)/# \1/' /etc/cloud/cloud.cfg
 
 - cancel_disable_root:
-  - exec_in: "sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg"
+  - exec_in: |
+      sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
 
 - preserve_hostname:
-  - exec_in: "sed -i 's/preserve_hostname: false/preserve_hostname: true/' /etc/cloud/cloud.cfg"
+  - exec_in: |
+      sed -i 's/preserve_hostname: false/preserve_hostname: true/' /etc/cloud/cloud.cfg
