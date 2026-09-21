@@ -1,2 +1,18 @@
 - install_cloud_init:
   - apt-get_in: install cloud-init
+
+- disable_cloud_init_network_conf:
+  - write_in:
+    - /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+    - |
+      network: {config: disabled}
+
+- disable_default_user_creation:
+  - exec_in: "sed -i 's/users:/# users:/' /etc/cloud/cloud.cfg"
+  - exec_in: sed -i -e 's/^\( *- default\)/# \1/' /etc/cloud/cloud.cfg
+
+- cancel_disable_root:
+  - exec_in: "sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg"
+
+- preserve_hostname:
+  - exec_in: "sed -i 's/preserve_hostname: false/preserve_hostname: true/' /etc/cloud/cloud.cfg"
