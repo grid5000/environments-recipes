@@ -65,7 +65,7 @@ in {
       boot:
         kernel: ${config.boot.kernelPackages.kernel}/${config.system.boot.loader.kernelFile}
         initrd: ${config.system.build.initialRamdisk}/${config.system.boot.loader.initrdFile}
-        kernel_params: init=${config.system.build.toplevel}/init rw modprobe.blacklist=nouveau
+        kernel_params: init=/nix/var/nix/profiles/system/init rw modprobe.blacklist=nouveau
       filesystem: ext4
       partition_type: 131
       multipart: false
