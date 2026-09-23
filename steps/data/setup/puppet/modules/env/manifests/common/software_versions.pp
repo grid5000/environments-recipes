@@ -54,8 +54,7 @@ class env::common::software_versions {
         }
         'bookworm': {
           $lmod                   = '8.6.19-1+g5k1.0.5'
-          $amdgpu_version         = '6.4.1'
-          $rocm_version           = '6.4.1'
+          $amdgpu_version         = '31.50'
           $nvidia_driver          = '580.95.05'
           $nvidia_fabricmanager   = '580.95.05-1'
           $datacenter_gpu_manager = '1:3.3.3'
