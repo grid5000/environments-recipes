@@ -8,7 +8,7 @@ class env::big::configure_amd_gpu () {
     'bookworm' => 'jammy',
     'trixie'   => 'noble'
   }
-  
+
   exec {
     'retrieve rocm key':
       command => "/usr/bin/wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | tee /etc/apt/trusted.gpg.d/rocm.gpg > /dev/null";
@@ -25,8 +25,6 @@ class env::big::configure_amd_gpu () {
       notify       => Exec['apt_update'],
       include  => { 'deb' => true, 'src' => false }
   }
-  
-  
 
   package {
     'amdgpu-dkms':

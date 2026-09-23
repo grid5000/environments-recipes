@@ -73,7 +73,7 @@ class env::big::configure_rocm () {
       }
     }
 
-    'bullseye', 'bookworm' : {
+    'bullseye': {
       exec {
         'build_and_install_rocm_llvm':
           command  => "mkdir /tmp/rocm && cd /tmp/rocm && apt download rocm-llvm && dpkg-deb -x rocm-llvm_*.deb rocm-llvm && dpkg-deb --control rocm-llvm_*.deb rocm-llvm/DEBIAN && sed -i 's/^Depends: .*/Depends: libc6/g' rocm-llvm/DEBIAN/control && dpkg -b rocm-llvm/ rocm-llvm.deb && apt install -y ./rocm-llvm.deb && rm -fr /tmp/rocm",

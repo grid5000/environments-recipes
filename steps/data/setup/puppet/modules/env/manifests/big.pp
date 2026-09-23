@@ -26,12 +26,12 @@ class env::big ( $variant = "big", $parent_parameters = {} ){
     class { 'env::big::configure_amd_gpu': }
     # GPU kernel module only for Debian 13 Trixie (bugs #15653 and #14466)
     # but still needs rocm-smi (bug #18590)
-    if $::lsbdistcodename == 'trixie' {
-      # install rocm-smi only
-      class { 'env::big::install_rocm_smi': }
-    } else {
+    if $::lsbdistcodename == 'bullseye' {
       # install rocm
       class { 'env::big::configure_rocm': }
+    } else {
+      # install rocm-smi only
+      class { 'env::big::install_rocm_smi': }
     }
   }
   # beegfs install

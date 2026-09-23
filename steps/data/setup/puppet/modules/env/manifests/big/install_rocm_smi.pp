@@ -5,7 +5,7 @@ class env::big::install_rocm_smi () {
 
   case $::lsbdistcodename {
 
-    'trixie' : {
+    'trixie', 'bookworm' : {
       package {
         'rocm-smi':
           ensure => installed;
