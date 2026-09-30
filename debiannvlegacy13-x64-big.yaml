@@ -15,7 +15,7 @@ global:
   g5k_description: $${distrib} $${release_number} ($${release}) with nvidia proprietary (legacy) kernel module for $${arch} - $${g5k_variant}
 
   # Grid'5000 Kadeploy environment parameters
-  g5k_postinst_script: g5k-postinstall --net debian --net hpc --fstab nfs --fstab ondemand --restrict-user current --disk-aliases
+  g5k_postinst_script: g5k-postinstall --net debian --net hpc --fstab nfs --restrict-user current --disk-aliases
   # QEMU options
   image_size: 27G
   # nvidia module licence
