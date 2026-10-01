@@ -13,7 +13,7 @@ class env::common::software_versions {
   # different dedicated g5k-checks versions (bug #18622#c2)
   case $lsbdistcodename {
     'trixie' : {
-      $g5k_checks                  = '0.12.55555'
+      $g5k_checks                  = '0.12.5'
     }
     'bullseye' : {
       $g5k_checks                  = '0.12.2'
