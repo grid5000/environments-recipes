@@ -28,12 +28,11 @@ class env::nfs::source_profile_by_shell {
           ensure => present,
           path   => '/etc/bash.bashrc',
           line   => '. /etc/bash.bashrc.g5k',
-          after  => '# this file has to be sourced in /etc/profile.',
-          require => File['/etc/profile.d/xdg_runtime_dir.sh']
+          after  => '# this file has to be sourced in /etc/profile.'
       }
 
       file_line { 'source /etc/zsh/zshenv.g5k file':
-          require => [Package['zsh'], File['/etc/profile.d/xdg_runtime_dir.sh']],
+          require => Package['zsh'],
           ensure => present,
           path   => '/etc/zsh/zshenv',
           line   => '. /etc/zsh/zshenv.g5k'
