@@ -24,6 +24,7 @@ class env::base ( $variant = "base", $parent_parameters = {} ){
   class { 'env::base::increase_ssh_maxstartups': }
   # Specific tuning
   class { 'env::base::tcp_tuning_for_10gbe': }
+  class { 'env::base::ulimit_open_files_extend': }
   # cpufreq no more available in trixie : using linux-cpupower (bug #17453)
   if $::lsbdistcodename == 'trixie' {
     class { 'env::base::enable_cpupower_with_performance_governor': }
