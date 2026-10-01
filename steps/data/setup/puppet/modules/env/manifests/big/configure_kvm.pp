@@ -83,23 +83,4 @@ class env::big::configure_kvm () {
     'sudo':
       ensure   => installed;
   }
-
-  file_line { 'kvm_etc_profile_createpath':
-    path => '/etc/profile',
-    line => 'mkdir -p /tmp/$USER-runtime-dir';
-  }
-
-  file_line { 'kvm_etc_profile_path':
-    path => '/etc/profile',
-    line => 'export XDG_RUNTIME_DIR=/tmp/$USER-runtime-dir',
-    require => File_line['kvm_etc_profile_createpath'];
-  }
-
-  # Not sure this is required anymore. Try without, uncomment if needed
-  # augeas {
-  #   'set_XDG_RUNTIME_DIR':
-  #     context   => "/files/etc/profile",
-  #     tag       => "modules",
-  #     changes   =>["set export[last()+1] XDG_RUNTIME_DIR=/tmp/$USER-runtime-dir",];
-  # }
 }
