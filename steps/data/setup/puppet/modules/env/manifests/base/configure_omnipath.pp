@@ -29,14 +29,7 @@ class env::base::configure_omnipath(){
   }
 
   case "${::lsbdistcodename}" {
-    'trixie': {
-      # Nothing (bug #17162)
-    }
-    'bookworm': {
-      ensure_packages(['ucx-utils'], {
-        ensure => present
-      })
-
+    'bookworm', 'trixie': {
       file {
         # Fix PSM2, see #13470 and https://sources.debian.org/src/libpsm2/11.2.185-2/debian/README.Debian/#L46
         '/lib/udev/rules.d/60-rdma-persistent-naming.rules':
