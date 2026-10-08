@@ -1,0 +1,6 @@
+# Make dhcpv6 sollicit message use the MAC address for client identification by changing the duidtype field
+# See bug https://intranet.grid5000.fr/bugzilla/show_bug.cgi?id=18286
+- fix_dhcpv6:
+  - exec_in: mkdir /etc/systemd/networkd.conf.d
+  - exec_in: echo -e "[DHCPv6]\nDUIDType=link-layer-time" > /etc/systemd/networkd.conf.d/dhcpv6-duidtype.conf
+
