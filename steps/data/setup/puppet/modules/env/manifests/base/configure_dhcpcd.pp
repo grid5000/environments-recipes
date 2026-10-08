@@ -15,5 +15,10 @@ class env::base::configure_dhcpcd () {
     line   => '#slaac private',
     match  => '^slaac private$',
   }
+  file_line { 'waitip_4':
+    ensure => present,
+    path   => '/etc/dhcpcd.conf',
+    line   => 'waitip 4',
+  }
 
 }
