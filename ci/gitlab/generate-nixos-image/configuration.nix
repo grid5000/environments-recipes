@@ -27,8 +27,8 @@ in {
   # Ensure compatibility with all clusters
   # Standard: hardware is defined via a specific hardware-configuration.nix per machine
   hardware.enableAllHardware = true;
-  # For compatibility with RAID controller like on larochette and pyxis
-  boot.initrd.availableKernelModules = ["mpi3mr" "mpt3sas"];
+  # For compatibility with RAID controller like on larochette (mpi3mr), pyxis (mpt3sas) and taurus (megaraid_sas)
+  boot.initrd.availableKernelModules = ["mpi3mr" "mpt3sas" "megaraid_sas"];
 
   services.openssh = {
     enable = true;
