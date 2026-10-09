@@ -45,9 +45,6 @@ in {
       enable = true;
       device = "nodev";
     };
-    efi = {
-      efiSysMountPoint = "/boot/efi";
-    };
   };
 
   # The postinstall will overwrite the "/" to the correct partition depending on the kadeploy arguments. Here this is set to fallback to the default PROD partition
@@ -58,11 +55,6 @@ in {
     "/" = lib.mkDefault {
       device = "/dev/disk/by-partlabel/KDPL_DEPLOY_disk0";
       fsType = "ext4";
-    };
-    "/boot/efi" = lib.mkDefault {
-      device = "/dev/disk/by-partlabel/efi";
-      fsType = "vfat";
-      options = ["fmask=0022" "dmask=0022"];
     };
   };
 
