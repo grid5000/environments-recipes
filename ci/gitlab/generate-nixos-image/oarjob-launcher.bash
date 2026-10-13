@@ -35,3 +35,13 @@ echo "Removing old environments... (DISABLED)"
 echo "Copying environment to home ($TARGET_DIR) directory of ajenkins@nancy..."
 ssh ajenkins@nancy "mkdir -p $TARGET_DIR"
 rsync -rLv result/ ajenkins@nancy:"$TARGET_DIR/"
+
+# If the user has specified a custom postinstall url, also generate a dsc with it.
+if [ -n "$POSTINSTALL_FILE" ]; then
+    CUSTOM_POSTINSTALL_URL="http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/$POSTINSTALL_FILE"
+    echo "Creating a dsc with a custom postinstall script"
+    cp "result/$ENV_NAME.dsc" "$ENV_NAME-custom-postinstall.dsc"
+    sed -i "s|archive: .*|archive: $CUSTOM_POSTINSTALL_URL|" "$ENV_NAME-custom-postinstall.dsc"
+    cat "$ENV_NAME-custom-postinstall.dsc"
+    scp "$ENV_NAME-custom-postinstall.dsc" ajenkins@nancy:"$TARGET_DIR/$ENV_NAME-custom-postinstall.dsc"
+fi
