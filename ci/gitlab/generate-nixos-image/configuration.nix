@@ -112,6 +112,7 @@ in {
   users.motdFile = "/etc/motd";
 
   # Workaround G5K: Automatically merges all rules from ./udev_rules into the system udev rules
+  # The udev_rules dir is populated during the g5k-postinstall
   # Standard NixOS: It may be simpler to use services.udev.extraRules for a few additions
   services.udev.packages = if builtins.pathExists ./udev_rules then [
     (pkgs.linkFarm "extra-udev-rules" [
