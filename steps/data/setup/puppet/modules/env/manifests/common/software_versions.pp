@@ -45,8 +45,8 @@ class env::common::software_versions {
       $nvidia_driver_arch         = 'x86_64'
       case $lsbdistcodename {
         'trixie' : {
-          $nvidia_driver          = '580.126.09'
-          $nvidia_fabricmanager   = '580.126.09-1'
+          $nvidia_driver          = '580.178.04'
+          $nvidia_fabricmanager   = '580.178.04-1'
           $datacenter_gpu_manager = '1:3.3.9'
           $dcgm_exporter          = '3.3.5-1'
           $lmod                   = '8.7.60-1+g5k1.0.0'
