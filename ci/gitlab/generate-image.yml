@@ -34,7 +34,6 @@ spec:
       if [[ ${ENV_NAME} == nixos* ]]; then
         echo "Detected NixOS environment, using NixOS image generation script"
         # Create a .env file to share environment variables with the OAR job
-        cd ci/gitlab/generate-nixos-image
         echo "CI_PIPELINE_ID=${CI_PIPELINE_ID}" > .env
         echo "CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA}" >> .env
         echo "CI_COMMIT_SHA=${CI_COMMIT_SHA}" >> .env
@@ -42,7 +41,7 @@ spec:
         echo "GENERATED_ENV_VERSION=${GENERATED_ENV_VERSION}" >> .env
         [[ -n ${POSTINSTALL_BRANCH} ]] && echo "POSTINSTALL_FILE=${POSTINSTALL_FILE}" >> .env
         TMP_DIR=generate-nixos-image.${CI_PIPELINE_ID}
-        rsync -rv ./ ajenkins@$SITE:"$TMP_DIR"/
+        rsync -rv .env ci/gitlab/generate-nixos-image/ nixos/ ajenkins@$SITE:"$TMP_DIR"/
         # Ensures the temporary directory is cleaned up on exit
         trap "ssh ajenkins@$SITE 'rm -rf $TMP_DIR'" EXIT
         ssh ajenkins@$SITE "cd '$TMP_DIR' && CLUSTERS='$CLUSTERS' bash submit-oarjob.bash"
