@@ -21,6 +21,19 @@ class env::nfs::install_autofs_requirements(){
     }
   }
 
+  if Integer($facts['os']['release']['major']) >= 13 {
+    augeas { '/files/etc/autofs.conf/negative_timeout':
+      require => Package['autofs'],
+      lens    => 'Ini.lns',
+      value   => '0',
+    }
+    augeas { '/files/etc/autofs.conf/positive_timeout':
+      require => Package['autofs'],
+      lens    => 'Ini.lns',
+      value   => '0',
+    }
+  }
+
   service {
     'autofs':
       ensure => running,
