@@ -24,7 +24,8 @@ tail -F "OAR.${OAR_JOB_ID}.stdout" "OAR.${OAR_JOB_ID}.stderr" &
 TAIL_PID=$!
 
 JOB_STATE=""
-while [[ "$JOB_STATE" =~ Waiting|Launching|Running|Finishing ]] || [[ -z "$JOB_STATE" ]]; do
+# Job states can be checked against the actual code source at, for example, https://gitlab.inria.fr/grid5000/oar/-/blob/2.5/docs/source/admin/database-scheme.rst?plain=1#L487
+while [[ "$JOB_STATE" =~ Waiting|toLaunch|Launching|Running|Finishing ]] || [[ -z "$JOB_STATE" ]]; do
   sleep 10
   JOB_STATE=$(oarstat -Jj $OAR_JOB_ID | jq -r '.[].state')
 done
