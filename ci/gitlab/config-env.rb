@@ -25,7 +25,6 @@ ENV_CONFIG = {
     'gh11'       => map_variants_to_archs(%w[std], ARCHS_ARM),
   },
   'ubuntu' => {
-    '2004' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_ALL),
     '2204' =>  map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
     '2404' => {
       'min'  => ARCHS_X_ARM,
@@ -34,14 +33,6 @@ ENV_CONFIG = {
     },
     'l4t200435' => map_variants_to_archs(%w[big], ARCHS_ARM),
     'gh2404'    => map_variants_to_archs(%w[big], ARCHS_ARM),
-  },
-  'centosstream' => {
-    '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
-    '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
-  },
-  'rocky' => {
-    '8' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
-    '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
   },
   'almalinux' => {
     '9' => map_variants_to_archs(VARIANTS_MIN_NFS, ARCHS_X_ARM),
