@@ -3,9 +3,12 @@
   config,
   modulesPath,
   inputs,
+  lib,
   ...
 }: let
   version = "$GENERATED_ENV_VERSION";
+  nixos_version = lib.trivial.release; # e.g. "26.05"
+  short_nixos_version = lib.replaceStrings ["."] [""] nixos_version;
   pipelineId = "$CI_PIPELINE_ID";
   commitShortSha = "$CI_COMMIT_SHORT_SHA";
   arch = if pkgs.stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
@@ -43,19 +46,19 @@ in {
 
   # Fix the generated kadeploy env description
   system.build.kadeploy_env_description = pkgs.writeTextFile {
-    name = "nixos2605-${arch}-min.dsc";
+    name = "nixos${short_nixos_version}-${arch}-min.dsc";
     text = ''
-      name: nixos2605-min
-      alias: nixos2605-${arch}-min
+      name: nixos${short_nixos_version}-min
+      alias: nixos${short_nixos_version}-${arch}-min
       arch: ${if arch == "arm64" then "aarch64" else "x86_64"}
       version: ${version}
-      description: NixOS 26.05 for ${arch} - min
+      description: NixOS ${nixos_version} for ${arch} - min
       author: support-staff@lists.grid5000.fr
       visibility: public
       destructive: false
       os: linux
       image:
-        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitShortSha}/nixos2605-${arch}-min.tar.zst
+        file: http://public.nancy.grid5000.fr/~ajenkins/environments/pipelines/${pipelineId}-${commitShortSha}/nixos${short_nixos_version}-${arch}-min.tar.zst
         kind: tar
         compression: zstd
       postinstalls:
@@ -80,14 +83,14 @@ in {
 
     installPhase = ''
       mkdir $out
-      ln -s ${config.system.build.kadeploy_env_description} $out/nixos2605-${arch}-min.dsc
-      ln -s ${config.system.build.g5k-image-archive}/tarball/nixos2605-${arch}-min.tar.zst $out/nixos2605-${arch}-min.tar.zst
+      ln -s ${config.system.build.kadeploy_env_description} $out/nixos${short_nixos_version}-${arch}-min.dsc
+      ln -s ${config.system.build.g5k-image-archive}/tarball/nixos${short_nixos_version}-${arch}-min.tar.zst $out/nixos${short_nixos_version}-${arch}-min.tar.zst
     '';
   };
 
   # Fix the compression to use zstd like other environments
   system.build.g5k-image-archive = import "${toString modulesPath}/../lib/make-system-tarball.nix" {
-    fileName = "nixos2605-${arch}-min";
+    fileName = "nixos${short_nixos_version}-${arch}-min";
     stdenv = pkgs.stdenv;
     closureInfo = pkgs.closureInfo;
     pixz = pkgs.pixz;

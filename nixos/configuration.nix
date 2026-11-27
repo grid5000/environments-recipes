@@ -11,6 +11,8 @@
   ...
 }: let
   version = "$GENERATED_ENV_VERSION";
+  nixos_version = lib.trivial.release; # e.g. "26.05"
+  short_nixos_version = lib.replaceStrings ["."] [""] nixos_version;
   commitSha = "$CI_COMMIT_SHA";
   arch = if pkgs.stdenv.hostPlatform.isAarch64 then "arm64" else "x64";
 in {
@@ -23,7 +25,7 @@ in {
     gnupg
   ];
 
-  system.stateVersion = "26.05";
+  system.stateVersion = nixos_version;
 
   # Workaround G5K: Ensure compatibility with all clusters
   # Standard NixOS: hardware is defined via a specific hardware-configuration.nix per machine
@@ -98,12 +100,12 @@ in {
   # Workaround G5K: Informative files checked by our automated tests
   environment.etc = {
     "grid5000/release".text = ''
-      nixos2605-${arch}-min-${version}
+      nixos${short_nixos_version}-${arch}-min-${version}
       ${commitSha}
     '';
     "motd".text = ''
-      nixos2605-${arch}-min-${version}
-      (Image based on NixOS 26.05 for ${arch})
+      nixos${short_nixos_version}-${arch}-min-${version}
+      (Image based on NixOS ${nixos_version} for ${arch})
       Maintained by support-staff <support-staff@lists.grid5000.fr>
     '';
   };
