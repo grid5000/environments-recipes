@@ -48,6 +48,7 @@ setup:
   - configure_apt
   - upgrade_system
   - install_packages
+  - install_cpu_microcode
   - setup_orchestrator
   - run_orchestrator
 

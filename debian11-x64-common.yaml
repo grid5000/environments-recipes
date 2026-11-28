@@ -48,6 +48,7 @@ setup:
   - configure_system
   - configure_apt
   - install_packages
+  - install_cpu_microcode
   - setup_orchestrator
   - run_orchestrator
   - install_ca_bookworm

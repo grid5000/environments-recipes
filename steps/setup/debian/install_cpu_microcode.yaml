@@ -1,0 +1,15 @@
+- install_cpu_microcode_packages:
+  - apt-get_in: install intel-microcode amd64-microcode
+
+- configure_cpu_microcode:
+  - local2in:
+    - $${kameleon_data_dir}/setup/cpu_microcode/intel-microcode
+    - /etc/default/intel-microcode
+
+  - local2in:
+    - $${kameleon_data_dir}/setup/cpu_microcode/amd64-microcode
+    - /etc/default/amd64-microcode
+
+  - exec_in: |
+      chown root:root /etc/default/intel-microcode /etc/default/amd64-microcode
+      chmod 0644 /etc/default/intel-microcode /etc/default/amd64-microcode

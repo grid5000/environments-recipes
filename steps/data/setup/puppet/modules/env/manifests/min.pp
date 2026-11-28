@@ -22,10 +22,6 @@ class env::min ( $variant = "min", $parent_parameters = {} ) {
       fail "${operatingsystem} not suported."
     }
   }
-  # Install cpu microcode
-  if $env::deb_arch == 'amd64' {
-    class { 'env::min::install_cpu_microcode': }
-  }
   # ssh
   class { 'env::min::install_and_configure_ssh': }
   # setup

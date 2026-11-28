@@ -52,6 +52,7 @@ setup:
   - configure_apt
   - install_packages
   - cloud_init
+  - install_cpu_microcode
   - setup_orchestrator
   - run_orchestrator
 
